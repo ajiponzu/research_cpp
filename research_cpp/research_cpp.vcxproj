@@ -145,6 +145,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="process\CarsDetector.cpp" />
+    <ClCompile Include="process\CarsTracer.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="process\CarsDetector.h" />
+    <ClInclude Include="process\CarsTracer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
