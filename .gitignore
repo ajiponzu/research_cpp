@@ -362,3 +362,4 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 research_cpp/output.mp4
+/research_cpp/output/hare/output.mp4

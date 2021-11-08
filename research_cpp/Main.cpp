@@ -1,34 +1,140 @@
 #include <iostream>
 #include <string>
+#include <array>
 #include <opencv2/opencv.hpp>
 
 #include "process/CarsDetector.h"
 
 using Image = cv::Mat;
 
+enum VideoType
+{
+	HARE = 0,
+	KUMORI,
+	AME,
+};
+
+/* ファイルパス関連 */
+const static std::string gVideoPathList[3] = { "./resource/hare/input.mp4", "./resource/kumori/input.mp4", "./resource/ame/input.mp4" };
+const static std::string gOutputPathList[3] = { "./output/hare/output.mp4", "./output/kumori/output.mp4", "./output/ame/output.mp4" };
+const static VideoType gVideoType = VideoType::HARE;
+const static std::string gBackImgPathList[3] = { "./resource/hare/back.png", "./resource/kumori/back.mp4", "./resource/ame/back.mp4" };
+const static std::string gRoadMaskPath = "./resource/back_kaikai.png";
+const static std::string gRoadMasksBasePath = "./resource/back_kai";
+constexpr static auto gRoadMasksNum = 4;
+/* end */
+
+// ループ回数決定
+constexpr static auto startCount = 1;
+constexpr static auto endCount = 1;
+
+
+/// <summary>
+/// ビデオリソース読み込み・初期設定
+/// </summary>
+/// <param name="videoCapture"></param>
+/// <param name="videoWriter"></param>
+/// <returns></returns>
+bool CreateVideoResource(cv::VideoCapture& videoCapture, cv::VideoWriter& videoWriter)
+{
+	videoCapture.open(gVideoPathList[gVideoType]);
+	if (!videoCapture.isOpened())
+	{
+		std::cout << gVideoPathList[gVideoType] << ": doesn't exist" << std::endl;
+		return false;
+	}
+
+	auto fourcc = cv::VideoWriter::fourcc('m', 'p', '4', 'v');
+	auto videoWidth = static_cast<int>(videoCapture.get(cv::CAP_PROP_FRAME_WIDTH));
+	auto videoHeight = static_cast<int>(videoCapture.get(cv::CAP_PROP_FRAME_HEIGHT));
+	auto videoFps = videoCapture.get(cv::CAP_PROP_FPS);
+	videoWriter.open(gOutputPathList[gVideoType], fourcc, videoFps, cv::Size(videoWidth, videoHeight));
+	if (!videoWriter.isOpened())
+	{
+		std::cout << gVideoPathList[gVideoType] << ": can't create or overwrite" << std::endl;
+		return false;
+	}
+
+	return true;
+}
+
+/// <summary>
+/// 背景画像・道路マスク画像等, 画像リソース読み込み
+/// </summary>
+/// <param name="backImg"></param>
+/// <param name="roadMask"></param>
+/// <param name="roadMasks"></param>
+/// <returns></returns>
+template<size_t N> bool CreateImageResource(Image& backImg, Image& roadMask, std::array<Image, N>& roadMasks)
+{
+	backImg = cv::imread(gBackImgPathList[gVideoType]);
+	if (backImg.empty())
+	{
+		std::cout << gBackImgPathList[gVideoType] << ": can't read this." << std::endl;
+		return false;
+	}
+
+	roadMask = cv::imread(gRoadMaskPath);
+	if (roadMask.empty())
+	{
+		std::cout << gRoadMaskPath << ": can't read this." << std::endl;
+		return false;
+	}
+
+	for (size_t idx = 0; idx < N; idx++)
+	{
+		const auto filePath = gRoadMasksBasePath + std::to_string(idx) + ".png";
+		roadMasks[idx] = cv::imread(filePath);
+		if (roadMasks[idx].empty())
+		{
+			std::cout << filePath << ": can't read this." << std::endl;
+			return false;
+		}
+	}
+
+	return true;
+}
+
 int main()
 {
 	// デバッグ出力高速化
 	std::ios::sync_with_stdio(false);
 
-	const std::string videoPath = "./resource/img_1fps/input.mp4";
+	/* リソース読み込み */
 
 	// 入力ビデオキャプチャ
 	cv::VideoCapture videoCapture;
-	videoCapture.open(videoPath);
-	if (!videoCapture.isOpened())
-	{
-		std::cout << videoPath << ": doesn't exist" << std::endl;
-		return 0;
-	}
-
 	// ビデオレコーダー
 	cv::VideoWriter videoWriter;
-	auto fourcc = cv::VideoWriter::fourcc('m', 'p', '4', 'v');
-	auto videoWidth = static_cast<int>(videoCapture.get(cv::CAP_PROP_FRAME_WIDTH));
-	auto videoHeight = static_cast<int>(videoCapture.get(cv::CAP_PROP_FRAME_HEIGHT));
-	auto videoFps = videoCapture.get(cv::CAP_PROP_FPS);
-	videoWriter.open("output.mp4", fourcc, videoFps, cv::Size(videoWidth, videoHeight));
+	// リソース登録
+	auto isCreatedVideo = CreateVideoResource(videoCapture, videoWriter);
+	if (!isCreatedVideo)
+		return 0;
+
+	// 背景画像
+	Image backImg;
+	// 道路マスク画像
+	Image roadMask;
+	// 道路マスク画像(テンプレートマッチング)
+	std::array<Image, gRoadMasksNum> roadMasks;
+	// リソース登録
+	auto isCreatedImages = CreateImageResource(backImg, roadMask, roadMasks);
+	if (!isCreatedImages)
+		return 0;
+
+	/* リソース読み込みデバッグ */
+	cv::imshow("", backImg);
+	cv::waitKey(1500);
+	cv::imshow("", roadMask);
+	cv::waitKey(1500);
+	for (auto itr = roadMasks.begin(); itr != roadMasks.end(); itr++)
+	{
+		cv::imshow("", *itr);
+		cv::waitKey(1500);
+	}
+	/* end */
+
+	/* end */
 
 	// フレームカウント
 	int count = 0;
@@ -44,6 +150,12 @@ int main()
 		if (frame.empty())
 			break;
 
+		if (count < startCount)
+			continue;
+
+		if (count > endCount)
+			break;
+
 		/* 画像処理 */
 
 		/* end */
@@ -56,4 +168,3 @@ int main()
 
 	return 0;
 }
-

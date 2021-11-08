@@ -12,4 +12,3 @@ namespace CarsDetector
 	Image ExtractCars(Image& input, Image& shadow);
 	//Image DrawRectangle(Image& input, std::vector::)
 };
-
