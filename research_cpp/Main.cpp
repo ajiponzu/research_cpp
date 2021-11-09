@@ -142,6 +142,11 @@ int main()
 	// フレーム
 	Image frame;
 
+	/* 実行時間計測変数 */
+  double f = 1000.0/cv::getTickFrequency();
+  uint64_t time = cv::getTickCount();
+	/* end */
+
 	// ビデオ読み込みループ
 	while (true)
 	{
@@ -161,8 +166,13 @@ int main()
 
 		// 背景差分画像
 		auto subtracted = CarsDetector::SubtractImage(frame, backImg, roadMask);
-		cv::imshow("", subtracted);
-		cv::waitKey(10000);
+		//cv::imshow("", subtracted);
+		//cv::waitKey(2000);
+
+		// 車影抽出
+		auto shadow = CarsDetector::ExtractShadow(frame, roadMask);
+		//cv::imshow("", shadow);
+		//cv::waitKey(2000);
 
 		/* end */
 
@@ -171,6 +181,15 @@ int main()
 
 		std::cout << count << std::endl;
 	}
+	
+	/* 計測時間表示 */
+	auto ms = (cv::getTickCount() - time) * f;
+	auto s = ms / 1000;
+	auto m = s / 60;
+	std::cout<< ms <<" [ms]"<<std::endl;
+	std::cout<<	s <<" [s]"<<std::endl;
+	std::cout<< m <<" [m]"<<std::endl;
+	/* end */
 
 	return 0;
 }
