@@ -24,9 +24,10 @@ const static std::string gRoadMasksBasePath = "./resource/back_kai";
 constexpr static auto gRoadMasksNum = 4;
 /* end */
 
-// ループ回数決定
+/* ループ回数決定 */
 constexpr static auto startCount = 1;
 constexpr static auto endCount = 1;
+/* end */
 
 
 /// <summary>
@@ -122,17 +123,17 @@ int main()
 	if (!isCreatedImages)
 		return 0;
 
-	/* リソース読み込みデバッグ */
-	cv::imshow("", backImg);
-	cv::waitKey(1500);
-	cv::imshow("", roadMask);
-	cv::waitKey(1500);
-	for (auto itr = roadMasks.begin(); itr != roadMasks.end(); itr++)
-	{
-		cv::imshow("", *itr);
-		cv::waitKey(1500);
-	}
-	/* end */
+	///* リソース読み込みデバッグ */
+	//cv::imshow("", backImg);
+	//cv::waitKey(1500);
+	//cv::imshow("", roadMask);
+	//cv::waitKey(1500);
+	//for (auto itr = roadMasks.begin(); itr != roadMasks.end(); itr++)
+	//{
+	//	cv::imshow("", *itr);
+	//	cv::waitKey(1500);
+	//}
+	///* end */
 
 	/* end */
 
@@ -157,6 +158,11 @@ int main()
 			break;
 
 		/* 画像処理 */
+
+		// 背景差分画像
+		auto subtracted = CarsDetector::SubtractImage(frame, backImg, roadMask);
+		cv::imshow("", subtracted);
+		cv::waitKey(10000);
 
 		/* end */
 
