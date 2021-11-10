@@ -124,6 +124,51 @@ void ImgProc::CarsDetector::ExtractCars()
 }
 
 /// <summary>
+/// 車両を矩形で囲む
+/// </summary>
+/// <param name="frame">入力フレーム</param>
+void ImgProc::CarsDetector::DrawRectangle(Image& frame, const int& areaThr)
+{
+	frame.copyTo(carRects);
+
+	cv::cvtColor(cars, gray, cv::COLOR_BGR2GRAY); // ラベリングにかけるためにはグレースケール化の必要がある
+
+	std::cout << roadMasks.size() << std::endl;
+
+	/* 車線分繰り返す */
+	for (int idx = 0; idx < roadMasks.size(); idx++)
+	{
+		cv::bitwise_and(gray, roadMasks[idx], tmp); // マスキング処理
+		//ラベリングによって求められるラベル数
+		auto labelNum = cv::connectedComponentsWithStats(tmp, labels, stats, centroids);
+
+		/* 各領域ごとの処理, 0番は背景 */
+		for (int label = 1; label < labelNum; label++)
+		{
+			/* 統計情報分割 */
+			auto statsPtr = stats.ptr<int>(label);
+			auto& x = statsPtr[cv::ConnectedComponentsTypes::CC_STAT_LEFT];
+			auto& y = statsPtr[cv::ConnectedComponentsTypes::CC_STAT_TOP];
+			auto& width = statsPtr[cv::ConnectedComponentsTypes::CC_STAT_WIDTH];
+			auto& height = statsPtr[cv::ConnectedComponentsTypes::CC_STAT_HEIGHT];
+			auto& area = statsPtr[cv::ConnectedComponentsTypes::CC_STAT_AREA];
+			/* end */
+
+			if (area < areaThr)
+				continue;
+
+			/* 矩形を描く */
+			auto topLeft = cv::Point(x, y);
+			auto bottomRight = cv::Point(x + width, y + height);
+			cv::rectangle(carRects, topLeft, bottomRight, cv::Scalar(0, 0, 255), 2);
+			/* end */
+		}
+		/* end */
+	}
+	/* end */
+}
+
+/// <summary>
 /// 出力画像一括保存
 /// </summary>
 /// <param name="pathList">パスの集合, 処理順にパス名を保存しておくこと</param>
@@ -147,8 +192,8 @@ void ImgProc::CarsDetector::ShowOutImgs(const int& interval)
 	cv::waitKey(interval);
 
 	cv::imshow("detector", cars);
-	cv::waitKey(interval * 10);
+	cv::waitKey(interval);
 
-	//cv::imshow("detector", carRects);
-	//cv::waitKey(interval);
+	cv::imshow("detector", carRects);
+	cv::waitKey(interval * 10);
 }

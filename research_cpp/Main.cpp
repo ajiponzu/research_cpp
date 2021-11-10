@@ -26,7 +26,7 @@ constexpr static auto gRoadMasksNum = 4;
 
 /* ループ回数決定 */
 constexpr static auto startCount = 1;
-constexpr static auto endCount = 30;
+constexpr static auto endCount = 10000;
 /* end */
 
 /// <summary>
@@ -51,7 +51,7 @@ bool CreateVideoResource(cv::VideoCapture& videoCapture, cv::VideoWriter& videoW
 	videoWriter.open(gOutputPathList[gVideoType], fourcc, videoFps, cv::Size(videoWidth, videoHeight));
 	if (!videoWriter.isOpened())
 	{
-		std::cout << gVideoPathList[gVideoType] << ": can't create or overwrite" << std::endl;
+		std::cout << gOutputPathList[gVideoType] << ": can't create or overwrite" << std::endl;
 		return false;
 	}
 
@@ -196,15 +196,17 @@ int main()
 		detector.ExtractShadow(frame);
 		detector.ReExtractShadow(5, 1.6f);
 		detector.ExtractCars();
+		detector.DrawRectangle(frame, 30);
 		/* end */
 
 		/* end */
 
-		videoWriter << frame; // ビデオ書き出し
+		//videoWriter << frame; // ビデオ書き出し
+		videoWriter << detector.GetCarsRect(); // ビデオ書き出し
 		std::cout << count << std::endl; // カウントアップ
 
 		/* デバッグ */
-		detector.ShowOutImgs(1000);
+		//detector.ShowOutImgs(1000);
 		/* end */
 
 		/* 計測時間表示 */

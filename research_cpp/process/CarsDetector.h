@@ -23,14 +23,6 @@ private:
 	Image tmp; //バッファ
 	Image gray; //グレースケール化のためのバッファ
 	Image binary; //二値化のためのバッファ
-	Image src1C3; //二項演算のためのバッファ1, チャンネル数3
-	Image src2C3; //二項演算のためのバッファ2, チャンネル数3
-	Image src1C1; //二項演算のためのバッファ1, チャンネル数1
-	Image src2C1; //二項演算のためのバッファ2, チャンネル数1
-	Image fSrc1C3; //小数を含む二項演算のためのバッファ1, チャンネル数3
-	Image fSrc2C3; //小数を含む二項演算のためのバッファ2, チャンネル数3
-	Image fSrc1C1; //小数を含む二項演算のためのバッファ1, チャンネル数1
-	Image fSrc2C1; //小数を含む二項演算のためのバッファ2, チャンネル数1
 	Image lab128; //グレースケール化のために, L*a*b*のa値とb値を128にするためのバッファ, チャンネル数1
 	Image labels; //ラベル画像
 	Image stats; //ラベリングにおける統計情報
@@ -42,7 +34,7 @@ private:
 	/* 外部リソース */
 	Image& backImg; //背景画像
 	Image& roadMask; //道路マスク画像
-	std::vector<Image>& roadMasks; //車線マスク画像群
+	std::vector<Image> roadMasks; //車線マスク画像群
 	/* end */
 
 public:
@@ -53,10 +45,9 @@ public:
 	/// <param name="backImg">背景画像</param>
 	/// <param name="roadMask">道路マスク画像</param>
 	/// <param name="roadMasks">車線マスク画像群</param>
-	CarsDetector(Image& backImg, Image& roadMask, std::vector<Image>& roadMasks)
+	CarsDetector(Image& backImg, Image& roadMask, std::vector<Image>& _roadMasks)
 		: backImg(backImg),
-		roadMask(roadMask),
-		roadMasks(roadMasks)
+		roadMask(roadMask)
 	{
 		frameWid = backImg.cols;
 		frameHigh = backImg.rows;
@@ -69,23 +60,26 @@ public:
 		reshadow = Image::zeros(imgSize, CV_8UC3);
 		cars = Image::zeros(imgSize, CV_8UC3);
 		carRects = Image::zeros(imgSize, CV_8UC3);
-		src1C3 = Image::zeros(imgSize, CV_8UC3);
-		src2C3 = Image::zeros(imgSize, CV_8UC3);
-		fSrc1C3 = Image::zeros(imgSize, CV_32FC3);
-		fSrc2C3 = Image::zeros(imgSize, CV_32FC3);
 		exceptedShadows = Image::zeros(imgSize, CV_8UC1);
 		/* end */
 
 		/* 1チャンネル画像の初期化 */
-		src1C1 = Image::zeros(imgSize, CV_8UC1);
-		src2C1 = Image::zeros(imgSize, CV_8UC1);
-		fSrc1C1 = Image::zeros(imgSize, CV_32FC1);
-		fSrc2C1 = Image::zeros(imgSize, CV_32FC1);
 		lab128 = Image::ones(imgSize, CV_8U) * 128;
 		/* end */
 
+		/* モルフォロジカーネルの初期化 */
 		int kernelList[9] = { 0, 1, 0, 1, 1, 1, 0, 1, 0 };
 		morphKernel = Image(3, 3, CV_8U, kernelList);
+		/* end */
+
+		/* 車線マスク画像群のグレースケール化, 車両検出ではグレースケールのマスクしか用いない */
+		roadMasks.resize(_roadMasks.size());
+		for (int idx = 0; idx < _roadMasks.size(); idx++)
+		{
+			cv::cvtColor(_roadMasks[idx], tmp, cv::COLOR_BGR2GRAY);
+			roadMasks[idx] = tmp.clone();
+		}
+		/* end */
 	}
 
 	~CarsDetector() {}
@@ -98,10 +92,12 @@ public:
 	void ReExtractShadow(const int& areaThr, const float& aspectThr);
 	// 車両抽出
 	void ExtractCars();
-	//void DrawRectangle()
+	// 車両を矩形で囲む
+	void DrawRectangle(Image& frame, const int& areaThr);
 
 	void WriteOutImgs(std::vector<std::string> pathList);
 	void ShowOutImgs(const int& interval);
+	const Image GetCarsRect() const { return carRects; }
 
 private:
 	CarsDetector(const CarsDetector& other) = delete;
