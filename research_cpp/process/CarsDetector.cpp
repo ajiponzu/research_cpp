@@ -1,21 +1,18 @@
 #include "CarsDetector.h"
 
 /// <summary>
-/// 背景差分
+/// 背景差分, 移動物体検出
 /// </summary>
 /// <param name="frame">入力フレーム</param>
 void ImgProc::CarsDetector::SubtractBackImage(Image& frame)
 {
-	frame.convertTo(fSrc1C3, CV_32F); //浮動小数はcv_32fを使う -> cv_16fだと謎のエラー
-	backImg.convertTo(fSrc2C3, CV_32F);
-	cv::absdiff(fSrc1C3, fSrc2C3, subtracted);
-	subtracted.convertTo(subtracted, CV_8U); // 型を戻す
+	cv::absdiff(frame, backImg, tmp); // 差分を取ってからその絶対値を画素値として格納
 
-	cv::cvtColor(subtracted, subtracted, cv::COLOR_BGR2GRAY); //グレースケール化
-	cv::threshold(subtracted, subtracted, 0, 255, cv::THRESH_BINARY | cv::THRESH_OTSU); //大津の二値化, thrは必要ないので0を渡す
+	cv::cvtColor(tmp, gray, cv::COLOR_BGR2GRAY); //グレースケール化
+	cv::threshold(gray, binary, 0, 255, cv::THRESH_BINARY | cv::THRESH_OTSU); //大津の二値化, thrは必要ないので0を渡す
+	cv::cvtColor(binary, tmp, cv::COLOR_GRAY2BGR); // チャンネル数を戻す
 
-	cv::cvtColor(subtracted, subtracted, cv::COLOR_GRAY2BGR); // チャンネル数を戻す
-	cv::bitwise_and(subtracted, roadMask, subtracted); // マスキング処理
+	cv::bitwise_and(tmp, roadMask, subtracted); // マスキング処理
 }
 
 /// <summary>
@@ -23,12 +20,13 @@ void ImgProc::CarsDetector::SubtractBackImage(Image& frame)
 /// </summary>
 void ImgProc::CarsDetector::ExtractShadow(Image& frame)
 {
+	// l*a*b*画像
 	Image lab;
 
 	// [0], [1], [2]にl, a, bが分割して代入される動的配列
 	std::vector<Image> vLab;
 
-	cv::cvtColor(frame, lab, cv::COLOR_BGR2Lab); //labに変換
+	cv::cvtColor(frame, lab, cv::COLOR_BGR2Lab); //l*a*b*に変換
 	cv::split(lab, vLab); //split: チャンネルごとに分割する関数
 
 	/* 参照型でリソース削減しつつ, わかりやすいエイリアスを定義 */
@@ -38,9 +36,9 @@ void ImgProc::CarsDetector::ExtractShadow(Image& frame)
 	/* end */
 
 	/* 統計量導出 */
-	cv::Scalar meanLScalar, stdLScalar;
 	auto& meanA = cv::mean(a)[0]; //cv::Scalarはdoubleの二次元配列なのかも?
 	auto& meanB = cv::mean(b)[0];
+	cv::Scalar meanLScalar, stdLScalar;
 	cv::meanStdDev(l, meanLScalar, stdLScalar);
 	auto& meanL = meanLScalar[0];
 	auto& stdL = stdLScalar[0];
@@ -63,8 +61,8 @@ void ImgProc::CarsDetector::ExtractShadow(Image& frame)
 	/* end */
 
 	/* a, b値を128で埋めてグレースケール化 */
-	a.setTo(128);
-	b.setTo(128);
+	a = lab128;
+	b = lab128;
 	/* end */
 
 	/* 統合処理 */
@@ -82,12 +80,11 @@ void ImgProc::CarsDetector::ExtractShadow(Image& frame)
 /// <param name="aspectThr">アスペクト比の閾値</param>
 void ImgProc::CarsDetector::ReExtractShadow(const int& areaThr, const float& aspectThr)
 {
-	cv::cvtColor(shadow, gray, cv::COLOR_BGR2GRAY);
-	//ラベル数
-	auto labelNum = cv::connectedComponentsWithStats(gray, labels, stats, centroids, 4); //ラベリング
-	//車影でない部分のバッファ
-	Image glasses = Image::zeros(cv::Size(gray.cols, gray.rows), CV_8U);
+	cv::cvtColor(shadow, gray, cv::COLOR_BGR2GRAY); // ラベリングにかけるためにはグレースケール化の必要がある
+	//ラベリングによって求められるラベル数
+	auto labelNum = cv::connectedComponentsWithStats(gray, labels, stats, centroids, 4);
 
+	exceptedShadows.setTo(0); // 除外すべき影画像を0で初期化
 	/* 各領域ごとの処理, 0番は背景 */
 	for (int label = 1; label < labelNum; label++)
 	{
@@ -106,18 +103,24 @@ void ImgProc::CarsDetector::ReExtractShadow(const int& areaThr, const float& asp
 		bool condAspect = aspect > aspectThr;
 		if (condArea || condAspect)
 		{
-			auto idxGroup = (labels == label);
-			glasses.setTo(255, idxGroup); //車影でない部分を抽出
+			auto idxGroup = (labels == label); // 車影出ない部分を抜き出す
+			exceptedShadows.setTo(255, idxGroup); //車影でない部分を白画素で塗る
 		}
 	}
 	/* end */
 
-	cv::bitwise_xor(glasses, gray, reshadow); //車影のみ抽出, xorなので先ほど作ったマスク以外の部分を車影として残す
+	cv::bitwise_xor(exceptedShadows, gray, reshadow); //車影のみ抽出, xorなので先ほど作ったマスク以外の部分を車影として残す
 	cv::cvtColor(reshadow, reshadow, cv::COLOR_GRAY2BGR);
 }
 
+/// <summary>
+/// 車両抽出
+/// </summary>
 void ImgProc::CarsDetector::ExtractCars()
 {
+	cars = subtracted - reshadow; // 移動物体から車影を除去
+	cv::morphologyEx(cars, tmp, cv::MORPH_CLOSE, morphKernel);
+	cv::bitwise_and(tmp, roadMask, cars);
 }
 
 /// <summary>
@@ -143,8 +146,8 @@ void ImgProc::CarsDetector::ShowOutImgs(const int& interval)
 	cv::imshow("detector", reshadow);
 	cv::waitKey(interval);
 
-	//cv::imshow("detector", cars);
-	//cv::waitKey(interval);
+	cv::imshow("detector", cars);
+	cv::waitKey(interval * 10);
 
 	//cv::imshow("detector", carRects);
 	//cv::waitKey(interval);

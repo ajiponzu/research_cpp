@@ -20,6 +20,7 @@ private:
 	/* end */
 
 	/* 画像処理に用いるバッファ */
+	Image tmp; //バッファ
 	Image gray; //グレースケール化のためのバッファ
 	Image binary; //二値化のためのバッファ
 	Image src1C3; //二項演算のためのバッファ1, チャンネル数3
@@ -30,10 +31,12 @@ private:
 	Image fSrc2C3; //小数を含む二項演算のためのバッファ2, チャンネル数3
 	Image fSrc1C1; //小数を含む二項演算のためのバッファ1, チャンネル数1
 	Image fSrc2C1; //小数を含む二項演算のためのバッファ2, チャンネル数1
+	Image lab128; //グレースケール化のために, L*a*b*のa値とb値を128にするためのバッファ, チャンネル数1
 	Image labels; //ラベル画像
 	Image stats; //ラベリングにおける統計情報
 	Image centroids; //ラベリングにおける中心点座標群
 	Image exceptedShadows; //除外すべき影画像
+	Image morphKernel; // モルフォロジで使用するカーネル
 	/* end */
 
 	/* 外部リソース */
@@ -78,17 +81,22 @@ public:
 		src2C1 = Image::zeros(imgSize, CV_8UC1);
 		fSrc1C1 = Image::zeros(imgSize, CV_32FC1);
 		fSrc2C1 = Image::zeros(imgSize, CV_32FC1);
+		lab128 = Image::ones(imgSize, CV_8U) * 128;
 		/* end */
+
+		int kernelList[9] = { 0, 1, 0, 1, 1, 1, 0, 1, 0 };
+		morphKernel = Image(3, 3, CV_8U, kernelList);
 	}
 
 	~CarsDetector() {}
 
-	//背景差分
+	//背景差分, 移動物体検出
 	void SubtractBackImage(Image& frame);
 	//車影抽出
 	void ExtractShadow(Image& frame);
 	//車影再抽出
 	void ReExtractShadow(const int& areaThr, const float& aspectThr);
+	// 車両抽出
 	void ExtractCars();
 	//void DrawRectangle()
 

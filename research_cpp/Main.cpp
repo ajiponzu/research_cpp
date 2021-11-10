@@ -195,6 +195,7 @@ int main()
 		detector.SubtractBackImage(frame);
 		detector.ExtractShadow(frame);
 		detector.ReExtractShadow(5, 1.6f);
+		detector.ExtractCars();
 		/* end */
 
 		/* end */
@@ -203,7 +204,7 @@ int main()
 		std::cout << count << std::endl; // カウントアップ
 
 		/* デバッグ */
-		detector.ShowOutImgs(3000);
+		detector.ShowOutImgs(1000);
 		/* end */
 
 		/* 計測時間表示 */
