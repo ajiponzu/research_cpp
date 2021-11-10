@@ -38,5 +38,8 @@
     <ClInclude Include="process\CarsTracer.h">
       <Filter>Process</Filter>
     </ClInclude>
+    <ClInclude Include="process\ImgProc.h">
+      <Filter>Process</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

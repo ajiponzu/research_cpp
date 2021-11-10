@@ -1,11 +1,11 @@
 #include <iostream>
 #include <string>
-#include <array>
+#include <vector>
 #include <opencv2/opencv.hpp>
 
 #include "process/CarsDetector.h"
 
-using Image = cv::Mat;
+using Image = ImgProc::Image;
 
 enum VideoType
 {
@@ -76,7 +76,7 @@ void binarizeMask(Image& inputImg)
 /// <param name="roadMask"></param>
 /// <param name="roadMasks"></param>
 /// <returns></returns>
-template<size_t N> bool CreateImageResource(Image& backImg, Image& roadMask, std::array<Image, N>& roadMasks)
+bool CreateImageResource(Image& backImg, Image& roadMask, std::vector<Image>& roadMasks)
 {
 	backImg = cv::imread(gBackImgPathList[gVideoType]);
 	if (backImg.empty())
@@ -84,7 +84,6 @@ template<size_t N> bool CreateImageResource(Image& backImg, Image& roadMask, std
 		std::cout << gBackImgPathList[gVideoType] << ": can't read this." << std::endl;
 		return false;
 	}
-	binarizeMask(backImg);
 
 	roadMask = cv::imread(gRoadMaskPath);
 	if (roadMask.empty())
@@ -94,7 +93,7 @@ template<size_t N> bool CreateImageResource(Image& backImg, Image& roadMask, std
 	}
 	binarizeMask(roadMask);
 
-	for (size_t idx = 0; idx < N; idx++)
+	for (size_t idx = 0; idx < gRoadMasksNum; idx++)
 	{
 		const auto filePath = gRoadMasksBasePath + std::to_string(idx) + ".png";
 		roadMasks[idx] = cv::imread(filePath);
@@ -106,13 +105,26 @@ template<size_t N> bool CreateImageResource(Image& backImg, Image& roadMask, std
 		binarizeMask(roadMasks[idx]);
 	}
 
+	size_t idx = 0;
+	for (auto& mask : roadMasks)
+	{
+		const auto filePath = gRoadMasksBasePath + std::to_string(idx) + ".png";
+		mask = cv::imread(filePath);
+		if (roadMasks[idx].empty())
+		{
+			std::cout << filePath << ": can't read this." << std::endl;
+			return false;
+		}
+		binarizeMask(mask);
+		idx++;
+	}
+
 	return true;
 }
 
 int main()
 {
-	// デバッグ出力高速化
-	std::ios::sync_with_stdio(false);
+	std::ios::sync_with_stdio(false); // デバッグ出力高速化
 
 	/* リソース読み込み */
 
@@ -120,8 +132,7 @@ int main()
 	cv::VideoCapture videoCapture;
 	// ビデオレコーダー
 	cv::VideoWriter videoWriter;
-	// リソース登録
-	auto isCreatedVideo = CreateVideoResource(videoCapture, videoWriter);
+	auto isCreatedVideo = CreateVideoResource(videoCapture, videoWriter); // リソース登録
 	if (!isCreatedVideo)
 		return 0;
 
@@ -130,13 +141,12 @@ int main()
 	// 道路マスク画像
 	Image roadMask;
 	// 道路マスク画像(テンプレートマッチング)
-	std::array<Image, gRoadMasksNum> roadMasks;
-	// リソース登録
-	auto isCreatedImages = CreateImageResource(backImg, roadMask, roadMasks);
+	std::vector<Image> roadMasks(gRoadMasksNum);
+	auto isCreatedImages = CreateImageResource(backImg, roadMask, roadMasks); // リソース登録
 	if (!isCreatedImages)
 		return 0;
 
-	///* リソース読み込みデバッグ */
+	/* リソース読み込みデバッグ */
 	//cv::imshow("", backImg);
 	//cv::waitKey(1500);
 	//cv::imshow("", roadMask);
@@ -146,7 +156,7 @@ int main()
 	//	cv::imshow("", *itr);
 	//	cv::waitKey(1500);
 	//}
-	///* end */
+	/* end */
 
 	/* end */
 
@@ -155,23 +165,21 @@ int main()
 	// フレーム
 	Image frame;
 
-	/* 処理過程画像 */
-	Image subtracted, shadow, reshadow, cars;
+	/* 処理実行変数 */
+	ImgProc::CarsDetector detector(backImg, roadMask, roadMasks);
 	/* end */
-	
-	// 1秒あたりの
+
+	// 1秒あたりのフレーム数
 	double tick = cv::getTickFrequency();
 
-	// ビデオ読み込みループ
+	/* ビデオ読み込みループ */
 	while (true)
 	{
-		/* 実行時間計測変数 */
-		int64 startTime = cv::getTickCount();
-		/* end */
+		// 実行時間計測開始
+		auto startTime = cv::getTickCount();
 
 		count++;
-		// ビデオフレーム読み込み
-		videoCapture >> frame;
+		videoCapture >> frame; // ビデオフレーム読み込み
 		if (frame.empty())
 			break;
 
@@ -183,36 +191,28 @@ int main()
 
 		/* 画像処理 */
 
-		// 背景差分画像
-		CarsDetector::SubtractImage(frame, subtracted, backImg, roadMask);
-		//cv::imshow("", subtracted);
-		//cv::waitKey(2000);
-
-		//// 車影抽出
-		CarsDetector::ExtractShadow(frame, shadow, roadMask);
-		//cv::imshow("", shadow);
-		//cv::waitKey(2000);
-
-		// 車影再抽出
-		CarsDetector::ReExtractShadow(shadow, reshadow, 5, 1.6);
-		//cv::imshow("", reshadow);
-		//cv::waitKey(20000);
+		/* 車両検出 */
+		detector.SubtractBackImage(frame);
+		detector.ExtractShadow(frame);
+		detector.ReExtractShadow(5, 1.6f);
+		/* end */
 
 		/* end */
 
-		// ビデオ書き出し
-		videoWriter << frame;
+		videoWriter << frame; // ビデオ書き出し
+		std::cout << count << std::endl; // カウントアップ
 
-		std::cout << count << std::endl;
+		/* デバッグ */
+		detector.ShowOutImgs(3000);
+		/* end */
 
 		/* 計測時間表示 */
-		//auto ms = (cv::getTickCount() - time) * f;
-		//std::cout << ms << "[ms]" << std::endl;
-		int64 endTime = cv::getTickCount();
+		auto endTime = cv::getTickCount();
 		auto fps = (endTime - startTime) / tick;
 		std::cout << fps << "[s]" << std::endl;
 		/* end */
 	}
+	/* end */
 
 	return 0;
 }

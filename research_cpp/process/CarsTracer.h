@@ -1,5 +1,7 @@
 #pragma once
 
-namespace CarsTracer
+#include "ImgProc.h"
+
+class ImgProc::CarsTracer
 {
 };

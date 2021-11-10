@@ -151,6 +151,7 @@
   <ItemGroup>
     <ClInclude Include="process\CarsDetector.h" />
     <ClInclude Include="process\CarsTracer.h" />
+    <ClInclude Include="process\ImgProc.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

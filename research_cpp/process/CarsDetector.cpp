@@ -1,48 +1,34 @@
 #include "CarsDetector.h"
 
-#include <vector>
-
-using Image = cv::Mat;
-
-static Image gTemp1, gTemp2, gTemp3, gTemp4;
-
 /// <summary>
 /// 背景差分
 /// </summary>
-/// <param name="input">入力フレーム</param>
-/// <param name="output">出力</param>
-/// <param name="backImg">背景画像</param>
-/// <param name="roadMask">マスク画像</param>
-void CarsDetector::SubtractImage(Image& input, Image& output, Image& backImg, Image& roadMask)
+/// <param name="frame">入力フレーム</param>
+void ImgProc::CarsDetector::SubtractBackImage(Image& frame)
 {
-	Image& src1 = gTemp1, src2 = gTemp2, subtracted = gTemp3;
-
-	input.convertTo(src1, CV_32F); //浮動小数はcv_32fを使う -> cv_16fだと謎のエラー
-	backImg.convertTo(src2, CV_32F);
-	cv::absdiff(src1, src2, subtracted);
+	frame.convertTo(fSrc1C3, CV_32F); //浮動小数はcv_32fを使う -> cv_16fだと謎のエラー
+	backImg.convertTo(fSrc2C3, CV_32F);
+	cv::absdiff(fSrc1C3, fSrc2C3, subtracted);
 	subtracted.convertTo(subtracted, CV_8U); // 型を戻す
 
 	cv::cvtColor(subtracted, subtracted, cv::COLOR_BGR2GRAY); //グレースケール化
 	cv::threshold(subtracted, subtracted, 0, 255, cv::THRESH_BINARY | cv::THRESH_OTSU); //大津の二値化, thrは必要ないので0を渡す
 
 	cv::cvtColor(subtracted, subtracted, cv::COLOR_GRAY2BGR); // チャンネル数を戻す
-	cv::bitwise_and(subtracted, roadMask, output); // マスキング処理
+	cv::bitwise_and(subtracted, roadMask, subtracted); // マスキング処理
 }
 
 /// <summary>
 /// 車影抽出
 /// </summary>
-/// <param name="input">入力フレーム</param>
-/// <param name="output">出力</param>
-/// <param name="roadMask">マスク画像</param>
-void CarsDetector::ExtractShadow(Image& input, Image& output, Image& roadMask)
+void ImgProc::CarsDetector::ExtractShadow(Image& frame)
 {
-	Image& shadow = gTemp1, lab = gTemp2;
+	Image lab;
 
 	// [0], [1], [2]にl, a, bが分割して代入される動的配列
 	std::vector<Image> vLab;
 
-	cv::cvtColor(input, lab, cv::COLOR_BGR2Lab); //labに変換
+	cv::cvtColor(frame, lab, cv::COLOR_BGR2Lab); //labに変換
 	cv::split(lab, vLab); //split: チャンネルごとに分割する関数
 
 	/* 参照型でリソース削減しつつ, わかりやすいエイリアスを定義 */
@@ -81,27 +67,24 @@ void CarsDetector::ExtractShadow(Image& input, Image& output, Image& roadMask)
 	b.setTo(128);
 	/* end */
 
-	//統合処理
+	/* 統合処理 */
 	cv::merge(vLab, shadow);
 	cv::cvtColor(shadow, shadow, cv::COLOR_Lab2BGR);
+	/* end */
 
-	cv::bitwise_and(shadow, roadMask, output); //マスキング処理
+	cv::bitwise_and(shadow, roadMask, shadow); //マスキング処理
 }
 
 /// <summary>
 /// 車影再抽出
 /// </summary>
-/// <param name="shadow">車影画像</param>
-/// <param name="output">出力</param>
 /// <param name="areaThr">面積の閾値</param>
 /// <param name="aspectThr">アスペクト比の閾値</param>
-void CarsDetector::ReExtractShadow(Image& shadow,Image& output, const int& areaThr, const float& aspectThr)
+void ImgProc::CarsDetector::ReExtractShadow(const int& areaThr, const float& aspectThr)
 {
-	Image gray = gTemp1, labels = gTemp2, stats = gTemp3, _centroids = gTemp4;
-
 	cv::cvtColor(shadow, gray, cv::COLOR_BGR2GRAY);
 	//ラベル数
-	auto labelNum = cv::connectedComponentsWithStats(gray, labels, stats, _centroids, 4); //ラベリング
+	auto labelNum = cv::connectedComponentsWithStats(gray, labels, stats, centroids, 4); //ラベリング
 	//車影でない部分のバッファ
 	Image glasses = Image::zeros(cv::Size(gray.cols, gray.rows), CV_8U);
 
@@ -129,10 +112,40 @@ void CarsDetector::ReExtractShadow(Image& shadow,Image& output, const int& areaT
 	}
 	/* end */
 
-	cv::bitwise_xor(glasses, gray, output); //車影のみ抽出, xorなので先ほど作ったマスク以外の部分を車影として残す
-	cv::cvtColor(output, output, cv::COLOR_GRAY2BGR);
+	cv::bitwise_xor(glasses, gray, reshadow); //車影のみ抽出, xorなので先ほど作ったマスク以外の部分を車影として残す
+	cv::cvtColor(reshadow, reshadow, cv::COLOR_GRAY2BGR);
 }
 
-void CarsDetector::ExtractCars(Image& input, Image& output, Image& shadow)
+void ImgProc::CarsDetector::ExtractCars()
 {
+}
+
+/// <summary>
+/// 出力画像一括保存
+/// </summary>
+/// <param name="pathList">パスの集合, 処理順にパス名を保存しておくこと</param>
+void ImgProc::CarsDetector::WriteOutImgs(std::vector<std::string> pathList)
+{
+}
+
+/// <summary>
+/// 出力画像順次表示
+/// </summary>
+/// <param name="interval"></param>
+void ImgProc::CarsDetector::ShowOutImgs(const int& interval)
+{
+	cv::imshow("detector", subtracted);
+	cv::waitKey(interval);
+
+	cv::imshow("detector", shadow);
+	cv::waitKey(interval);
+
+	cv::imshow("detector", reshadow);
+	cv::waitKey(interval);
+
+	//cv::imshow("detector", cars);
+	//cv::waitKey(interval);
+
+	//cv::imshow("detector", carRects);
+	//cv::waitKey(interval);
 }
