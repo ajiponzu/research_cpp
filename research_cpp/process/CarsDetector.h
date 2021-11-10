@@ -7,11 +7,11 @@ namespace CarsDetector
 	using Image = cv::Mat;
 
 	//背景差分
-	Image SubtractImage(Image& input, Image& backImg, Image& roadMask);
+	void SubtractImage(Image& input, Image& output, Image& backImg, Image& roadMask);
 	//車影抽出
-	Image ExtractShadow(Image& input, Image& roadMask);
+	void ExtractShadow(Image& input, Image& output, Image& roadMask);
 	//車影再抽出
-	Image ReExtractShadow(Image& shadow, const int& areaThr, const float& aspectThr);
-	Image ExtractCars(Image& input, Image& shadow);
+	void ReExtractShadow(Image& shadow, Image& output, const int& areaThr, const float& aspectThr);
+	void ExtractCars(Image& input, Image& output, Image& shadow);
 	//Image DrawRectangle(Image& input, std::vector::)
 };

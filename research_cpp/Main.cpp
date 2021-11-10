@@ -26,7 +26,7 @@ constexpr static auto gRoadMasksNum = 4;
 
 /* ループ回数決定 */
 constexpr static auto startCount = 1;
-constexpr static auto endCount = 10000;
+constexpr static auto endCount = 30;
 /* end */
 
 /// <summary>
@@ -155,14 +155,20 @@ int main()
 	// フレーム
 	Image frame;
 
-	/* 実行時間計測変数 */
-	double f = 1000.0 / cv::getTickFrequency();
-	uint64_t time = cv::getTickCount();
+	/* 処理過程画像 */
+	Image subtracted, shadow, reshadow, cars;
 	/* end */
+	
+	// 1秒あたりの
+	double tick = cv::getTickFrequency();
 
 	// ビデオ読み込みループ
 	while (true)
 	{
+		/* 実行時間計測変数 */
+		int64 startTime = cv::getTickCount();
+		/* end */
+
 		count++;
 		// ビデオフレーム読み込み
 		videoCapture >> frame;
@@ -178,17 +184,17 @@ int main()
 		/* 画像処理 */
 
 		// 背景差分画像
-		auto subtracted = CarsDetector::SubtractImage(frame, backImg, roadMask);
+		CarsDetector::SubtractImage(frame, subtracted, backImg, roadMask);
 		//cv::imshow("", subtracted);
 		//cv::waitKey(2000);
 
 		//// 車影抽出
-		auto shadow = CarsDetector::ExtractShadow(frame, roadMask);
+		CarsDetector::ExtractShadow(frame, shadow, roadMask);
 		//cv::imshow("", shadow);
 		//cv::waitKey(2000);
 
 		// 車影再抽出
-		auto reshadow = CarsDetector::ReExtractShadow(shadow, 5, 1.6);
+		CarsDetector::ReExtractShadow(shadow, reshadow, 5, 1.6);
 		//cv::imshow("", reshadow);
 		//cv::waitKey(20000);
 
@@ -198,17 +204,15 @@ int main()
 		videoWriter << frame;
 
 		std::cout << count << std::endl;
-	}
 
-	/* 計測時間表示 */
-	auto ms = (cv::getTickCount() - time) * f;
-	auto s = ms / 1000;
-	auto m = s / 60;
-	std::cout << ms << " [ms]" << std::endl;
-	std::cout << s << " [s]" << std::endl;
-	std::cout << m << " [m]" << std::endl;
-	std::cout << count / s << "[fps]" << std::endl;
-	/* end */
+		/* 計測時間表示 */
+		//auto ms = (cv::getTickCount() - time) * f;
+		//std::cout << ms << "[ms]" << std::endl;
+		int64 endTime = cv::getTickCount();
+		auto fps = (endTime - startTime) / tick;
+		std::cout << fps << "[s]" << std::endl;
+		/* end */
+	}
 
 	return 0;
 }
