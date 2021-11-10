@@ -44,7 +44,7 @@ Image CarsDetector::ExtractShadow(Image& input, Image& roadMask)
 
 	cv::cvtColor(input, lab, cv::COLOR_BGR2Lab); //labに変換
 	cv::split(lab, vLab); //split: チャンネルごとに分割する関数
-	
+
 	/* 参照型でリソース削減しつつ, わかりやすいエイリアスを定義 */
 	auto& l = vLab[0];
 	auto& a = vLab[1];
@@ -53,11 +53,11 @@ Image CarsDetector::ExtractShadow(Image& input, Image& roadMask)
 
 	/* 統計量導出 */
 	cv::Scalar meanLScalar, stdLScalar;
-	double meanA = cv::mean(a)[0]; //cv::Scalarはdoubleの二次元配列なのかも?
-	double meanB = cv::mean(b)[0];
+	auto& meanA = cv::mean(a)[0]; //cv::Scalarはdoubleの二次元配列なのかも?
+	auto& meanB = cv::mean(b)[0];
 	cv::meanStdDev(l, meanLScalar, stdLScalar);
-	double meanL = meanLScalar[0];
-	double stdL = stdLScalar[0];
+	auto& meanL = meanLScalar[0];
+	auto& stdL = stdLScalar[0];
 	/* end */
 
 	/* L値を決定する処理 */
@@ -72,7 +72,7 @@ Image CarsDetector::ExtractShadow(Image& input, Image& roadMask)
 	else
 	{
 		int thr_l = 10, thr_b = 5;
-		auto idxGroupL = (l <= thr_l); 
+		auto idxGroupL = (l <= thr_l);
 		auto idxGroupB = (b <= thr_b);
 		l = idxGroupL.mul(idxGroupB);
 	}
@@ -84,15 +84,59 @@ Image CarsDetector::ExtractShadow(Image& input, Image& roadMask)
 	/* end */
 
 	//統合処理
-	cv::merge(vLab, retImg);
-	cv::cvtColor(retImg, retImg, cv::COLOR_Lab2BGR);
+	cv::merge(vLab, shadow);
+	cv::cvtColor(shadow, shadow, cv::COLOR_Lab2BGR);
+
+	cv::bitwise_and(shadow, roadMask, retImg); //マスキング処理
 
 	return retImg;
 }
 
+/// <summary>
+/// 車影再抽出
+/// </summary>
+/// <param name="shadow">車影画像</param>
+/// <param name="areaThr">面積の閾値</param>
+/// <param name="aspectThr">アスペクト比の閾値</param>
+/// <returns></returns>
 Image CarsDetector::ReExtractShadow(Image& shadow, const int& areaThr, const float& aspectThr)
 {
-	return Image();
+	Image retImg, gray, labels, stats, _centroids;
+
+	cv::cvtColor(shadow, gray, cv::COLOR_BGR2GRAY);
+	//ラベル数
+	auto labelNum = cv::connectedComponentsWithStats(gray, labels, stats, _centroids, 4); //ラベリング
+	//車影でない部分のバッファ
+	Image glasses = Image::zeros(cv::Size(gray.cols, gray.rows), CV_8U);
+
+	/* 各領域ごとの処理, 0番は背景 */
+	for (int label = 1; label < labelNum; label++)
+	{
+		/* 統計情報分割 */
+		auto statsPtr = stats.ptr<int>(label);
+		auto& y = statsPtr[cv::ConnectedComponentsTypes::CC_STAT_TOP];
+		auto& width = statsPtr[cv::ConnectedComponentsTypes::CC_STAT_WIDTH];
+		auto& height = statsPtr[cv::ConnectedComponentsTypes::CC_STAT_HEIGHT];
+		auto& area = statsPtr[cv::ConnectedComponentsTypes::CC_STAT_AREA];
+		/* end */
+
+		auto aspect = static_cast<float>(width) / height; //アスペクト比の導出
+		auto tAreaThr = (y - 230) / 12 + areaThr; // 位置に応じた面積の閾値
+
+		bool condArea = area < tAreaThr;
+		bool condAspect = aspect > aspectThr;
+		if (condArea || condAspect)
+		{
+			auto idxGroup = (labels == label);
+			glasses.setTo(255, idxGroup); //車影でない部分を抽出
+		}
+	}
+	/* end */
+
+	cv::bitwise_xor(glasses, gray, retImg); //車影のみ抽出, xorなので先ほど作ったマスク以外の部分を車影として残す
+	cv::cvtColor(retImg, retImg, cv::COLOR_GRAY2BGR);
+
+	return retImg;
 }
 
 Image CarsDetector::ExtractCars(Image& input, Image& shadow)

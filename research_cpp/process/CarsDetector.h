@@ -10,6 +10,7 @@ namespace CarsDetector
 	Image SubtractImage(Image& input, Image& backImg, Image& roadMask);
 	//車影抽出
 	Image ExtractShadow(Image& input, Image& roadMask);
+	//車影再抽出
 	Image ReExtractShadow(Image& shadow, const int& areaThr, const float& aspectThr);
 	Image ExtractCars(Image& input, Image& shadow);
 	//Image DrawRectangle(Image& input, std::vector::)
