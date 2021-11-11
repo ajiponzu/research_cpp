@@ -163,7 +163,10 @@ namespace ImgProc
 				/* 矩形を描く */
 				auto topLeft = cv::Point(x, y);
 				auto bottomRight = cv::Point(x + width, y + height);
-				cv::rectangle(mCarRects, topLeft, bottomRight, cv::Scalar(0, 0, 255), 2);
+				cv::rectangle(mCarRects, topLeft, bottomRight, cv::Scalar(0, 0, 255), 3);
+				/* end */
+
+				/* テンプレート抽出等 */
 				/* end */
 			}
 			/* end */

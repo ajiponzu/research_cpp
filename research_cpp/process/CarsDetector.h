@@ -78,8 +78,6 @@ public:
 		/* end */
 	}
 
-	~CarsDetector() {}
-
 	//背景差分, 移動物体検出
 	void SubtractBackImage(Image& frame);
 	//車影抽出
