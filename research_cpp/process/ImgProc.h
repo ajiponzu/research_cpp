@@ -99,7 +99,7 @@ namespace ImgProc
 	/// <param name="y">参照範囲矩形の左上座標のy成分</param>
 	/// <param name="width">参照範囲矩形の横幅</param>
 	/// <param name="height">参照範囲矩形の縦幅</param>
-	/// <returns>参照範囲の部分画像(</returns>
+	/// <returns>参照範囲の部分画像</returns>
 	Image GetImgSlice(Image& inputImg, const int& x, const int& y, const int& width, const int& height);
 
 	/// <summary>

@@ -26,6 +26,10 @@ int main()
 	auto isCreatedImages = ImgProcToolkit::CreateImageResource(); // リソース登録
 	if (!isCreatedImages)
 		return 0;
+
+	auto& frame = ImgProcToolkit::GetFrame();
+	auto& videoCapture = ImgProcToolkit::GetVideoCapture();
+	auto& videoWriter = ImgProcToolkit::GetVideoWriter();
 	/* end */
 
 	/* 処理実行変数 */
@@ -37,6 +41,8 @@ int main()
 	int count = 0;
 	// 1秒あたりのフレーム数
 	double tick = cv::getTickFrequency();
+	// 実行結果画像
+	auto& result = detector.GetCarsRect();
 
 	/* ビデオ読み込みループ */
 	while (true)
@@ -45,8 +51,8 @@ int main()
 		auto startTime = cv::getTickCount();
 
 		count++;
-		ImgProcToolkit::GetVideoCapture() >> ImgProcToolkit::GetFrame(); // ビデオフレーム読み込み
-		if (ImgProcToolkit::GetFrame().empty())
+		videoCapture >> frame; // ビデオフレーム読み込み
+		if (frame.empty())
 			break;
 
 		if (count < gStartCount)
@@ -63,7 +69,7 @@ int main()
 		detector.DrawRectangle(30);
 		/* end */
 
-		ImgProcToolkit::GetVideoWriter() << detector.GetCarsRect(); // ビデオ書き出し
+		videoWriter << result; // ビデオ書き出し
 		std::cout << count << std::endl; // カウントアップ
 
 		/* デバッグ */

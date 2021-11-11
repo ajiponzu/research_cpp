@@ -55,7 +55,7 @@ public:
 	/// <param name="areaThr">面積の閾値</param>
 	/// <param name="aspectThr">アスペクト比の閾値</param>
 	void ReExtractShadow(const int& areaThr, const float& aspectThr);
-	
+
 	/// <summary>
 	/// 車両抽出
 	/// </summary>
@@ -83,9 +83,8 @@ public:
 	/// 車両検出画像の取得
 	/// </summary>
 	/// <returns>車両検出画像</returns>
-	const Image GetCarsRect() const { return mCarRects; }
+	const Image& GetCarsRect() const { return mCarRects; }
 
 private:
 	CarsDetector(const CarsDetector& other) = delete;
 };
-
