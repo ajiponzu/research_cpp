@@ -30,6 +30,9 @@
     <ClCompile Include="process\CarsTracer.cpp">
       <Filter>Process</Filter>
     </ClCompile>
+    <ClCompile Include="process\ImgProc.cpp">
+      <Filter>Process</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="process\CarsDetector.h">
