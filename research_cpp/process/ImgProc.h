@@ -1,7 +1,9 @@
 #pragma once
 
-#include<opencv2/opencv.hpp>
-#include<opencv2/opencv_modules.hpp>
+#include <vector>
+
+#include <opencv2/opencv.hpp>
+#include <opencv2/opencv_modules.hpp>
 
 namespace ImgProc
 {
@@ -9,4 +11,6 @@ namespace ImgProc
 
 	class CarsDetector;
 	class CarsTracer;
+
+	static std::vector<Image> gTemplates;
 };

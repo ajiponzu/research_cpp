@@ -6,13 +6,13 @@
 /// <param name="frame">入力フレーム</param>
 void ImgProc::CarsDetector::SubtractBackImage(Image& frame)
 {
-	cv::absdiff(frame, backImg, tmp); // 差分を取ってからその絶対値を画素値として格納
+	cv::absdiff(frame, m_rBackImg, mTemp); // 差分を取ってからその絶対値を画素値として格納
 
-	cv::cvtColor(tmp, gray, cv::COLOR_BGR2GRAY); //グレースケール化
-	cv::threshold(gray, binary, 0, 255, cv::THRESH_BINARY | cv::THRESH_OTSU); //大津の二値化, thrは必要ないので0を渡す
-	cv::cvtColor(binary, tmp, cv::COLOR_GRAY2BGR); // チャンネル数を戻す
+	cv::cvtColor(mTemp, mGray, cv::COLOR_BGR2GRAY); //グレースケール化
+	cv::threshold(mGray, mBinary, 0, 255, cv::THRESH_BINARY | cv::THRESH_OTSU); //大津の二値化, thrは必要ないので0を渡す
+	cv::cvtColor(mBinary, mTemp, cv::COLOR_GRAY2BGR); // チャンネル数を戻す
 
-	cv::bitwise_and(tmp, roadMask, subtracted); // マスキング処理
+	cv::bitwise_and(mTemp, m_rRoadMask, mSubtracted); // マスキング処理
 }
 
 /// <summary>
@@ -61,16 +61,16 @@ void ImgProc::CarsDetector::ExtractShadow(Image& frame)
 	/* end */
 
 	/* a, b値を128で埋めてグレースケール化 */
-	a = lab128;
-	b = lab128;
+	a = mLab128;
+	b = mLab128;
 	/* end */
 
 	/* 統合処理 */
-	cv::merge(vLab, shadow);
-	cv::cvtColor(shadow, shadow, cv::COLOR_Lab2BGR);
+	cv::merge(vLab, mShadow);
+	cv::cvtColor(mShadow, mShadow, cv::COLOR_Lab2BGR);
 	/* end */
 
-	cv::bitwise_and(shadow, roadMask, shadow); //マスキング処理
+	cv::bitwise_and(mShadow, m_rRoadMask, mShadow); //マスキング処理
 }
 
 /// <summary>
@@ -80,16 +80,16 @@ void ImgProc::CarsDetector::ExtractShadow(Image& frame)
 /// <param name="aspectThr">アスペクト比の閾値</param>
 void ImgProc::CarsDetector::ReExtractShadow(const int& areaThr, const float& aspectThr)
 {
-	cv::cvtColor(shadow, gray, cv::COLOR_BGR2GRAY); // ラベリングにかけるためにはグレースケール化の必要がある
+	cv::cvtColor(mShadow, mGray, cv::COLOR_BGR2GRAY); // ラベリングにかけるためにはグレースケール化の必要がある
 	//ラベリングによって求められるラベル数
-	auto labelNum = cv::connectedComponentsWithStats(gray, labels, stats, centroids, 4);
+	auto labelNum = cv::connectedComponentsWithStats(mGray, mLabels, mStats, mCentroids, 4);
 
-	exceptedShadows.setTo(0); // 除外すべき影画像を0で初期化
+	mExceptedShadows.setTo(0); // 除外すべき影画像を0で初期化
 	/* 各領域ごとの処理, 0番は背景 */
 	for (int label = 1; label < labelNum; label++)
 	{
 		/* 統計情報分割 */
-		auto statsPtr = stats.ptr<int>(label);
+		auto statsPtr = mStats.ptr<int>(label);
 		auto& y = statsPtr[cv::ConnectedComponentsTypes::CC_STAT_TOP];
 		auto& width = statsPtr[cv::ConnectedComponentsTypes::CC_STAT_WIDTH];
 		auto& height = statsPtr[cv::ConnectedComponentsTypes::CC_STAT_HEIGHT];
@@ -103,14 +103,14 @@ void ImgProc::CarsDetector::ReExtractShadow(const int& areaThr, const float& asp
 		bool condAspect = aspect > aspectThr;
 		if (condArea || condAspect)
 		{
-			auto idxGroup = (labels == label); // 車影出ない部分を抜き出す
-			exceptedShadows.setTo(255, idxGroup); //車影でない部分を白画素で塗る
+			auto idxGroup = (mLabels == label); // 車影出ない部分を抜き出す
+			mExceptedShadows.setTo(255, idxGroup); //車影でない部分を白画素で塗る
 		}
 	}
 	/* end */
 
-	cv::bitwise_xor(exceptedShadows, gray, reshadow); //車影のみ抽出, xorなので先ほど作ったマスク以外の部分を車影として残す
-	cv::cvtColor(reshadow, reshadow, cv::COLOR_GRAY2BGR);
+	cv::bitwise_xor(mExceptedShadows, mGray, mReShadow); //車影のみ抽出, xorなので先ほど作ったマスク以外の部分を車影として残す
+	cv::cvtColor(mReShadow, mReShadow, cv::COLOR_GRAY2BGR);
 }
 
 /// <summary>
@@ -118,9 +118,9 @@ void ImgProc::CarsDetector::ReExtractShadow(const int& areaThr, const float& asp
 /// </summary>
 void ImgProc::CarsDetector::ExtractCars()
 {
-	cars = subtracted - reshadow; // 移動物体から車影を除去
-	cv::morphologyEx(cars, tmp, cv::MORPH_CLOSE, morphKernel);
-	cv::bitwise_and(tmp, roadMask, cars);
+	mCars = mSubtracted - mReShadow; // 移動物体から車影を除去
+	cv::morphologyEx(mCars, mTemp, cv::MORPH_CLOSE, mMorphKernel);
+	cv::bitwise_and(mTemp, m_rRoadMask, mCars);
 }
 
 /// <summary>
@@ -129,24 +129,24 @@ void ImgProc::CarsDetector::ExtractCars()
 /// <param name="frame">入力フレーム</param>
 void ImgProc::CarsDetector::DrawRectangle(Image& frame, const int& areaThr)
 {
-	frame.copyTo(carRects);
+	frame.copyTo(mCarRects);
 
-	cv::cvtColor(cars, gray, cv::COLOR_BGR2GRAY); // ラベリングにかけるためにはグレースケール化の必要がある
+	cv::cvtColor(mCars, mGray, cv::COLOR_BGR2GRAY); // ラベリングにかけるためにはグレースケール化の必要がある
 
-	std::cout << roadMasks.size() << std::endl;
+	std::cout << mRoadMasks.size() << std::endl;
 
 	/* 車線分繰り返す */
-	for (int idx = 0; idx < roadMasks.size(); idx++)
+	for (int idx = 0; idx < mRoadMasks.size(); idx++)
 	{
-		cv::bitwise_and(gray, roadMasks[idx], tmp); // マスキング処理
+		cv::bitwise_and(mGray, mRoadMasks[idx], mTemp); // マスキング処理
 		//ラベリングによって求められるラベル数
-		auto labelNum = cv::connectedComponentsWithStats(tmp, labels, stats, centroids);
+		auto labelNum = cv::connectedComponentsWithStats(mTemp, mLabels, mStats, mCentroids);
 
 		/* 各領域ごとの処理, 0番は背景 */
 		for (int label = 1; label < labelNum; label++)
 		{
 			/* 統計情報分割 */
-			auto statsPtr = stats.ptr<int>(label);
+			auto statsPtr = mStats.ptr<int>(label);
 			auto& x = statsPtr[cv::ConnectedComponentsTypes::CC_STAT_LEFT];
 			auto& y = statsPtr[cv::ConnectedComponentsTypes::CC_STAT_TOP];
 			auto& width = statsPtr[cv::ConnectedComponentsTypes::CC_STAT_WIDTH];
@@ -160,7 +160,7 @@ void ImgProc::CarsDetector::DrawRectangle(Image& frame, const int& areaThr)
 			/* 矩形を描く */
 			auto topLeft = cv::Point(x, y);
 			auto bottomRight = cv::Point(x + width, y + height);
-			cv::rectangle(carRects, topLeft, bottomRight, cv::Scalar(0, 0, 255), 2);
+			cv::rectangle(mCarRects, topLeft, bottomRight, cv::Scalar(0, 0, 255), 2);
 			/* end */
 		}
 		/* end */
@@ -182,18 +182,18 @@ void ImgProc::CarsDetector::WriteOutImgs(std::vector<std::string> pathList)
 /// <param name="interval"></param>
 void ImgProc::CarsDetector::ShowOutImgs(const int& interval)
 {
-	cv::imshow("detector", subtracted);
+	cv::imshow("detector", mSubtracted);
 	cv::waitKey(interval);
 
-	cv::imshow("detector", shadow);
+	cv::imshow("detector", mShadow);
 	cv::waitKey(interval);
 
-	cv::imshow("detector", reshadow);
+	cv::imshow("detector", mReShadow);
 	cv::waitKey(interval);
 
-	cv::imshow("detector", cars);
+	cv::imshow("detector", mCars);
 	cv::waitKey(interval);
 
-	cv::imshow("detector", carRects);
+	cv::imshow("detector", mCarRects);
 	cv::waitKey(interval * 10);
 }

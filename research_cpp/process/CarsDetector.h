@@ -1,40 +1,38 @@
 #pragma once
-#include <vector>
-#include <string>
-#include <opencv2/opencv.hpp>
-
 #include "ImgProc.h"
+
+#include <string>
 
 class ImgProc::CarsDetector
 {
 private:
-	int frameWid = 0; //入力フレームの横幅
-	int frameHigh = 0; //入力フレームの縦幅
+	int mFrameWid = 0; //入力フレームの横幅
+	int mFrameHigh = 0; //入力フレームの縦幅
 
 	/* 出力画像バッファ */
-	Image subtracted; //背景差分画像
-	Image shadow; //車影画像
-	Image reshadow;//車影再抽出画像
-	Image cars; //車両画像
-	Image carRects; //車両検出矩形画像
+	Image mSubtracted; //背景差分画像
+	Image mShadow; //車影画像
+	Image mReShadow;//車影再抽出画像
+	Image mCars; //車両画像
+	Image mCarRects; //車両検出矩形画像
 	/* end */
 
 	/* 画像処理に用いるバッファ */
-	Image tmp; //バッファ
-	Image gray; //グレースケール化のためのバッファ
-	Image binary; //二値化のためのバッファ
-	Image lab128; //グレースケール化のために, L*a*b*のa値とb値を128にするためのバッファ, チャンネル数1
-	Image labels; //ラベル画像
-	Image stats; //ラベリングにおける統計情報
-	Image centroids; //ラベリングにおける中心点座標群
-	Image exceptedShadows; //除外すべき影画像
-	Image morphKernel; // モルフォロジで使用するカーネル
+	Image mTemp; //バッファ
+	Image mGray; //グレースケール化のためのバッファ
+	Image mBinary; //二値化のためのバッファ
+	Image mLab128; //グレースケール化のために, L*a*b*のa値とb値を128にするためのバッファ, チャンネル数1
+	Image mLabels; //ラベル画像
+	Image mStats; //ラベリングにおける統計情報
+	Image mCentroids; //ラベリングにおける中心点座標群
+	Image mExceptedShadows; //除外すべき影画像
+	Image mMorphKernel; // モルフォロジで使用するカーネル
 	/* end */
 
 	/* 外部リソース */
-	Image& backImg; //背景画像
-	Image& roadMask; //道路マスク画像
-	std::vector<Image> roadMasks; //車線マスク画像群
+	Image& m_rBackImg; //背景画像
+	Image& m_rRoadMask; //道路マスク画像
+	std::vector<Image> mRoadMasks; //車線マスク画像群
 	/* end */
 
 public:
@@ -45,39 +43,39 @@ public:
 	/// <param name="backImg">背景画像</param>
 	/// <param name="roadMask">道路マスク画像</param>
 	/// <param name="roadMasks">車線マスク画像群</param>
-	CarsDetector(Image& backImg, Image& roadMask, std::vector<Image>& _roadMasks)
-		: backImg(backImg),
-		roadMask(roadMask)
+	CarsDetector(Image& backImg, Image& roadMask, std::vector<Image>& roadMasks)
+		: m_rBackImg(backImg),
+		m_rRoadMask(roadMask)
 	{
-		frameWid = backImg.cols;
-		frameHigh = backImg.rows;
+		mFrameWid = backImg.cols;
+		mFrameHigh = backImg.rows;
 
-		cv::Size imgSize(frameWid, frameHigh);
+		cv::Size imgSize(mFrameWid, mFrameHigh);
 
 		/* 3チャンネル画像の初期化 */
-		subtracted = Image::zeros(imgSize, CV_8UC3);
-		shadow = Image::zeros(imgSize, CV_8UC3);
-		reshadow = Image::zeros(imgSize, CV_8UC3);
-		cars = Image::zeros(imgSize, CV_8UC3);
-		carRects = Image::zeros(imgSize, CV_8UC3);
-		exceptedShadows = Image::zeros(imgSize, CV_8UC1);
+		mSubtracted = Image::zeros(imgSize, CV_8UC3);
+		mShadow = Image::zeros(imgSize, CV_8UC3);
+		mReShadow = Image::zeros(imgSize, CV_8UC3);
+		mCars = Image::zeros(imgSize, CV_8UC3);
+		mCarRects = Image::zeros(imgSize, CV_8UC3);
+		mExceptedShadows = Image::zeros(imgSize, CV_8UC1);
 		/* end */
 
 		/* 1チャンネル画像の初期化 */
-		lab128 = Image::ones(imgSize, CV_8U) * 128;
+		mLab128 = Image::ones(imgSize, CV_8U) * 128;
 		/* end */
 
 		/* モルフォロジカーネルの初期化 */
 		int kernelList[9] = { 0, 1, 0, 1, 1, 1, 0, 1, 0 };
-		morphKernel = Image(3, 3, CV_8U, kernelList);
+		mMorphKernel = Image(3, 3, CV_8U, kernelList);
 		/* end */
 
 		/* 車線マスク画像群のグレースケール化, 車両検出ではグレースケールのマスクしか用いない */
-		roadMasks.resize(_roadMasks.size());
-		for (int idx = 0; idx < _roadMasks.size(); idx++)
+		mRoadMasks.resize(roadMasks.size());
+		for (int idx = 0; idx < roadMasks.size(); idx++)
 		{
-			cv::cvtColor(_roadMasks[idx], tmp, cv::COLOR_BGR2GRAY);
-			roadMasks[idx] = tmp.clone();
+			cv::cvtColor(roadMasks[idx], mTemp, cv::COLOR_BGR2GRAY);
+			roadMasks[idx] = mTemp.clone();
 		}
 		/* end */
 	}
@@ -97,7 +95,7 @@ public:
 
 	void WriteOutImgs(std::vector<std::string> pathList);
 	void ShowOutImgs(const int& interval);
-	const Image GetCarsRect() const { return carRects; }
+	const Image GetCarsRect() const { return mCarRects; }
 
 private:
 	CarsDetector(const CarsDetector& other) = delete;
