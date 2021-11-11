@@ -1,8 +1,6 @@
 #pragma once
 #include "ImgProc.h"
 
-#include <string>
-
 class ImgProc::CarsDetector
 {
 private:
@@ -100,3 +98,4 @@ public:
 private:
 	CarsDetector(const CarsDetector& other) = delete;
 };
+

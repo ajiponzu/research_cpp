@@ -1,6 +1,3 @@
-#include <iostream>
-#include <string>
-#include <vector>
 #include <opencv2/opencv.hpp>
 
 #include "process/CarsDetector.h"
