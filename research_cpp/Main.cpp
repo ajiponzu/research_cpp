@@ -38,6 +38,12 @@ int main()
 	ImgProcToolkit::SetRoadCarsDirections(std::move(directions));
 	/* end */
 
+	/* 検出範囲の設定 */
+	ImgProcToolkit::SetDetectTop(230);
+	ImgProcToolkit::SetDetectBottom(535);
+	ImgProcToolkit::SetDetectMergin(5);
+	/* end */
+
 	//ImgProcToolkit::ShowResourceImgs(1500); // リソース表示
 
 	auto& frame = ImgProcToolkit::GetFrame();

@@ -1,5 +1,7 @@
 #include "CarsDetector.h"
 
+using Tk = ImgProc::ImgProcToolkit;
+
 namespace ImgProc
 {
 	/// <summary>
@@ -7,9 +9,9 @@ namespace ImgProc
 	/// </summary>
 	void CarsDetector::SubtractBackImage()
 	{
-		cv::absdiff(ImgProcToolkit::sFrame, ImgProcToolkit::sBackImg, mTemp); // 差分を取ってからその絶対値を画素値として格納
+		cv::absdiff(Tk::sFrame, Tk::sBackImg, mTemp); // 差分を取ってからその絶対値を画素値として格納
 		binarizeImage(mTemp);
-		cv::bitwise_and(mTemp, ImgProcToolkit::sRoadMaskGray, mSubtracted); // マスキング処理
+		cv::bitwise_and(mTemp, Tk::sRoadMaskGray, mSubtracted); // マスキング処理
 	}
 
 	/// <summary>
@@ -20,7 +22,7 @@ namespace ImgProc
 		// [0], [1], [2]にl, a, bが分割して代入される動的配列
 		std::vector<Image> vLab;
 
-		cv::cvtColor(ImgProcToolkit::sFrame, mTemp, cv::COLOR_BGR2Lab); //l*a*b*に変換
+		cv::cvtColor(Tk::sFrame, mTemp, cv::COLOR_BGR2Lab); //l*a*b*に変換
 		cv::split(mTemp, vLab); //split: チャンネルごとに分割する関数
 
 		/* 参照型でリソース削減しつつ, わかりやすいエイリアスを定義 */
@@ -64,7 +66,7 @@ namespace ImgProc
 		cv::cvtColor(mTemp, mTemp, cv::COLOR_Lab2BGR);
 		/* end */
 
-		cv::bitwise_and(mTemp, ImgProcToolkit::sRoadMask, mTemp); //マスキング処理
+		cv::bitwise_and(mTemp, Tk::sRoadMask, mTemp); //マスキング処理
 		cv::cvtColor(mTemp, mShadow, cv::COLOR_BGR2GRAY);
 	}
 
@@ -113,7 +115,7 @@ namespace ImgProc
 	{
 		mCars = mSubtracted - mReShadow; // 移動物体から車影を除去
 		cv::morphologyEx(mCars, mTemp, cv::MORPH_CLOSE, mMorphKernel);
-		cv::bitwise_and(mTemp, ImgProcToolkit::sRoadMaskGray, mCars);
+		cv::bitwise_and(mTemp, Tk::sRoadMaskGray, mCars);
 	}
 
 	/// <summary>
@@ -121,12 +123,13 @@ namespace ImgProc
 	/// </summary>
 	void CarsDetector::DrawRectangle(const int& areaThr)
 	{
-		ImgProcToolkit::sFrame.copyTo(mCarRects);
+		Tk::sFrame.copyTo(mCarRects);
+		Tk::sCarsNumPrev = Tk::sCarsNum; // 前フレームの車両台数を保持
 
 		/* 車線分繰り返す */
-		for (int idx = 0; idx < ImgProcToolkit::sRoadMasksNum; idx++)
+		for (int idx = 0; idx < Tk::sRoadMasksNum; idx++)
 		{
-			cv::bitwise_and(mCars, ImgProcToolkit::sRoadMasksGray[idx], mTemp); // マスキング処理
+			cv::bitwise_and(mCars, Tk::sRoadMasksGray[idx], mTemp); // マスキング処理
 			//ラベリングによって求められるラベル数
 			auto labelNum = cv::connectedComponentsWithStats(mTemp, mLabels, mStats, mCentroids);
 
@@ -145,32 +148,57 @@ namespace ImgProc
 				if (area < areaThr)
 					continue;
 
-				/* 矩形を描く */
-				auto topLeft = cv::Point(x, y);
-				auto bottomRight = cv::Point(x + width, y + height);
-				cv::rectangle(mCarRects, topLeft, bottomRight, cv::Scalar(0, 0, 255), 3);
+				/* 検出位置チェック */
+				cv::Rect carRect(x, y, width, height);
+				bool doesntDetectCar = true;
+				auto bottomY = carRect.y + carRect.height;
+
+				/* 1フレーム目で検出されない領域を除外 */
+				if (Tk::sFrameCount == 1)
+				{
+					doesntDetectCar = (carRect.y < Tk::sDetectTop) || (bottomY > Tk::sDetectBottom);
+					if (doesntDetectCar)
+						continue;
+				}
 				/* end */
 
-				//bool doesDetectCar = true;
-				//switch (ImgProcToolkit::sRoadCarsDirections[idx])
-				//{
-				//case ImgProcToolkit::CARS_APPROACH_ROAD:
-				//{
-				//	doesDetectCar
-				//}
-				//}
-				//if (ImgProcToolkit::sFrameCount == 1)
-				//{
-				//}
-				//else
-				//{
-				//}
+				/* 検出開始地点から遠い領域かをチェック */
+				switch (Tk::sRoadCarsDirections[idx])
+				{
+				case Tk::CARS_APPROACH_ROAD:
+					doesntDetectCar = (carRect.y < Tk::sDetectTop) || (carRect.y > (Tk::sDetectTop + Tk::sDetectMergin));
+					break;
+				case Tk::CARS_LEAVE_ROAD:
+					doesntDetectCar = (bottomY < (Tk::sDetectBottom - Tk::sDetectMergin)) || (bottomY > Tk::sDetectBottom);
+					break;
+				default:
+					break;
+				}
+				/* end */
+
+				/* 2フレーム目以降は, 検出開始地点から遠い車両を検出しない */
+				if (Tk::sFrameCount > 1 && doesntDetectCar)
+					continue;
+
+				/* 検出開始位置近傍の車両を特定, 未検出車両なら車両IDを保存 */
+				if (!doesntDetectCar)
+				{
+					Tk::sBoundaryCarIdLists[idx].push_back(Tk::sCarsNum); // 1フレーム目は, 車両として検出しても, ここでIDを保存しないものもあることに注意
+				}
+				/* end */
+				/* end */
+
+				cv::rectangle(mCarRects, carRect, cv::Scalar(0, 0, 255), 3); // 矩形を描く
+
 				/* テンプレート抽出等 */
-				ImgProcToolkit::sTemplatePositionsList[idx][ImgProcToolkit::sCarsNum] = std::move(topLeft);
-				ImgProcToolkit::sTemplatesList[idx][ImgProcToolkit::sCarsNum] = ExtractTemplate(ImgProcToolkit::sFrame, x, y, width, height);
+				Tk::sTemplatePositionsList[idx][Tk::sCarsNum] = std::move(carRect);
+				Tk::sTemplatesList[idx][Tk::sCarsNum] = std::move(ExtractTemplate(Tk::sFrame, x, y, width, height));
 				/* end */
 
-				ImgProcToolkit::sCarsNum++; // 検出台数を更新
+				/* 検出台数を更新 */
+				Tk::sCarsNum++;
+				Tk::sFrameCarsNum++;
+				/* end */
 			}
 			/* end */
 		}

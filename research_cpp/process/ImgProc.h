@@ -6,12 +6,11 @@
 namespace ImgProc
 {
 	using Image = cv::Mat;
-	using Point = cv::Point;
 
 	class CarsDetector;
 	class CarsTracer;
 
-	static class ImgProcToolkit
+	class ImgProcToolkit
 	{
 		ImgProcToolkit() = delete; //staticクラスなので
 		friend class CarsDetector;
@@ -44,10 +43,12 @@ namespace ImgProc
 		/* end */
 
 		/* テンプレート処理に用いる変数 */
-		// 抽出したテンプレートを保存
+		// 検出・追跡中の車両のうち, 検出開始地点付近の車両のIDを保存, 車線ごとに保存
+		static std::vector<std::vector<uint64_t>> sBoundaryCarIdLists;
+		// 抽出したテンプレートを保存, 車線ごとに保存
 		static std::vector<std::unordered_map<uint64_t, Image>> sTemplatesList;
-		// テンプレートの抽出位置を保存
-		static std::vector<std::unordered_map<uint64_t, Point>> sTemplatePositionsList;
+		// テンプレートの抽出位置を保存, 車線ごとに保存
+		static std::vector<std::unordered_map<uint64_t, cv::Rect>> sTemplatePositionsList;
 		// 車線ごとの車の移動方向を保存
 		static std::unordered_map<int, int> sRoadCarsDirections;
 		/* end */
@@ -73,6 +74,12 @@ namespace ImgProc
 		// 現在のフレーム中の車両台数
 		static uint64_t sFrameCarsNum;
 
+		/* 検出範囲指定 */
+		static int sDetectTop;
+		static int sDetectBottom;
+		static int sDetectMergin;
+		/* end */
+
 	public:
 		/// <summary>
 		/// ビデオリソース読み込み・初期設定
@@ -87,18 +94,21 @@ namespace ImgProc
 		static bool CreateImageResource();
 
 		/// <summary>
-		/// リソース画像表示
-		/// </summary>
-		/// <param name="interval">待機時間[ms]</param>
-		static void ShowResourceImgs(const int& interval);
-
-		/// <summary>
 		/// 車線ごとの車の移動方向を設定
 		/// </summary>
 		/// <param name="directions">key: 車線番号(0~), value: CARS_~_ROADマクロのハッシュ</param>
 		static void SetRoadCarsDirections(const std::unordered_map<int, int>&& directions);
 
+		/// <summary>
+		/// リソース画像表示
+		/// </summary>
+		/// <param name="interval">待機時間[ms]</param>
+		static void ShowResourceImgs(const int& interval);
+
 		static void SetVideoType(const int& videoType) { sVideoType = videoType; }
+		static void SetDetectTop(const int& detectTop) { sDetectTop = detectTop; }
+		static void SetDetectBottom(const int& detectBottom) { sDetectBottom = detectBottom; }
+		static void SetDetectMergin(const int& detectMergin) { sDetectMergin = detectMergin; }
 		static cv::VideoCapture& GetVideoCapture() { return sVideoCapture; }
 		static cv::VideoWriter& GetVideoWriter() { return sVideoWriter; }
 		static Image& GetFrame() { return sFrame; }
@@ -133,6 +143,6 @@ namespace ImgProc
 	/// <param name="y">抽出範囲矩形の左上座標のy成分</param>
 	/// <param name="width">抽出範囲矩形の横幅</param>
 	/// <param name="height">抽出範囲矩形の縦幅</param>
-	/// <returns>指定範囲の抽出画像(クローン後にムーブ)</returns>
-	Image&& ExtractTemplate(Image& inputImg, const int& x, const int& y, const int& width, const int& height);
+	/// <returns>指定範囲の抽出画像(クローン後)</returns>
+	Image ExtractTemplate(Image& inputImg, const int& x, const int& y, const int& width, const int& height);
 };

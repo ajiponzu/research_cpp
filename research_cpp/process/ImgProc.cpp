@@ -27,10 +27,12 @@ namespace ImgProc
 	/* end */
 
 	/* テンプレート処理に用いる変数 */
-	//抽出したテンプレートを保存
+	// 検出・追跡中の車両のうち, 検出開始地点付近の車両のIDを保存, 車線ごとに保存
+	std::vector<std::vector<uint64_t>> ImgProcToolkit::sBoundaryCarIdLists;
+	// 抽出したテンプレートを保存, 車線ごとに保存
 	std::vector<std::unordered_map<uint64_t, Image>> ImgProcToolkit::sTemplatesList;
-	//テンプレートの抽出位置を保存
-	std::vector<std::unordered_map<uint64_t, Point>> ImgProcToolkit::sTemplatePositionsList;
+	// テンプレートの抽出位置を保存, 車線ごとに保存
+	std::vector<std::unordered_map<uint64_t, cv::Rect>> ImgProcToolkit::sTemplatePositionsList;
 	// 車線ごとの車の移動方向を保存
 	std::unordered_map<int, int> ImgProcToolkit::sRoadCarsDirections;
 	/* end */
@@ -53,6 +55,12 @@ namespace ImgProc
 	uint64_t ImgProcToolkit::sCarsNumPrev;
 	// 現在のフレーム中の車両台数
 	uint64_t ImgProcToolkit::sFrameCarsNum;
+
+	/* 検出範囲指定 */
+	int ImgProcToolkit::sDetectTop = 230;
+	int ImgProcToolkit::sDetectBottom = 535;
+	int ImgProcToolkit::sDetectMergin = 5;
+	/* end */
 
 	/* end */
 
@@ -126,6 +134,7 @@ namespace ImgProc
 			idx++;
 		}
 		sRoadMasksNum = idx;
+		sBoundaryCarIdLists.resize(idx);
 		sTemplatesList.resize(idx);
 		sTemplatePositionsList.resize(idx);
 
@@ -194,9 +203,9 @@ namespace ImgProc
 	/// <param name="width">抽出範囲矩形の横幅</param>
 	/// <param name="height">抽出範囲矩形の縦幅</param>
 	/// <returns>指定範囲の抽出画像(クローン後にムーブ)</returns>
-	Image&& ExtractTemplate(Image& inputImg, const int& x, const int& y, const int& width, const int& height)
+	Image ExtractTemplate(Image& inputImg, const int& x, const int& y, const int& width, const int& height)
 	{
-		return std::move(inputImg(cv::Range(y, y + height), cv::Range(x, x + width)).clone());
+		return inputImg(cv::Range(y, y + height), cv::Range(x, x + width)).clone();
 	}
 	/* end */
 };
