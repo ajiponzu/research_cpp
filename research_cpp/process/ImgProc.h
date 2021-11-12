@@ -11,7 +11,6 @@ namespace ImgProc
 	class CarsDetector;
 	class CarsTracer;
 
-	/* リソース変数staticクラス */
 	static class ImgProcToolkit
 	{
 		ImgProcToolkit() = delete; //staticクラスなので
@@ -56,9 +55,9 @@ namespace ImgProc
 		const static std::string sRoadMaskPath;
 		const static std::string sRoadMasksBasePath;
 		// sRoadMasksのsize数
-		static int sRoadMasksNum; 
+		static int sRoadMasksNum;
 		// 使用リソースの指定
-		static int sVideoType; 
+		static int sVideoType;
 		/* end */
 
 	public:

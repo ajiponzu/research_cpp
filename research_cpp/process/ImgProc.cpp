@@ -45,10 +45,10 @@ namespace ImgProc
 
 	/* end */
 
-/// <summary>
-/// ビデオリソース読み込み・初期設定
-/// </summary>
-/// <returns>処理成功の真偽</returns>
+	/// <summary>
+	/// ビデオリソース読み込み・初期設定
+	/// </summary>
+	/// <returns>処理成功の真偽</returns>
 	bool ImgProcToolkit::CreateVideoResource()
 	{
 		sVideoCapture.open(sVideoPathList[sVideoType]);

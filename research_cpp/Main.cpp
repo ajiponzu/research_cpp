@@ -29,6 +29,8 @@ int main()
 	if (!isCreatedImages)
 		return 0;
 
+	//ImgProcToolkit::ShowResourceImgs(1500); // リソース表示
+
 	auto& frame = ImgProcToolkit::GetFrame();
 	auto& videoCapture = ImgProcToolkit::GetVideoCapture();
 	auto& videoWriter = ImgProcToolkit::GetVideoWriter();
