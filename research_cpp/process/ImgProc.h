@@ -20,6 +20,8 @@ namespace ImgProc
 		constexpr static int VIDEO_TYPE_HARE = 0;
 		constexpr static int VIDEO_TYPE_KUMORI = 1;
 		constexpr static int VIDEO_TYPE_AME = 2;
+		constexpr static int CARS_LEAVE_ROAD = 0;
+		constexpr static int CARS_APPROACH_ROAD = 1;
 	private:
 		// 入力ビデオキャプチャ
 		static cv::VideoCapture sVideoCapture;
@@ -42,10 +44,12 @@ namespace ImgProc
 		/* end */
 
 		/* テンプレート処理に用いる変数 */
-		//抽出したテンプレートを保存
+		// 抽出したテンプレートを保存
 		static std::vector<std::vector<Image>> sTemplatesList;
-		//テンプレートの抽出位置を保存
+		// テンプレートの抽出位置を保存
 		static std::vector<Point> sTemplatePositionsList;
+		// 車線ごとの車の移動方向を保存
+		static std::unordered_map<int, int> sRoadCarsDirections;
 		/* end */
 
 		/* ファイルパス関連 */
@@ -55,10 +59,12 @@ namespace ImgProc
 		const static std::string sRoadMaskPath;
 		const static std::string sRoadMasksBasePath;
 		// sRoadMasksのsize数
-		static int sRoadMasksNum;
+		static size_t sRoadMasksNum;
 		// 使用リソースの指定
 		static int sVideoType;
 		/* end */
+
+		static int sFrameCount;
 
 	public:
 		/// <summary>
@@ -79,11 +85,17 @@ namespace ImgProc
 		/// <param name="interval">待機時間[ms]</param>
 		static void ShowResourceImgs(const int& interval);
 
-		static void SetVideoType(const int& videoType) { sVideoType = videoType; }
+		/// <summary>
+		/// 車線ごとの車の移動方向を設定
+		/// </summary>
+		/// <param name="directions">key: 車線番号(0~), value: CARS_~_ROADマクロのハッシュ</param>
+		static void SetRoadCarsDirections(const std::unordered_map<int, int>&& directions);
 
+		static void SetVideoType(const int& videoType) { sVideoType = videoType; }
 		static cv::VideoCapture& GetVideoCapture() { return sVideoCapture; }
 		static cv::VideoWriter& GetVideoWriter() { return sVideoWriter; }
 		static Image& GetFrame() { return sFrame; }
+		static int& GetFrameCount() { return sFrameCount; }
 	};
 
 	/// <summary>

@@ -29,6 +29,15 @@ int main()
 	if (!isCreatedImages)
 		return 0;
 
+	/* 車線方向の設定 */
+	std::unordered_map<int, int> directions;
+	directions[0] = ImgProcToolkit::CARS_LEAVE_ROAD;
+	directions[2] = ImgProcToolkit::CARS_LEAVE_ROAD;
+	directions[1] = ImgProcToolkit::CARS_APPROACH_ROAD;
+	directions[3] = ImgProcToolkit::CARS_APPROACH_ROAD;
+	ImgProcToolkit::SetRoadCarsDirections(std::move(directions));
+	/* end */
+
 	//ImgProcToolkit::ShowResourceImgs(1500); // リソース表示
 
 	auto& frame = ImgProcToolkit::GetFrame();
@@ -42,7 +51,7 @@ int main()
 	/* end */
 
 	// フレームカウント
-	int count = 0;
+	int& count = ImgProcToolkit::GetFrameCount();
 	// 1秒あたりのフレーム数
 	double tick = cv::getTickFrequency();
 	// 実行結果画像
@@ -71,14 +80,12 @@ int main()
 		detector.ReExtractShadow(5, 1.6f);
 		detector.ExtractCars();
 		detector.DrawRectangle(30);
+
+		//detector.ShowOutImgs(1000); // 出力結果表示
 		/* end */
 
 		videoWriter << result; // ビデオ書き出し
 		std::cout << count << std::endl; // カウントアップ
-
-		/* デバッグ */
-		//detector.ShowOutImgs(1000);
-		/* end */
 
 		/* 計測時間表示 */
 		auto endTime = cv::getTickCount();

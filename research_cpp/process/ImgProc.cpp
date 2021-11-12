@@ -28,9 +28,11 @@ namespace ImgProc
 
 	/* テンプレート処理に用いる変数 */
 	//抽出したテンプレートを保存
-	static std::vector<std::vector<Image>> sTemplatesList;
+	std::vector<std::vector<Image>> ImgProcToolkit::sTemplatesList;
 	//テンプレートの抽出位置を保存
-	static std::vector<Point> sTemplatePositionsList;
+	std::vector<Point> ImgProcToolkit::sTemplatePositionsList;
+	// 車線ごとの車の移動方向を保存
+	std::unordered_map<int, int> ImgProcToolkit::sRoadCarsDirections;
 	/* end */
 
 	/* ファイルパス関連 */
@@ -39,9 +41,11 @@ namespace ImgProc
 	const std::string ImgProcToolkit::sBackImgPathList[3] = { "./resource/hare/back.png", "./resource/kumori/back.mp4", "./resource/ame/back.mp4" };
 	const std::string ImgProcToolkit::sRoadMaskPath = "./resource/back_kaikai.png";
 	const std::string ImgProcToolkit::sRoadMasksBasePath = "./resource/back_kai";
-	int ImgProcToolkit::sRoadMasksNum = 0;
+	size_t ImgProcToolkit::sRoadMasksNum = 0;
 	int ImgProcToolkit::sVideoType = ImgProcToolkit::VIDEO_TYPE_HARE;
 	/* end */
+
+	int ImgProcToolkit::sFrameCount = 0;
 
 	/* end */
 
@@ -134,6 +138,15 @@ namespace ImgProc
 			cv::imshow("", *itr);
 			cv::waitKey(interval);
 		}
+	}
+
+	/// <summary>
+	/// 車線ごとの車の移動方向を設定
+	/// </summary>
+	/// <param name="directions">key: 車線番号(0~), value: CARS_~_ROADマクロのハッシュ</param>
+	void ImgProcToolkit::SetRoadCarsDirections(const std::unordered_map<int, int>&& directions)
+	{
+		sRoadCarsDirections = directions;
 	}
 	/* end */
 

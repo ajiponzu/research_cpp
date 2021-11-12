@@ -151,7 +151,24 @@ namespace ImgProc
 				cv::rectangle(mCarRects, topLeft, bottomRight, cv::Scalar(0, 0, 255), 3);
 				/* end */
 
+				//bool doesDetectCar = true;
+				//switch (ImgProcToolkit::sRoadCarsDirections[idx])
+				//{
+				//case ImgProcToolkit::CARS_APPROACH_ROAD:
+				//{
+				//	doesDetectCar
+				//}
+				//}
+				//if (ImgProcToolkit::sFrameCount == 1)
+				//{
+				//}
+				//else
+				//{
+
+				//}
 				/* テンプレート抽出等 */
+				ImgProcToolkit::sTemplatePositionsList.push_back(std::move(topLeft));
+				ImgProcToolkit::sTemplatesList.push_back(ExtractTemplate(ImgProcToolkit::sFrame, x, y, width, height));
 				/* end */
 			}
 			/* end */
