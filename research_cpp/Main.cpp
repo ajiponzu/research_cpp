@@ -51,11 +51,17 @@ int main()
 	/* end */
 
 	// フレームカウント
-	int& count = ImgProcToolkit::GetFrameCount();
+	uint64_t& count = ImgProcToolkit::GetFrameCount();
 	// 1秒あたりのフレーム数
 	double tick = cv::getTickFrequency();
 	// 実行結果画像
 	auto& result = detector.GetCarsRect();
+
+	/* 検出台数監視 */
+	auto& carsNum = ImgProcToolkit::GetCarsNum();
+	auto& carsFrameNum = ImgProcToolkit::GetFrameCarsNum();
+	auto& carsNumPrev = ImgProcToolkit::GetCarsNumPrev();
+	/* end */
 
 	/* ビデオ読み込みループ */
 	while (true)

@@ -28,9 +28,9 @@ namespace ImgProc
 
 	/* テンプレート処理に用いる変数 */
 	//抽出したテンプレートを保存
-	std::vector<std::vector<Image>> ImgProcToolkit::sTemplatesList;
+	std::vector<std::unordered_map<uint64_t, Image>> ImgProcToolkit::sTemplatesList;
 	//テンプレートの抽出位置を保存
-	std::vector<Point> ImgProcToolkit::sTemplatePositionsList;
+	std::vector<std::unordered_map<uint64_t, Point>> ImgProcToolkit::sTemplatePositionsList;
 	// 車線ごとの車の移動方向を保存
 	std::unordered_map<int, int> ImgProcToolkit::sRoadCarsDirections;
 	/* end */
@@ -45,7 +45,14 @@ namespace ImgProc
 	int ImgProcToolkit::sVideoType = ImgProcToolkit::VIDEO_TYPE_HARE;
 	/* end */
 
-	int ImgProcToolkit::sFrameCount = 0;
+	// 読み込んだフレーム数
+	uint64_t ImgProcToolkit::sFrameCount = 0;
+	// 検出・追跡中車両台数
+	uint64_t ImgProcToolkit::sCarsNum = 0;
+	// 全フレーム中の検出・追跡中車両台数(前フレームのもの)
+	uint64_t ImgProcToolkit::sCarsNumPrev;
+	// 現在のフレーム中の車両台数
+	uint64_t ImgProcToolkit::sFrameCarsNum;
 
 	/* end */
 
@@ -119,6 +126,8 @@ namespace ImgProc
 			idx++;
 		}
 		sRoadMasksNum = idx;
+		sTemplatesList.resize(idx);
+		sTemplatePositionsList.resize(idx);
 
 		return true;
 	}

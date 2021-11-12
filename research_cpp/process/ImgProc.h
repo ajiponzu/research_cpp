@@ -45,9 +45,9 @@ namespace ImgProc
 
 		/* テンプレート処理に用いる変数 */
 		// 抽出したテンプレートを保存
-		static std::vector<std::vector<Image>> sTemplatesList;
+		static std::vector<std::unordered_map<uint64_t, Image>> sTemplatesList;
 		// テンプレートの抽出位置を保存
-		static std::vector<Point> sTemplatePositionsList;
+		static std::vector<std::unordered_map<uint64_t, Point>> sTemplatePositionsList;
 		// 車線ごとの車の移動方向を保存
 		static std::unordered_map<int, int> sRoadCarsDirections;
 		/* end */
@@ -64,7 +64,14 @@ namespace ImgProc
 		static int sVideoType;
 		/* end */
 
-		static int sFrameCount;
+		// 読み込んだフレーム数
+		static uint64_t sFrameCount;
+		// 全フレーム中の検出・追跡中車両台数
+		static uint64_t sCarsNum;
+		// 全フレーム中の検出・追跡中車両台数(前フレームのもの)
+		static uint64_t sCarsNumPrev;
+		// 現在のフレーム中の車両台数
+		static uint64_t sFrameCarsNum;
 
 	public:
 		/// <summary>
@@ -95,7 +102,10 @@ namespace ImgProc
 		static cv::VideoCapture& GetVideoCapture() { return sVideoCapture; }
 		static cv::VideoWriter& GetVideoWriter() { return sVideoWriter; }
 		static Image& GetFrame() { return sFrame; }
-		static int& GetFrameCount() { return sFrameCount; }
+		static uint64_t& GetFrameCount() { return sFrameCount; }
+		static const uint64_t& GetCarsNum() { return sCarsNum; }
+		static const uint64_t& GetCarsNumPrev() { return sCarsNumPrev; }
+		static const uint64_t& GetFrameCarsNum() { return sFrameCarsNum; }
 	};
 
 	/// <summary>

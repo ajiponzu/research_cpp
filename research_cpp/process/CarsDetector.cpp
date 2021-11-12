@@ -164,12 +164,13 @@ namespace ImgProc
 				//}
 				//else
 				//{
-
 				//}
 				/* テンプレート抽出等 */
-				ImgProcToolkit::sTemplatePositionsList.push_back(std::move(topLeft));
-				ImgProcToolkit::sTemplatesList.push_back(ExtractTemplate(ImgProcToolkit::sFrame, x, y, width, height));
+				ImgProcToolkit::sTemplatePositionsList[idx][ImgProcToolkit::sCarsNum] = std::move(topLeft);
+				ImgProcToolkit::sTemplatesList[idx][ImgProcToolkit::sCarsNum] = ExtractTemplate(ImgProcToolkit::sFrame, x, y, width, height);
 				/* end */
+
+				ImgProcToolkit::sCarsNum++; // 検出台数を更新
 			}
 			/* end */
 		}
