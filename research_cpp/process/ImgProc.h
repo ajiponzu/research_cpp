@@ -17,6 +17,10 @@ namespace ImgProc
 		ImgProcToolkit() = delete; //staticクラスなので
 		friend class CarsDetector;
 		friend class CarsTracer;
+	public:
+		constexpr static int VIDEO_TYPE_HARE = 0;
+		constexpr static int VIDEO_TYPE_KUMORI = 1;
+		constexpr static int VIDEO_TYPE_AME = 2;
 	private:
 		// 入力ビデオキャプチャ
 		static cv::VideoCapture sVideoCapture;
@@ -45,20 +49,16 @@ namespace ImgProc
 		static std::vector<Point> sTemplatePositionsList;
 		/* end */
 
-	/* ファイルパス関連 */
-		constexpr static int VIDEO_TYPE_HARE = 0;
-		constexpr static int VIDEO_TYPE_KUMORI = 1;
-		constexpr static int VIDEO_TYPE_AME = 2;
-
+		/* ファイルパス関連 */
 		const static std::string sVideoPathList[3];
 		const static std::string sOutputPathList[3];
-
-		constexpr static int sVideoType = VIDEO_TYPE_HARE;
 		const static std::string sBackImgPathList[3];
-
 		const static std::string sRoadMaskPath;
 		const static std::string sRoadMasksBasePath;
-		static int sRoadMasksNum;
+		// sRoadMasksのsize数
+		static int sRoadMasksNum; 
+		// 使用リソースの指定
+		static int sVideoType; 
 		/* end */
 
 	public:
@@ -79,6 +79,8 @@ namespace ImgProc
 		/// </summary>
 		/// <param name="interval">待機時間[ms]</param>
 		static void ShowResourceImgs(const int& interval);
+
+		static void SetVideoType(const int& videoType) { sVideoType = videoType; }
 
 		static cv::VideoCapture& GetVideoCapture() { return sVideoCapture; }
 		static cv::VideoWriter& GetVideoWriter() { return sVideoWriter; }

@@ -19,6 +19,8 @@ int main()
 	std::ios::sync_with_stdio(false); // デバッグ出力高速化
 
 	/* リソース読み込み */
+	ImgProcToolkit::SetVideoType(ImgProcToolkit::VIDEO_TYPE_HARE); // リソース指定
+
 	auto isCreatedVideo = ImgProcToolkit::CreateVideoResource(); // リソース登録
 	if (!isCreatedVideo)
 		return 0;

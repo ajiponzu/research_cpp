@@ -5,6 +5,7 @@ namespace ImgProc
 	/* ImgProcToolkit */
 
 	/* static変数再宣言 */
+
 	// 入力ビデオキャプチャ
 	cv::VideoCapture ImgProcToolkit::sVideoCapture;
 	// ビデオレコーダー
@@ -35,13 +36,13 @@ namespace ImgProc
 	/* ファイルパス関連 */
 	const std::string ImgProcToolkit::sVideoPathList[3] = { "./resource/hare/input.mp4", "./resource/kumori/input.mp4", "./resource/ame/input.mp4" };
 	const std::string ImgProcToolkit::sOutputPathList[3] = { "./output/hare/output.mp4", "./output/kumori/output.mp4", "./output/ame/output.mp4" };
-
 	const std::string ImgProcToolkit::sBackImgPathList[3] = { "./resource/hare/back.png", "./resource/kumori/back.mp4", "./resource/ame/back.mp4" };
-
 	const std::string ImgProcToolkit::sRoadMaskPath = "./resource/back_kaikai.png";
 	const std::string ImgProcToolkit::sRoadMasksBasePath = "./resource/back_kai";
 	int ImgProcToolkit::sRoadMasksNum = 0;
+	int ImgProcToolkit::sVideoType = ImgProcToolkit::VIDEO_TYPE_HARE;
 	/* end */
+
 	/* end */
 
 /// <summary>
