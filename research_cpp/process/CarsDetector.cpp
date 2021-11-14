@@ -119,7 +119,7 @@ namespace ImgProc
 	}
 
 	/// <summary>
-	/// 車両を矩形で囲む
+	/// 車両を矩形で囲む, 未完成(未検出物体かどうかのチェックをあいまいにしている)
 	/// </summary>
 	void CarsDetector::DrawRectangle(const int& areaThr)
 	{
@@ -127,7 +127,7 @@ namespace ImgProc
 		Tk::sCarsNumPrev = Tk::sCarsNum; // 前フレームの車両台数を保持
 
 		/* 車線分繰り返す */
-		for (int idx = 0; idx < Tk::sRoadMasksNum; idx++)
+		for (size_t idx = 0; idx < Tk::sRoadMasksNum; idx++)
 		{
 			cv::bitwise_and(mCars, Tk::sRoadMasksGray[idx], mTemp); // マスキング処理
 			//ラベリングによって求められるラベル数
@@ -194,6 +194,8 @@ namespace ImgProc
 				Tk::sTemplatePositionsList[idx][Tk::sCarsNum] = std::move(carRect);
 				Tk::sTemplatesList[idx][Tk::sCarsNum] = std::move(ExtractTemplate(Tk::sFrame, x, y, width, height));
 				/* end */
+				cv::imshow("", Tk::sTemplatesList[idx][Tk::sCarsNum]);
+				cv::waitKey(5000);
 
 				/* 検出台数を更新 */
 				Tk::sCarsNum++;

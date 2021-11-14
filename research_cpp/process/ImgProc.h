@@ -50,7 +50,7 @@ namespace ImgProc
 		// テンプレートの抽出位置を保存, 車線ごとに保存
 		static std::vector<std::unordered_map<uint64_t, cv::Rect>> sTemplatePositionsList;
 		// 車線ごとの車の移動方向を保存
-		static std::unordered_map<int, int> sRoadCarsDirections;
+		static std::unordered_map<size_t, int> sRoadCarsDirections;
 		/* end */
 
 		/* ファイルパス関連 */
@@ -97,7 +97,7 @@ namespace ImgProc
 		/// 車線ごとの車の移動方向を設定
 		/// </summary>
 		/// <param name="directions">key: 車線番号(0~), value: CARS_~_ROADマクロのハッシュ</param>
-		static void SetRoadCarsDirections(const std::unordered_map<int, int>&& directions);
+		static void SetRoadCarsDirections(const std::unordered_map<size_t, int>&& directions);
 
 		/// <summary>
 		/// リソース画像表示

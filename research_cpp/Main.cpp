@@ -30,7 +30,7 @@ int main()
 		return 0;
 
 	/* 車線方向の設定 */
-	std::unordered_map<int, int> directions;
+	std::unordered_map<size_t, int> directions;
 	directions[0] = ImgProcToolkit::CARS_LEAVE_ROAD;
 	directions[2] = ImgProcToolkit::CARS_LEAVE_ROAD;
 	directions[1] = ImgProcToolkit::CARS_APPROACH_ROAD;
