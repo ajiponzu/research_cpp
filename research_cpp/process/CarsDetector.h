@@ -54,7 +54,7 @@ public:
 	/// </summary>
 	/// <param name="areaThr">面積の閾値</param>
 	/// <param name="aspectThr">アスペクト比の閾値</param>
-	void ReExtractShadow(const int& areaThr, const float& aspectThr);
+	void ReExtractShadow(const int& areaThr = 5, const float& aspectThr = 1.6);
 
 	/// <summary>
 	/// 車両抽出
@@ -65,7 +65,7 @@ public:
 	/// 車両を矩形で囲む
 	/// </summary>
 	/// <param name="areaThr">面積の閾値</param>
-	void DrawRectangle(const int& areaThr);
+	void DrawRectangle(const int& areaThr = 30);
 
 	/// <summary>
 	/// 出力画像一括保存
@@ -77,7 +77,7 @@ public:
 	/// 出力画像順次表示
 	/// </summary>
 	/// <param name="interval">待機時間[ms]</param>
-	void ShowOutImgs(const int& interval);
+	void ShowOutImgs(const int& interval = 1500);
 
 	/// <summary>
 	/// 車両検出画像の取得
