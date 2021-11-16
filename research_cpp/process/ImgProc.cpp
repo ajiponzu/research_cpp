@@ -16,6 +16,8 @@ namespace ImgProc
 	int ImgProcToolkit::sVideoHeight = 0;
 	// 入力フレーム
 	Image ImgProcToolkit::sFrame;
+	// 結果画像
+	Image ImgProcToolkit::sResutImg;
 	// 背景画像
 	Image ImgProcToolkit::sBackImg;
 	// 道路マスク画像
@@ -52,9 +54,11 @@ namespace ImgProc
 	// 検出・追跡中車両台数
 	uint64_t ImgProcToolkit::sCarsNum = 0;
 	// 全フレーム中の検出・追跡中車両台数(前フレームのもの)
-	uint64_t ImgProcToolkit::sCarsNumPrev;
+	uint64_t ImgProcToolkit::sCarsNumPrev = 0;
 	// 現在のフレーム中の車両台数
-	uint64_t ImgProcToolkit::sFrameCarsNum;
+	uint64_t ImgProcToolkit::sFrameCarsNum = 0;
+	// 検出車両のうち, もっとも最初に検出した車両のID
+	uint64_t ImgProcToolkit::sFrontCarsId = 0;
 
 	/* 検出範囲指定 */
 	int ImgProcToolkit::sDetectTop = 230;

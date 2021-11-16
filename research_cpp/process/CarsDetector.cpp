@@ -132,6 +132,8 @@ namespace ImgProc
 			cv::bitwise_and(mCars, Tk::sRoadMasksGray[idx], mTemp); // マスキング処理
 			//ラベリングによって求められるラベル数
 			auto labelNum = cv::connectedComponentsWithStats(mTemp, mLabels, mStats, mCentroids);
+			auto& templates = Tk::sTemplatesList[idx];
+			auto& templatePositions = Tk::sTemplatePositionsList[idx];
 
 			/* 各領域ごとの処理, 0番は背景 */
 			for (int label = 1; label < labelNum; label++)
@@ -189,13 +191,14 @@ namespace ImgProc
 				/* end */
 
 				cv::rectangle(mCarRects, carRect, cv::Scalar(0, 0, 255), 3); // 矩形を描く
+				cv::rectangle(Tk::sResutImg, carRect, cv::Scalar(0, 0, 255), 3); // 矩形を描く
 
 				/* テンプレート抽出等 */
-				Tk::sTemplatePositionsList[idx][Tk::sCarsNum] = std::move(carRect);
-				Tk::sTemplatesList[idx][Tk::sCarsNum] = std::move(ExtractTemplate(Tk::sFrame, x, y, width, height));
+				templates.insert(std::pair(Tk::sCarsNum, ExtractTemplate(Tk::sFrame, x, y, width, height)));
+				templatePositions.insert(std::pair(Tk::sCarsNum, carRect));
 				/* end */
-				cv::imshow("", Tk::sTemplatesList[idx][Tk::sCarsNum]);
-				cv::waitKey(5000);
+				//cv::imshow("", templates[Tk::sCarsNum]);
+				//cv::waitKey(5000);
 
 				/* 検出台数を更新 */
 				Tk::sCarsNum++;

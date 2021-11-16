@@ -32,6 +32,8 @@ namespace ImgProc
 		static int sVideoHeight;
 		// 入力フレーム
 		static Image sFrame;
+		// 結果画像
+		static Image sResutImg;
 		// 背景画像
 		static Image sBackImg;
 		// 道路マスク画像
@@ -73,6 +75,8 @@ namespace ImgProc
 		static uint64_t sCarsNumPrev;
 		// 現在のフレーム中の車両台数
 		static uint64_t sFrameCarsNum;
+		// 検出車両のうち, もっとも最初に検出した車両のID
+		static uint64_t sFrontCarsId;
 
 		/* 検出範囲指定 */
 		static int sDetectTop;
@@ -116,6 +120,7 @@ namespace ImgProc
 		static const uint64_t& GetCarsNum() { return sCarsNum; }
 		static const uint64_t& GetCarsNumPrev() { return sCarsNumPrev; }
 		static const uint64_t& GetFrameCarsNum() { return sFrameCarsNum; }
+		static const Image& GetResult() { return sResutImg; }
 	};
 
 	/// <summary>

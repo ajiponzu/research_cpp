@@ -6,7 +6,8 @@ using namespace ImgProc;
 /* ループ回数決定 */
 constexpr static auto gStartCount = 1;
 //constexpr static auto gEndCount = 1;
-constexpr static auto gEndCount = 60;
+//constexpr static auto gEndCount = 60;
+constexpr static auto gEndCount = 6;
 //constexpr static auto gEndCount = 10000;
 /* end */
 
@@ -61,7 +62,7 @@ int main()
 	// 1秒あたりのフレーム数
 	double tick = cv::getTickFrequency();
 	// 実行結果画像
-	auto& result = detector.GetCarsRect();
+	auto& result = ImgProcToolkit::GetResult();
 
 	/* 検出台数監視 */
 	auto& carsNum = ImgProcToolkit::GetCarsNum();
@@ -86,12 +87,20 @@ int main()
 		if (count > gEndCount)
 			break;
 
-		/* 車両検出 */
+		/* 車両検出の準備 */
 		detector.SubtractBackImage();
 		detector.ExtractShadow();
 		detector.ReExtractShadow(5, 1.6f);
 		detector.ExtractCars();
+		/* end */
+	
+		/* 車両追跡 */
+		tracer.FindCarsTemplates();
+		/* end */
+
+		/* 新規車両検出 */
 		detector.DrawRectangle(30);
+		/* end */
 
 		//detector.ShowOutImgs(1000); // 出力結果表示
 		/* end */
