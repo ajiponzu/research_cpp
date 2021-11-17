@@ -29,14 +29,14 @@ namespace ImgProc
 	/* end */
 
 	/* テンプレート処理に用いる変数 */
-	// 検出・追跡中の車両のうち, 検出開始地点付近の車両のIDを保存, 車線ごとに保存
-	std::vector<std::vector<uint64_t>> ImgProcToolkit::sBoundaryCarIdLists;
 	// 抽出したテンプレートを保存, 車線ごとに保存
 	std::vector<std::unordered_map<uint64_t, Image>> ImgProcToolkit::sTemplatesList;
 	// テンプレートの抽出位置を保存, 車線ごとに保存
 	std::vector<std::unordered_map<uint64_t, cv::Rect2d>> ImgProcToolkit::sTemplatePositionsList;
 	// 車線ごとの車の移動方向を保存
 	std::unordered_map<size_t, int> ImgProcToolkit::sRoadCarsDirections;
+	// 車線ごとに検出境界に最も近い(高さの大小)車両IDを保存
+	std::vector<std::unordered_set<uint64_t>> ImgProcToolkit::sBoundaryCarIdLists;
 	/* end */
 
 	/* ファイルパス関連 */

@@ -183,22 +183,32 @@ namespace ImgProc
 					continue;
 
 				/* 検出開始位置近傍の車両を特定, 未検出車両なら車両IDを保存 */
+				bool continueFlag = false;
 				if (!doesntDetectCar)
 				{
-					Tk::sBoundaryCarIdLists[idx].push_back(Tk::sCarsNum); // 1フレーム目は, 車両として検出しても, ここでIDを保存しないものもあることに注意
+					for (const auto& elem : Tk::sBoundaryCarIdLists[idx])
+					{
+						const auto& carPos = Tk::sTemplatePositionsList[idx][elem];
+						continueFlag = (std::abs(carRect.x - carPos.x) < 4) && (std::abs(carRect.y - carPos.y) < 4);
+						if (continueFlag)
+							break;
+					}
+
+					if (!continueFlag)
+						Tk::sBoundaryCarIdLists[idx].insert(Tk::sCarsNum); // 1フレーム目は, 車両として検出しても, ここでIDを保存しないものもあることに注意
+					else
+						continue;
 				}
 				/* end */
 				/* end */
 
-				cv::rectangle(mCarRects, carRect, cv::Scalar(0, 0, 255), 3); // 矩形を描く
-				cv::rectangle(Tk::sResutImg, carRect, cv::Scalar(0, 0, 255), 3); // 矩形を描く
+				cv::rectangle(mCarRects, carRect, cv::Scalar(0, 0, 255), 1); // 矩形を描く
+				cv::rectangle(Tk::sResutImg, carRect, cv::Scalar(0, 0, 255), 1); // 矩形を描く
 
 				/* テンプレート抽出等 */
 				templates.insert(std::pair(Tk::sCarsNum, ExtractTemplate(Tk::sFrame, x, y, width, height)));
 				templatePositions.insert(std::pair(Tk::sCarsNum, carRect));
 				/* end */
-				//cv::imshow("", templates[Tk::sCarsNum]);
-				//cv::waitKey(5000);
 
 				/* 検出台数を更新 */
 				Tk::sCarsNum++;

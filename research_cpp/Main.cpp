@@ -7,7 +7,7 @@ using namespace ImgProc;
 constexpr static auto gStartCount = 1;
 //constexpr static auto gEndCount = 1;
 //constexpr static auto gEndCount = 60;
-constexpr static auto gEndCount = 515;
+constexpr static auto gEndCount = 195;
 //constexpr static auto gEndCount = 10000;
 /* end */
 
@@ -40,7 +40,7 @@ int main()
 	/* end */
 
 	/* 検出範囲の設定 */
-	ImgProcToolkit::SetDetectTop(230);
+	ImgProcToolkit::SetDetectTop(235);
 	ImgProcToolkit::SetDetectBottom(535);
 	ImgProcToolkit::SetDetectMergin(5);
 	/* end */

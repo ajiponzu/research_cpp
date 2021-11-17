@@ -10,7 +10,7 @@ namespace ImgProc
 		if (Tk::sFrameCount == 1)
 			return;
 
-		double maxValue = 0.0, magni = 1.002;
+		double maxValue = 0.0, magni = 1.0015;
 		int mergin = 6;
 		cv::Point maxLoc;
 		cv::Rect2d nearRect;
@@ -29,7 +29,6 @@ namespace ImgProc
 				auto& carPos = templatePositions[carId];
 				nearRect = ExtractCarsNearestArea(idx, carId, magni, mergin);
 				mTemp = GetImgSlice(Tk::sFrame, nearRect.x, nearRect.y, nearRect.width, nearRect.height);
-				//cv::matchTemplate(mTempFrame, carImg, mDataTemp, cv::TM_CCOEFF_NORMED);
 				cv::matchTemplate(mTemp, carImg, mDataTemp, cv::TM_CCOEFF_NORMED);
 				cv::minMaxLoc(mDataTemp, nullptr, &maxValue, nullptr, &maxLoc);
 				if (maxValue < 0.45)
@@ -38,22 +37,11 @@ namespace ImgProc
 					continue;
 				}
 
+				//if ((carPos.x != (nearRect.x + maxLoc.x)) && (carPos.y != (nearRect.y + maxLoc.y)))
+				//	carImg = ExtractTemplate(mTemp, maxLoc.x, maxLoc.y, carPos.width, carPos.height);
 				carPos.x = nearRect.x + maxLoc.x;
 				carPos.y = nearRect.y + maxLoc.y;
-				//carImg = ExtractTemplate(mTemp, maxLoc.x, maxLoc.y, carPos.width, carPos.height);
-				//carPos.x = maxLoc.x;
-				//carPos.y = maxLoc.y;
-				//carImg = ExtractTemplate(Tk::sFrame, maxLoc.x, maxLoc.y, carPos.width, carPos.height);
 				cv::rectangle(Tk::sResutImg, carPos, cv::Scalar(255, 0, 0), 1);
-
-				//if (carId == 6)
-				//{
-				//	std::cout << carPos << std::endl;
-				//	cv::imshow("a", carImg);
-				//	//cv::rectangle(mTemp, cv::Rect(maxLoc.x, maxLoc.y, carPos.width, carPos.height), cv::Scalar(0, 255, 0), 1);
-				//	//cv::imshow("b", mTemp);
-				//	cv::waitKey(2000);
-				//}
 			}
 		}
 
@@ -111,11 +99,6 @@ namespace ImgProc
 		/* 最終的な探索領域の縦横の幅を算出 */
 		auto findRectWidth = std::abs(findRectXR - findRectX) + 1.0;
 		auto findRectHeight = std::abs(findRectYB - findRectY) + 1.0;
-		/* end */
-
-		/* 小さいほうを原点として最終的に採用 */
-		//findRectX = std::min(findRectX, findRectXR);
-		//findRectY = std::min(findRectY, findRectYB);
 		/* end */
 		/* end */
 
