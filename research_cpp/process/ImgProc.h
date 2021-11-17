@@ -50,7 +50,7 @@ namespace ImgProc
 		// 抽出したテンプレートを保存, 車線ごとに保存
 		static std::vector<std::unordered_map<uint64_t, Image>> sTemplatesList;
 		// テンプレートの抽出位置を保存, 車線ごとに保存
-		static std::vector<std::unordered_map<uint64_t, cv::Rect>> sTemplatePositionsList;
+		static std::vector<std::unordered_map<uint64_t, cv::Rect2d>> sTemplatePositionsList;
 		// 車線ごとの車の移動方向を保存
 		static std::unordered_map<size_t, int> sRoadCarsDirections;
 		/* end */

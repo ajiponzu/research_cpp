@@ -34,7 +34,7 @@ namespace ImgProc
 	// 抽出したテンプレートを保存, 車線ごとに保存
 	std::vector<std::unordered_map<uint64_t, Image>> ImgProcToolkit::sTemplatesList;
 	// テンプレートの抽出位置を保存, 車線ごとに保存
-	std::vector<std::unordered_map<uint64_t, cv::Rect>> ImgProcToolkit::sTemplatePositionsList;
+	std::vector<std::unordered_map<uint64_t, cv::Rect2d>> ImgProcToolkit::sTemplatePositionsList;
 	// 車線ごとの車の移動方向を保存
 	std::unordered_map<size_t, int> ImgProcToolkit::sRoadCarsDirections;
 	/* end */
@@ -195,7 +195,7 @@ namespace ImgProc
 	/// <returns>参照範囲の部分画像(</returns>
 	Image GetImgSlice(Image& inputImg, const int& x, const int& y, const int& width, const int& height)
 	{
-		return inputImg(cv::Rect(x, y, width, height)); // 参照カウントのため, シャローコピーでもデータが解放されない.
+		return inputImg(cv::Rect(x, y, width + 1, height + 1)); // 参照カウントのため, シャローコピーでもデータが解放されない.
 	}
 
 	/// <summary>
@@ -209,7 +209,7 @@ namespace ImgProc
 	/// <returns>指定範囲の抽出画像(クローン後にムーブ)</returns>
 	Image ExtractTemplate(Image& inputImg, const int& x, const int& y, const int& width, const int& height)
 	{
-		return inputImg(cv::Rect(x, y, width, height)).clone();
+		return inputImg(cv::Rect(x, y, width + 1, height + 1)).clone();
 	}
 	/* end */
 };
