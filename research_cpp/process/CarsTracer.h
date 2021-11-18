@@ -24,5 +24,5 @@ private:
 	/// <param name="orgMagni">拡大・縮小倍率</param>
 	/// <param name="orgMergin">車両の1フレーム後における推定移動幅</param>
 	/// <returns>制限された領域をあらわす矩形</returns>
-	cv::Rect2d ExtractCarsNearestArea(const size_t& maskId, const uint64_t& carId, const double& orgMagni=1.001, const int& orgMergin = 8);
+	cv::Rect2d ExtractCarsNearestArea(const size_t& maskId, const uint64_t& carId, const double& orgMagni = 1.001, const int& orgMergin = 8);
 };

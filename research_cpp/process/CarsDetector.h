@@ -68,21 +68,15 @@ public:
 	void DrawRectangle(const int& areaThr = 30);
 
 	/// <summary>
-	/// 出力画像一括保存
-	/// </summary>
-	/// <param name="pathList">パスの集合, 処理順にパス名を保存しておくこと</param>
-	void WriteOutImgs(std::vector<std::string> pathList);
-
-	/// <summary>
 	/// 出力画像順次表示
 	/// </summary>
 	/// <param name="interval">待機時間[ms]</param>
 	void ShowOutImgs(const int& interval = 1500);
 
-	/// <summary>
-	/// 車両検出画像の取得
-	/// </summary>
-	/// <returns>車両検出画像</returns>
+	const Image& GetSubtracted() const { return mSubtracted; }
+	const Image& GetShadow() const { return mShadow; }
+	const Image& GetReShadow() const { return mReShadow; }
+	const Image& GetCars() const { return mCars; }
 	const Image& GetCarsRect() const { return mCarRects; }
 
 private:

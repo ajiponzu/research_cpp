@@ -93,7 +93,7 @@ namespace ImgProc
 			/* end */
 
 			auto aspect = static_cast<float>(width) / height; //アスペクト比の導出
-			auto tAreaThr = (y - 230) / 12 + areaThr; // 位置に応じた面積の閾値
+			auto tAreaThr = (y - Tk::sDetectTop) / 12 + areaThr; // 位置に応じた面積の閾値
 
 			bool condArea = area < tAreaThr;
 			bool condAspect = aspect > aspectThr;
@@ -206,7 +206,7 @@ namespace ImgProc
 				cv::rectangle(Tk::sResutImg, carRect, cv::Scalar(0, 0, 255), 1); // 矩形を描く
 
 				/* テンプレート抽出等 */
-				templates.insert(std::pair(Tk::sCarsNum, ExtractTemplate(Tk::sFrame, x, y, width, height)));
+				templates.insert(std::pair(Tk::sCarsNum, ExtractTemplate(Tk::sFrame, carRect)));
 				templatePositions.insert(std::pair(Tk::sCarsNum, carRect));
 				/* end */
 
@@ -218,14 +218,6 @@ namespace ImgProc
 			/* end */
 		}
 		/* end */
-	}
-
-	/// <summary>
-	/// 出力画像一括保存
-	/// </summary>
-	/// <param name="pathList">パスの集合, 処理順にパス名を保存しておくこと</param>
-	void CarsDetector::WriteOutImgs(std::vector<std::string> pathList)
-	{
 	}
 
 	/// <summary>

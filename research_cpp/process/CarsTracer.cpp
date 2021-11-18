@@ -10,7 +10,7 @@ namespace ImgProc
 		if (Tk::sFrameCount == 1)
 			return;
 
-		double maxValue = 0.0, magni = 1.0015;
+		double maxValue = 0.0, magni = 1.0009;
 		int mergin = 6;
 		cv::Point maxLoc;
 		cv::Rect2d nearRect;
@@ -28,9 +28,10 @@ namespace ImgProc
 				auto& carImg = templates[carId];
 				auto& carPos = templatePositions[carId];
 				nearRect = ExtractCarsNearestArea(idx, carId, magni, mergin);
-				mTemp = GetImgSlice(Tk::sFrame, nearRect.x, nearRect.y, nearRect.width, nearRect.height);
+				mTemp = GetImgSlice(Tk::sFrame, nearRect);
 				cv::matchTemplate(mTemp, carImg, mDataTemp, cv::TM_CCOEFF_NORMED);
 				cv::minMaxLoc(mDataTemp, nullptr, &maxValue, nullptr, &maxLoc);
+
 				if (maxValue < 0.45)
 				{
 					mDeleteLists.push_back(std::pair(idx, carId));
@@ -38,10 +39,24 @@ namespace ImgProc
 				}
 
 				//if ((carPos.x != (nearRect.x + maxLoc.x)) && (carPos.y != (nearRect.y + maxLoc.y)))
-				//	carImg = ExtractTemplate(mTemp, maxLoc.x, maxLoc.y, carPos.width, carPos.height);
+				//	carImg = ExtractTemplate(mTemp, maxLoc.x, maxLoc.y, static_cast<int>(carPos.width), static_cast<int>(carPos.height));
 				carPos.x = nearRect.x + maxLoc.x;
 				carPos.y = nearRect.y + maxLoc.y;
 				cv::rectangle(Tk::sResutImg, carPos, cv::Scalar(255, 0, 0), 1);
+
+				switch (Tk::sRoadCarsDirections[idx])
+				{
+				case Tk::CARS_APPROACH_ROAD:
+					if (carPos.y > Tk::sDetectBottom)
+						mDeleteLists.push_back(std::pair(idx, carId));
+					break;
+				case Tk::CARS_LEAVE_ROAD:
+					if (carPos.y < Tk::sDetectTop)
+						mDeleteLists.push_back(std::pair(idx, carId));
+					break;
+				default:
+					break;
+				}
 			}
 		}
 
@@ -67,19 +82,15 @@ namespace ImgProc
 	{
 		auto magni = orgMagni;
 		double mergin = orgMergin;
-		double moveOffset = 5.0;
 		auto& rect = Tk::sTemplatePositionsList[maskId][carId];
 		auto& carTemplate = Tk::sTemplatesList[maskId][carId];
 
 		/* 車両が遠ざかっていくとき */
 		if (Tk::sRoadCarsDirections[maskId] == Tk::CARS_LEAVE_ROAD)
-		{
 			magni = 1 / magni; // 縮小するために逆数にする
-			moveOffset *= -1.0;
-		}
 		/* end */
 
-		/* テンプレートの拡大・縮小処理と, 座標矩形の縦横の変更 */ 
+		/* テンプレートの拡大・縮小処理と, 座標矩形の縦横の変更 */
 		rect.width *= magni;
 		rect.height *= magni;
 		cv::resize(carTemplate, carTemplate, cv::Size(), magni, magni, cv::INTER_NEAREST_EXACT);
@@ -88,7 +99,7 @@ namespace ImgProc
 		/* テンプレートマッチングの対象領域の限定 */
 		/* 原点の設定 */
 		auto findRectX = std::round(std::clamp((rect.x - mergin), 0.0, static_cast<double>(Tk::sVideoWidth)));
-		auto findRectY = std::round(std::clamp((rect.y - mergin + moveOffset), 0.0, static_cast<double>(Tk::sVideoHeight)));
+		auto findRectY = std::round(std::clamp((rect.y - mergin), 0.0, static_cast<double>(Tk::sVideoHeight)));
 		/* end */
 
 		/* 移動後に予想される到達地点の最大値を算出 */

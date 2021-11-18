@@ -142,6 +142,33 @@ namespace ImgProc
 	Image GetImgSlice(Image& inputImg, const int& x, const int& y, const int& width, const int& height);
 
 	/// <summary>
+	///	画像の部分参照
+	/// </summary>
+	/// <param name="inputImg">参照元画像</param>
+	/// <param name="x">参照範囲矩形の左上座標のx成分</param>
+	/// <param name="y">参照範囲矩形の左上座標のy成分</param>
+	/// <param name="width">参照範囲矩形の横幅</param>
+	/// <param name="height">参照範囲矩形の縦幅</param>
+	/// <returns>参照範囲の部分画像</returns>
+	Image GetImgSlice(Image& inputImg, const double& x, const double& y, const double& width, const double& height);
+
+	/// <summary>
+	///	画像の部分参照
+	/// </summary>
+	/// <param name="inputImg">参照元画像</param>
+	/// <param name="x">参照範囲矩形</param>
+	/// <returns>参照範囲の部分画像(</returns>
+	Image GetImgSlice(Image& inputImg, const cv::Rect& rect);
+
+	/// <summary>
+	///	画像の部分参照
+	/// </summary>
+	/// <param name="inputImg">参照元画像</param>
+	/// <param name="x">参照範囲矩形</param>
+	/// <returns>参照範囲の部分画像(</returns>
+	Image GetImgSlice(Image& inputImg, const cv::Rect2d& rect);
+
+	/// <summary>
 	/// テンプレート抽出
 	/// </summary>
 	/// <param name="inputImg">抽出元画像</param>
@@ -151,4 +178,31 @@ namespace ImgProc
 	/// <param name="height">抽出範囲矩形の縦幅</param>
 	/// <returns>指定範囲の抽出画像(クローン後)</returns>
 	Image ExtractTemplate(Image& inputImg, const int& x, const int& y, const int& width, const int& height);
+
+	/// <summary>
+	/// テンプレート抽出
+	/// </summary>
+	/// <param name="inputImg">抽出元画像</param>
+	/// <param name="x">抽出範囲矩形の左上座標のx成分</param>
+	/// <param name="y">抽出範囲矩形の左上座標のy成分</param>
+	/// <param name="width">抽出範囲矩形の横幅</param>
+	/// <param name="height">抽出範囲矩形の縦幅</param>
+	/// <returns>指定範囲の抽出画像(クローン後)</returns>
+	Image ExtractTemplate(Image& inputImg, const double& x, const double& y, const double& width, const double& height);
+
+	/// <summary>
+	/// テンプレート抽出
+	/// </summary>
+	/// <param name="inputImg">抽出元画像</param>
+	/// <param name="rect">抽出範囲矩形</param>
+	/// <returns>指定範囲の抽出画像(クローン後)</returns>
+	Image ExtractTemplate(Image& inputImg, const cv::Rect& rect);
+
+	/// <summary>
+	/// テンプレート抽出
+	/// </summary>
+	/// <param name="inputImg">抽出元画像</param>
+	/// <param name="rect">抽出範囲矩形</param>
+	/// <returns>指定範囲の抽出画像(クローン後)</returns>
+	Image ExtractTemplate(Image& inputImg, const cv::Rect2d& rect);
 };

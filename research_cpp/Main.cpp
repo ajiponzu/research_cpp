@@ -7,8 +7,8 @@ using namespace ImgProc;
 constexpr static auto gStartCount = 1;
 //constexpr static auto gEndCount = 1;
 //constexpr static auto gEndCount = 60;
-constexpr static auto gEndCount = 195;
-//constexpr static auto gEndCount = 10000;
+//constexpr static auto gEndCount = 195;
+constexpr static auto gEndCount = 10000;
 /* end */
 
 /// <summary>
@@ -42,7 +42,7 @@ int main()
 	/* 検出範囲の設定 */
 	ImgProcToolkit::SetDetectTop(235);
 	ImgProcToolkit::SetDetectBottom(535);
-	ImgProcToolkit::SetDetectMergin(5);
+	ImgProcToolkit::SetDetectMergin(2);
 	/* end */
 
 	//ImgProcToolkit::ShowResourceImgs(1500); // リソース表示
@@ -93,7 +93,7 @@ int main()
 		detector.ReExtractShadow(5, 1.6f);
 		detector.ExtractCars();
 		/* end */
-	
+
 		/* 車両追跡 */
 		tracer.FindCarsTemplates();
 		/* end */
@@ -104,6 +104,10 @@ int main()
 
 		//detector.ShowOutImgs(1000); // 出力結果表示
 		/* end */
+
+		//Image temp;
+		//cv::cvtColor(detector.GetCars(), temp, cv::COLOR_GRAY2BGR);
+		//videoWriter << temp;
 
 		videoWriter << result; // ビデオ書き出し
 		std::cout << count << std::endl; // カウントアップ
