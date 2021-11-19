@@ -189,7 +189,12 @@ namespace ImgProc
 					for (const auto& elem : Tk::sBoundaryCarIdLists[idx])
 					{
 						const auto& carPos = Tk::sTemplatePositionsList[idx][elem];
-						continueFlag = (std::abs(carRect.x - carPos.x) < 4) && (std::abs(carRect.y - carPos.y) < 4);
+						auto diffPosX = carRect.x - carPos.x;
+						auto diffPosY = carRect.y - carPos.y;
+						auto diffWid = carRect.width - carPos.width;
+						auto diffHigh = carRect.height - carPos.height;
+						continueFlag = (std::abs(diffPosX) < 4) && (std::abs(diffPosY) < 4)
+							|| (std::abs(diffPosX + diffWid) < 4) && (std::abs(diffPosY + diffHigh) < 4);
 						if (continueFlag)
 							break;
 					}
