@@ -7,8 +7,8 @@ using namespace ImgProc;
 constexpr static auto gStartCount = 1;
 //constexpr static auto gEndCount = 1;
 //constexpr static auto gEndCount = 60;
-//constexpr static auto gEndCount = 195;
-constexpr static auto gEndCount = 10000;
+constexpr static auto gEndCount = 195;
+//constexpr static auto gEndCount = 10000;
 /* end */
 
 /// <summary>

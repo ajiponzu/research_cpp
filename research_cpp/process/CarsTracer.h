@@ -12,6 +12,9 @@ private:
 public:
 	CarsTracer() {}
 
+	/// <summary>
+	/// 車両追跡
+	/// </summary>
 	void FindCarsTemplates();
 private:
 	CarsTracer(const CarsTracer& other) = delete;

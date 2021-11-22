@@ -4,6 +4,9 @@ using Tk = ImgProc::ImgProcToolkit;
 
 namespace ImgProc
 {
+	/// <summary>
+	/// 車両追跡
+	/// </summary>
 	void CarsTracer::FindCarsTemplates()
 	{
 		Tk::sFrame.copyTo(Tk::sResutImg);
@@ -14,17 +17,20 @@ namespace ImgProc
 		int mergin = 6;
 		cv::Point maxLoc;
 		cv::Rect2d nearRect;
+		/* 各道路ごとに処理 */
 		for (size_t idx = 0; idx < Tk::sRoadMasksNum; idx++)
 		{
 			cv::bitwise_and(Tk::sFrame, Tk::sRoadMasks[idx], mTempFrame);
 			auto& templates = Tk::sTemplatesList[idx];
 			auto& templatePositions = Tk::sTemplatePositionsList[idx];
 
+			/* 検出済み車両ごとに処理 */
 			for (auto carId = Tk::sFrontCarsId; carId < Tk::sCarsNum; carId++)
 			{
 				if (templates.find(carId) == templates.end())
 					continue;
 
+				/* テンプレートマッチング */
 				auto& carImg = templates[carId];
 				auto& carPos = templatePositions[carId];
 				nearRect = ExtractCarsNearestArea(idx, carId, magni, mergin);
@@ -37,13 +43,18 @@ namespace ImgProc
 					mDeleteLists.push_back(std::pair(idx, carId));
 					continue;
 				}
+				/* end */
 
 				//if ((carPos.x != (nearRect.x + maxLoc.x)) && (carPos.y != (nearRect.y + maxLoc.y)))
 				//	carImg = ExtractTemplate(mTemp, maxLoc.x, maxLoc.y, static_cast<int>(carPos.width), static_cast<int>(carPos.height));
+
+				/* 車両位置更新, 矩形描画 */
 				carPos.x = nearRect.x + maxLoc.x;
 				carPos.y = nearRect.y + maxLoc.y;
 				cv::rectangle(Tk::sResutImg, carPos, cv::Scalar(255, 0, 0), 1);
+				/* end */
 
+				/* 追跡終了位置かどうかの判別 */
 				switch (Tk::sRoadCarsDirections[idx])
 				{
 				case Tk::CARS_APPROACH_ROAD:
@@ -57,9 +68,13 @@ namespace ImgProc
 				default:
 					break;
 				}
+				/* end */
 			}
+			/* end */
 		}
+		/* end */
 
+		/* 追跡終了車両をデータから除外 */
 		for (const auto& [roadIdx, carId] : mDeleteLists)
 		{
 			Tk::sTemplatesList[roadIdx].erase(carId);
@@ -68,6 +83,7 @@ namespace ImgProc
 				Tk::sFrontCarsId++;
 		}
 		mDeleteLists.clear();
+		/* end */
 	}
 
 	/// <summary>
