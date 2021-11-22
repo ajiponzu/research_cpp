@@ -88,4 +88,20 @@ public:
 
 private:
 	CarsDetector(const CarsDetector& other) = delete;
+	
+	/// <summary>
+	/// 横方向の負エッジをy方向微分によって求め, 切りだすy座標を処理によって選択
+	/// </summary>
+	/// <param name="inputImg">入力テンプレート画像</param>
+	/// <returns>切りだすy座</returns>
+	int ExtractAreaByEdgeH(Image& inputImg);
+
+	std::pair<int, int> ExtractAreaByEdgeV(Image& inputImg);
+
+	/// <summary>
+	/// 頻度値データを, 一行n列の1チャンネル(グレースケール)画像として考え, 極大値をもつインデックスを保存
+	/// </summary>
+	/// <param name="inputData">入力データ, 必ずcolsをn, rowを1にしておく</param>
+	/// <param name="retData">取得したいデータを格納するコンテナの参照</param>
+	void SplitLineByEdge(Image& inputData, std::vector<int>& retData);
 };

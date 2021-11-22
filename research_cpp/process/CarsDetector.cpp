@@ -1,5 +1,7 @@
 #include "CarsDetector.h"
 
+#include <opencv2/core/core_c.h>
+
 using Tk = ImgProc::ImgProcToolkit;
 
 namespace ImgProc
@@ -207,6 +209,9 @@ namespace ImgProc
 				/* end */
 				/* end */
 
+				mTemp = GetImgSlice(Tk::sFrame, carRect);
+				auto cutY = ExtractAreaByEdgeH(mTemp);
+
 				cv::rectangle(mCarRects, carRect, cv::Scalar(0, 0, 255), 1); // 矩形を描く
 				cv::rectangle(Tk::sResutImg, carRect, cv::Scalar(0, 0, 255), 1); // 矩形を描く
 
@@ -245,5 +250,100 @@ namespace ImgProc
 
 		cv::imshow("detector", mCarRects);
 		cv::waitKey(interval * 10);
+	}
+
+
+	/// <summary>
+	/// 横方向の負エッジをy方向微分によって求め, 切りだすy座標を処理によって選択
+	/// </summary>
+	/// <param name="inputImg">入力テンプレート画像</param>
+	/// <returns>切りだすy座</returns>
+	int CarsDetector::ExtractAreaByEdgeH(Image& inputImg)
+	{
+		Image gray, temp, sumElems;
+
+		/* エッジ抽出部. cv関数では, 場合によってsrc=dstのように引数を与えると動作しないことがあるので注意 */
+		cv::cvtColor(inputImg, gray, cv::COLOR_BGR2GRAY);
+		cv::bilateralFilter(gray, temp, 15, 50, 20); // src, dstともにgrayを与えると動作しなかった
+		cv::Sobel(temp, gray, CV_64F, 0, 1);
+		/* end */
+
+		/* 負のエッジのみ抽出 */
+		auto whereMask = gray > 0; // 0より大きい要素の添え字を残すマスクを作成
+		gray.setTo(cv::Scalar(0), whereMask); // マスク部分の添え字のみ要素を0にする
+		cv::convertScaleAbs(gray, temp); // 各要素の絶対値をとって8bitに変換するらしい
+		/* end */
+
+		/* 二値化とエッジの頻度計算 */
+		cv::threshold(temp, gray, 0, 1, cv::THRESH_BINARY | cv::THRESH_OTSU); // 二値化
+		cv::reduce(gray, sumElems, 1, CV_REDUCE_SUM, CV_32F); // ビット深度をCV_8Uにすると何故か動作しない, 公式ドキュメントでは全部CV_32Fを指定
+		sumElems = sumElems.reshape(1, 1); // 各y(行)について値を計算し収縮すると, n行1列になる. 1行n列の方が配列っぽいので直す. チャンネルは1のままにする
+		sumElems.convertTo(sumElems, CV_8U); // で, CV_32Fだと二値化が動かないので, CV_8Uに戻す
+		/* end */
+
+		/* 頻度の二値化マスクと積算し, 有力なy座標のみ残す */
+		cv::threshold(sumElems, temp, 0, 1, cv::THRESH_BINARY | cv::THRESH_OTSU);
+		sumElems = temp.mul(sumElems);
+		/* end */
+
+		std::vector<int> yFreqs;
+		SplitLineByEdge(sumElems, yFreqs);
+
+		return *yFreqs.rbegin(); // 縦方向は最下部のエッジがわかればよいので, 候補の一番最後の添え字が最下部のy座標
+	}
+
+	/// <summary>
+	/// 縦方向の正負両エッジをそれぞれx方向微分によって求め, 切りだすx座標二つを処理によって選択
+	/// </summary>
+	/// <param name="inputImg">入力テンプレート画像</param>
+	/// <returns>切りだすx座標二つを一組にして返す</returns>
+	std::pair<int, int> CarsDetector::ExtractAreaByEdgeV(Image& inputImg)
+	{
+		return std::pair<int, int>();
+	}
+
+	/// <summary>
+	/// 頻度値データを, 一行n列の1チャンネル(グレースケール)画像として考え, 極大値をもつインデックスを保存
+	/// </summary>
+	/// <param name="inputData">入力データ, 必ずcolsをn, rowを1にしておく</param>
+	/// <param name="retData">取得したいデータを格納するコンテナの参照</param>
+	void CarsDetector::SplitLineByEdge(Image& inputData, std::vector<int>& retData)
+	{
+		int nearMax = -1, nearMaxIdx = -1; // あえて自然数にとっての最小値?をいれておく
+		bool flag = false; // 0から単調増加するとtrue, 0以外の値から0に単調減少するとfalseになる
+
+		const auto& ptrInputData = inputData.data;
+		for (int idx = 0; idx < inputData.cols; idx++)
+		{
+			const auto& elem = ptrInputData[idx];
+			/* 登山中 */
+			if (flag)
+			{
+				/* 0を平野とすると, 値の山が終わったとき */
+				if (elem <= 0) 
+				{
+					retData.push_back(nearMaxIdx); // 極大値をもつ添え字を保存
+					flag = false; 
+					nearMax = -1; // 最大値をまたみつけるために, 最小値でリセット
+				}
+				/* end */
+				/* 山を探索中, より大きな峰をみつけた */
+				else if (elem > nearMax)
+				{
+					nearMaxIdx = idx; // 極大値を与える添え字を更新
+					nearMax = elem; // 極大値の更新
+				}
+				/* end */
+			}
+			/* end */
+			/* 平野を散歩中に山の麓をみつけた */
+			else if (elem > 0)
+			{
+				flag = true;
+				nearMaxIdx = idx;
+				nearMax = elem;
+			}
+			/* end */
+		}
 	}
 };
