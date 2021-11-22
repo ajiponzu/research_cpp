@@ -112,6 +112,11 @@ int main()
 		videoWriter << result; // ビデオ書き出し
 		std::cout << count << std::endl; // カウントアップ
 
+		/* 結果表示 */
+		cv::imshow("result", result);
+		cv::waitKey(1);
+		/* end */
+
 		/* 計測時間表示 */
 		auto endTime = cv::getTickCount();
 		auto fps = (endTime - startTime) / tick;
