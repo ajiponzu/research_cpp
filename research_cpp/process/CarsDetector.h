@@ -88,7 +88,7 @@ public:
 
 private:
 	CarsDetector(const CarsDetector& other) = delete;
-	
+
 	/// <summary>
 	/// 横方向の負エッジをy方向微分によって求め, 切りだすy座標を処理によって選択
 	/// </summary>

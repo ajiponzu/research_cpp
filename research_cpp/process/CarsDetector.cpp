@@ -212,7 +212,6 @@ namespace ImgProc
 				/* テンプレート再抽出 */
 				{
 					mTemp = GetImgSlice(Tk::sFrame, carRect);
-					cv::imshow("c", mTemp);
 					auto cutY = ExtractAreaByEdgeH(mTemp);
 					auto cutPairX = ExtractAreaByEdgeV(mTemp);
 
@@ -230,15 +229,6 @@ namespace ImgProc
 					carRect.width = wid;
 					carRect.height = cutY + 1;
 					mTemp = ExtractTemplate(Tk::sFrame, carRect);
-
-					//Image output;
-					//output = mTemp.clone();
-					//cv::line(output, cv::Point(cutPairX.first, 0), cv::Point(cutPairX.first, carRect.height), cv::Scalar(255, 0, 0));
-					//cv::line(output, cv::Point(cutPairX.second, 0), cv::Point(cutPairX.second, carRect.height), cv::Scalar(255, 255, 0));
-					//cv::line(output, cv::Point(0, cutY), cv::Point(carRect.width, cutY), cv::Scalar(0, 0, 255));
-					//cv::imshow("", output);
-					//cv::waitKey(3000);
-					//cv::destroyAllWindows();
 				}
 				/* end */
 
@@ -281,7 +271,6 @@ namespace ImgProc
 		cv::imshow("detector", mCarRects);
 		cv::waitKey(interval * 10);
 	}
-
 
 	/// <summary>
 	/// 横方向の負エッジをy方向微分によって求め, 切りだすy座標を処理によって選択
@@ -378,26 +367,6 @@ namespace ImgProc
 		SplitLineByEdge(sumElems[0], xFreqs[0]);
 		SplitLineByEdge(sumElems[1], xFreqs[1]);
 
-		//auto output = inputImg.clone();
-		//cv::Point a(0, 0), b(0, inputImg.rows);
-		//for (const auto& freq : xFreqs[0])
-		//{
-		//	a.x = freq;
-		//	b.x = freq;
-		//	cv::line(output, a, b, cv::Scalar(0, 255, 0));
-		//}
-		//cv::line(output, a, b, cv::Scalar(255, 255, 0));
-
-		//for (const auto& freq : xFreqs[1])
-		//{
-		//	a.x = freq;
-		//	b.x = freq;
-		//	cv::line(output, a, b, cv::Scalar(0, 0, 255));
-		//}
-		//cv::line(output, a, b, cv::Scalar(255, 0, 0));
-
-		//cv::imshow("d", output);
-
 		/* 左端・右端チェック */
 		auto ret = std::make_pair(*xFreqs[1].begin(), *xFreqs[0].rbegin());
 		/* 正エッジの左端と負エッジの右端の大小チェックを行い, 逆なら適切な値を再代入する */
@@ -430,10 +399,10 @@ namespace ImgProc
 			if (flag)
 			{
 				/* 0を平野とすると, 値の山が終わったとき */
-				if (elem <= 0) 
+				if (elem <= 0)
 				{
 					retData.push_back(nearMaxIdx); // 極大値をもつ添え字を保存
-					flag = false; 
+					flag = false;
 					nearMax = -1; // 最大値をまたみつけるために, 最小値でリセット
 				}
 				/* end */
