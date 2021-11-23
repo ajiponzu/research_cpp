@@ -209,14 +209,34 @@ namespace ImgProc
 				/* end */
 				/* end */
 
-				mTemp = GetImgSlice(Tk::sFrame, carRect);
-				auto cutY = ExtractAreaByEdgeH(mTemp);
+				/* テンプレート再抽出 */
+				{
+					mTemp = GetImgSlice(Tk::sFrame, carRect);
+					cv::imshow("c", mTemp);
+					auto cutY = ExtractAreaByEdgeH(mTemp);
+					auto cutPairX = ExtractAreaByEdgeV(mTemp);
+
+					//Image output;
+					//output = mTemp.clone();
+					//cv::line(output, cv::Point(cutPairX.first, 0), cv::Point(cutPairX.first, carRect.height), cv::Scalar(255, 0, 0));
+					//cv::line(output, cv::Point(cutPairX.second, 0), cv::Point(cutPairX.second, carRect.height), cv::Scalar(255, 255, 0));
+					//cv::line(output, cv::Point(0, cutY), cv::Point(carRect.width, cutY), cv::Scalar(0, 0, 255));
+					//cv::imshow("", output);
+					//cv::waitKey(3000);
+					//cv::destroyAllWindows();
+
+					carRect.x += cutPairX.first;
+					carRect.width = cutPairX.second - cutPairX.first + 1;
+					carRect.height = cutY;
+					mTemp = ExtractTemplate(Tk::sFrame, carRect);
+				}
+				/* end */
 
 				cv::rectangle(mCarRects, carRect, cv::Scalar(0, 0, 255), 1); // 矩形を描く
 				cv::rectangle(Tk::sResutImg, carRect, cv::Scalar(0, 0, 255), 1); // 矩形を描く
 
 				/* テンプレート抽出等 */
-				templates.insert(std::pair(Tk::sCarsNum, ExtractTemplate(Tk::sFrame, carRect)));
+				templates.insert(std::pair(Tk::sCarsNum, mTemp));
 				templatePositions.insert(std::pair(Tk::sCarsNum, carRect));
 				/* end */
 
@@ -263,9 +283,8 @@ namespace ImgProc
 		Image gray, temp, sumElems;
 
 		/* エッジ抽出部. cv関数では, 場合によってsrc=dstのように引数を与えると動作しないことがあるので注意 */
-		cv::cvtColor(inputImg, gray, cv::COLOR_BGR2GRAY);
-		cv::bilateralFilter(gray, temp, 15, 50, 20); // src, dstともにgrayを与えると動作しなかった
-		cv::Sobel(temp, gray, CV_64F, 0, 1);
+		cv::cvtColor(inputImg, temp, cv::COLOR_BGR2GRAY);
+		cv::Sobel(temp, gray, CV_32F, 0, 1);
 		/* end */
 
 		/* 負のエッジのみ抽出 */
@@ -294,12 +313,93 @@ namespace ImgProc
 
 	/// <summary>
 	/// 縦方向の正負両エッジをそれぞれx方向微分によって求め, 切りだすx座標二つを処理によって選択
+	/// 正エッジの左端, 負エッジの右端が出力されるはず
+	/// 逆の場合, 負エッジの左端, 正エッジの右端が出力される
 	/// </summary>
 	/// <param name="inputImg">入力テンプレート画像</param>
 	/// <returns>切りだすx座標二つを一組にして返す</returns>
 	std::pair<int, int> CarsDetector::ExtractAreaByEdgeV(Image& inputImg)
 	{
-		return std::pair<int, int>();
+		Image gray[2], temp[2], sumElems[2];
+		/* エッジ抽出部. cv関数では, 場合によってsrc=dstのように引数を与えると動作しないことがあるので注意 */
+		cv::cvtColor(inputImg, temp[0], cv::COLOR_BGR2GRAY);
+		cv::Sobel(temp[0], gray[0], CV_32F, 1, 0);
+		gray[0].copyTo(gray[1]);
+		/* end */
+
+		/* 正負のエッジをそれぞれ抽出 */
+		/* 負のエッジ */
+		auto whereMask = gray[0] > 0; // 0より大きい要素の添え字を残すマスクを作成
+		gray[0].setTo(cv::Scalar(0), whereMask); // マスク部分の添え字のみ要素を0にする
+		cv::convertScaleAbs(gray[0], temp[0]); // 各要素の絶対値をとって8bitに変換するらしい
+		/* end */
+		/* 正のエッジ */
+		whereMask = gray[1] < 0;
+		gray[1].setTo(cv::Scalar(0), whereMask);
+		gray[1].convertTo(temp[1], CV_8U);
+		/* end */
+		/* end */
+
+		/* 二値化とエッジの頻度計算 */
+		/* 負エッジについて */
+		cv::threshold(temp[0], gray[0], 0, 1, cv::THRESH_BINARY | cv::THRESH_OTSU); // 二値化
+		cv::reduce(gray[0], sumElems[0], 0, CV_REDUCE_SUM, CV_32F); // ビット深度をCV_8Uにすると何故か動作しない, 公式ドキュメントでは全部CV_32Fを指定
+		sumElems[0].convertTo(sumElems[0], CV_8U); // で, CV_32Fだと二値化が動かないので, CV_8Uに戻す
+		/* end */
+		/* 正エッジについて */
+		cv::threshold(temp[1], gray[1], 0, 1, cv::THRESH_BINARY | cv::THRESH_OTSU); // 二値化
+		cv::reduce(gray[1], sumElems[1], 0, CV_REDUCE_SUM, CV_32F); // ビット深度をCV_8Uにすると何故か動作しない, 公式ドキュメントでは全部CV_32Fを指定
+		sumElems[1].convertTo(sumElems[1], CV_8U); // で, CV_32Fだと二値化が動かないので, CV_8Uに戻す
+		/* end */
+		/* end */
+
+		/* 頻度の二値化マスクと積算し, 有力なx座標のみ残す */
+		/* 負エッジについて */
+		cv::threshold(sumElems[0], temp[0], 0, 1, cv::THRESH_BINARY | cv::THRESH_OTSU);
+		sumElems[0] = temp[0].mul(sumElems[0]);
+		/* end */
+		/* 正エッジについて */
+		cv::threshold(sumElems[1], temp[1], 0, 1, cv::THRESH_BINARY | cv::THRESH_OTSU);
+		sumElems[1] = temp[1].mul(sumElems[1]);
+		/* end */
+		/* end */
+
+		std::vector<int> xFreqs[2];
+		SplitLineByEdge(sumElems[0], xFreqs[0]);
+		SplitLineByEdge(sumElems[1], xFreqs[1]);
+
+		//auto output = inputImg.clone();
+		//cv::Point a(0, 0), b(0, inputImg.rows);
+		//for (const auto& freq : xFreqs[0])
+		//{
+		//	a.x = freq;
+		//	b.x = freq;
+		//	cv::line(output, a, b, cv::Scalar(0, 255, 0));
+		//}
+		//cv::line(output, a, b, cv::Scalar(255, 255, 0));
+
+		//for (const auto& freq : xFreqs[1])
+		//{
+		//	a.x = freq;
+		//	b.x = freq;
+		//	cv::line(output, a, b, cv::Scalar(0, 0, 255));
+		//}
+		//cv::line(output, a, b, cv::Scalar(255, 0, 0));
+
+		//cv::imshow("d", output);
+
+		/* 左端・右端チェック */
+		auto ret = std::make_pair(*xFreqs[1].begin(), *xFreqs[0].rbegin());
+		/* 正エッジの左端と負エッジの右端の大小チェックを行い, 逆なら適切な値を再代入する */
+		if (ret.first > ret.second)
+		{
+			ret.first = *xFreqs[0].begin();
+			ret.second = *xFreqs[1].rbegin();
+		}
+		/* end */
+		/* end */
+
+		return ret;
 	}
 
 	/// <summary>

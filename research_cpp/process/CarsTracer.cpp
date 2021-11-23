@@ -46,6 +46,7 @@ namespace ImgProc
 				/* end */
 
 				//if ((carPos.x != (nearRect.x + maxLoc.x)) && (carPos.y != (nearRect.y + maxLoc.y)))
+				//if (maxValue > 0.90)
 				//	carImg = ExtractTemplate(mTemp, maxLoc.x, maxLoc.y, static_cast<int>(carPos.width), static_cast<int>(carPos.height));
 
 				/* 車両位置更新, 矩形描画 */
