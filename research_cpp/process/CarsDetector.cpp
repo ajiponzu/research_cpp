@@ -216,6 +216,21 @@ namespace ImgProc
 					auto cutY = ExtractAreaByEdgeH(mTemp);
 					auto cutPairX = ExtractAreaByEdgeV(mTemp);
 
+					if (cutY <= (carRect.height * 0.35))
+						cutY = carRect.height - 1;
+
+					auto wid = cutPairX.second - cutPairX.first + 1;
+					if (wid < (carRect.width * 0.35))
+					{
+						cutPairX.first = 0;
+						wid = carRect.width;
+					}
+
+					carRect.x += cutPairX.first;
+					carRect.width = wid;
+					carRect.height = cutY + 1;
+					mTemp = ExtractTemplate(Tk::sFrame, carRect);
+
 					//Image output;
 					//output = mTemp.clone();
 					//cv::line(output, cv::Point(cutPairX.first, 0), cv::Point(cutPairX.first, carRect.height), cv::Scalar(255, 0, 0));
@@ -224,11 +239,6 @@ namespace ImgProc
 					//cv::imshow("", output);
 					//cv::waitKey(3000);
 					//cv::destroyAllWindows();
-
-					carRect.x += cutPairX.first;
-					carRect.width = cutPairX.second - cutPairX.first + 1;
-					carRect.height = cutY;
-					mTemp = ExtractTemplate(Tk::sFrame, carRect);
 				}
 				/* end */
 

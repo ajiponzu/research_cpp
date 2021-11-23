@@ -13,7 +13,8 @@ namespace ImgProc
 		if (Tk::sFrameCount == 1)
 			return;
 
-		double maxValue = 0.0, magni = 1.0009;
+		//double maxValue = 0.0, magni = 1.0009;
+		double maxValue = 0.0, magni = 1.0015;
 		int mergin = 6;
 		cv::Point maxLoc;
 		cv::Rect2d nearRect;
@@ -38,7 +39,7 @@ namespace ImgProc
 				cv::matchTemplate(mTemp, carImg, mDataTemp, cv::TM_CCOEFF_NORMED);
 				cv::minMaxLoc(mDataTemp, nullptr, &maxValue, nullptr, &maxLoc);
 
-				if (maxValue < 0.45)
+				if (maxValue < 0.35)
 				{
 					mDeleteLists.push_back(std::pair(idx, carId));
 					continue;

@@ -22,7 +22,7 @@ private:
 	Image mMorphKernel; // モルフォロジで使用するカーネル
 	/* end */
 
-	int mKernelCount = 2; // カーネル掛けの回数
+	int mKernelCount = 1; // カーネル掛けの回数
 
 public:
 	CarsDetector()
@@ -38,9 +38,9 @@ public:
 		/* モルフォロジカーネルの初期化 */
 		int kernelList[9] =
 		{
-			0, 1, 0,
 			1, 1, 1,
-			0, 1, 0
+			1, 1, 1,
+			1, 1, 1
 		};
 		mMorphKernel = Image(3, 3, CV_8U, kernelList);
 		/* end */
