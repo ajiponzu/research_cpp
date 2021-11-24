@@ -60,6 +60,7 @@ namespace ImgProc
 		const static std::string sVideoPathList[3];
 		const static std::string sOutputPathList[3];
 		const static std::string sBackImgPathList[3];
+		const static std::string sTemplatesPathList[3];
 		const static std::string sRoadMaskPath;
 		const static std::string sRoadMasksBasePath;
 		// sRoadMasksのsize数

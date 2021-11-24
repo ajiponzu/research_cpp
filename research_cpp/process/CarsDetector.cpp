@@ -201,10 +201,10 @@ namespace ImgProc
 							break;
 					}
 
-					if (!continueFlag)
-						Tk::sBoundaryCarIdLists[idx].insert(Tk::sCarsNum); // 1フレーム目は, 車両として検出しても, ここでIDを保存しないものもあることに注意
-					else
+					if (continueFlag)
 						continue;
+
+					Tk::sBoundaryCarIdLists[idx].insert(Tk::sCarsNum); // 1フレーム目は, 車両として検出しても, ここでIDを保存しないものもあることに注意
 				}
 				/* end */
 				/* end */
@@ -306,6 +306,18 @@ namespace ImgProc
 
 		std::vector<int> yFreqs;
 		SplitLineByEdge(sumElems, yFreqs);
+
+		Image output;
+		cv::Point a(0, 0), b(inputImg.cols, 0);
+		output = inputImg.clone();
+		for (const auto& elem : yFreqs)
+		{
+			a.y = elem;
+			b.y = elem;
+			cv::line(output, a, b, cv::Scalar(0, 0, 255));
+		}
+		const std::string path = Tk::sTemplatesPathList[Tk::sVideoType] + "template_" + std::to_string(Tk::sCarsNum) + ".png";
+		cv::imwrite(path, output);
 
 		return *yFreqs.rbegin(); // 縦方向は最下部のエッジがわかればよいので, 候補の一番最後の添え字が最下部のy座標
 	}
