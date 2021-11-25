@@ -4,13 +4,13 @@
 using namespace ImgProc;
 
 /* ループ回数決定 */
-//constexpr static auto gStartCount = 1;
-constexpr static auto gStartCount = 338;
+constexpr static auto gStartCount = 1;
+//constexpr static auto gStartCount = 338;
 
 //constexpr static auto gEndCount = 1;
 //constexpr static auto gEndCount = 60;
-constexpr static auto gEndCount = 345;
-//constexpr static auto gEndCount = 10000;
+//constexpr static auto gEndCount = 345;
+constexpr static auto gEndCount = 10000;
 /* end */
 
 /// <summary>
@@ -115,7 +115,7 @@ int main()
 		videoWriter << result; // ビデオ書き出し
 		std::cout << count << std::endl; // カウントアップ
 		std::string path = "./frame_" + std::to_string(count) + ".png";
-		cv::imwrite(path, result);
+		//cv::imwrite(path, result);
 
 		/* 結果表示 */
 		cv::imshow("result", result);

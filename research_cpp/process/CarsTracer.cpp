@@ -24,6 +24,7 @@ namespace ImgProc
 			cv::bitwise_and(Tk::sFrame, Tk::sRoadMasks[idx], mTempFrame);
 			auto& templates = Tk::sTemplatesList[idx];
 			auto& templatePositions = Tk::sTemplatePositionsList[idx];
+			auto& boundaryCarIdList = Tk::sBoundaryCarIdLists[idx];
 
 			/* 検出済み車両ごとに処理 */
 			for (auto carId = Tk::sFrontCarsId; carId < Tk::sCarsNum; carId++)
@@ -60,12 +61,28 @@ namespace ImgProc
 				switch (Tk::sRoadCarsDirections[idx])
 				{
 				case Tk::CARS_APPROACH_ROAD:
-					if (carPos.y + carPos.height > Tk::sDetectBottom)
+					if ((carPos.y + carPos.height) > Tk::sDetectBottom)
 						mDeleteLists.push_back(std::pair(idx, carId));
 					break;
 				case Tk::CARS_LEAVE_ROAD:
 					if (carPos.y < Tk::sDetectTop)
 						mDeleteLists.push_back(std::pair(idx, carId));
+					break;
+				default:
+					break;
+				}
+				/* end */
+
+				/* 検出ほやほや車両かどうかの判別 */
+				switch (Tk::sRoadCarsDirections[idx])
+				{
+				case Tk::CARS_APPROACH_ROAD:
+					if (carPos.y > (Tk::sDetectTop + Tk::sDetectMergin))
+						boundaryCarIdList.erase(carId);
+					break;
+				case Tk::CARS_LEAVE_ROAD:
+					if ((carPos.y + carPos.height) < (Tk::sDetectTop - Tk::sDetectMergin))
+						boundaryCarIdList.erase(carId);
 					break;
 				default:
 					break;
@@ -81,6 +98,7 @@ namespace ImgProc
 		{
 			Tk::sTemplatesList[roadIdx].erase(carId);
 			Tk::sTemplatePositionsList[roadIdx].erase(carId);
+			Tk::sBoundaryCarIdLists[roadIdx].erase(carId);
 			if (carId == Tk::sFrontCarsId)
 				Tk::sFrontCarsId++;
 		}

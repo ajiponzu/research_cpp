@@ -136,6 +136,7 @@ namespace ImgProc
 			auto labelNum = cv::connectedComponentsWithStats(mTemp, mLabels, mStats, mCentroids);
 			auto& templates = Tk::sTemplatesList[idx];
 			auto& templatePositions = Tk::sTemplatePositionsList[idx];
+			auto& boundaryCarIdList = Tk::sBoundaryCarIdLists[idx];
 
 			/* 各領域ごとの処理, 0番は背景 */
 			for (int label = 1; label < labelNum; label++)
@@ -188,15 +189,18 @@ namespace ImgProc
 				bool continueFlag = false;
 				if (!doesntDetectCar)
 				{
-					for (const auto& elem : Tk::sBoundaryCarIdLists[idx])
+					for (const auto& elem : boundaryCarIdList)
 					{
-						const auto& carPos = Tk::sTemplatePositionsList[idx][elem];
+						const auto& carPos = templatePositions[elem];
 						auto diffPosX = carRect.x - carPos.x;
 						auto diffPosY = carRect.y - carPos.y;
-						auto diffWid = carRect.width - carPos.width;
-						auto diffHigh = carRect.height - carPos.height;
-						continueFlag = (std::abs(diffPosX) < 4) && (std::abs(diffPosY) < 4)
-							|| (std::abs(diffPosX + diffWid) < 4) && (std::abs(diffPosY + diffHigh) < 4);
+						continueFlag = (std::abs(diffPosX) < 4) && (std::abs(diffPosY) < 4);
+						if (continueFlag)
+							break;
+
+						diffPosX = (carRect.x + carRect.width) - (carPos.x + carPos.width);
+						diffPosY = (carRect.y + carRect.height) - (carPos.y + carPos.height);
+						continueFlag = (std::abs(diffPosX) < 4) && (std::abs(diffPosY) < 4);
 						if (continueFlag)
 							break;
 					}
@@ -204,7 +208,7 @@ namespace ImgProc
 					if (continueFlag)
 						continue;
 
-					Tk::sBoundaryCarIdLists[idx].insert(Tk::sCarsNum); // 1フレーム目は, 車両として検出しても, ここでIDを保存しないものもあることに注意
+					boundaryCarIdList.insert(Tk::sCarsNum); // 1フレーム目は, 車両として検出しても, ここでIDを保存しないものもあることに注意
 				}
 				/* end */
 				/* end */
