@@ -10,12 +10,12 @@ namespace ImgProc
 	void CarsTracer::FindCarsTemplates()
 	{
 		Tk::sFrame.copyTo(Tk::sResutImg);
-		if (Tk::sFrameCount == 1)
+		if (Tk::sFrameCount == Tk::sStartFrame)
 			return;
 
 		//double maxValue = 0.0, magni = 1.0009;
 		double maxValue = 0.0, magni = 1.0015;
-		int mergin = 6;
+		int mergin = 10;
 		cv::Point maxLoc;
 		cv::Rect2d nearRect;
 		/* 各道路ごとに処理 */
@@ -60,7 +60,7 @@ namespace ImgProc
 				switch (Tk::sRoadCarsDirections[idx])
 				{
 				case Tk::CARS_APPROACH_ROAD:
-					if (carPos.y > Tk::sDetectBottom)
+					if (carPos.y + carPos.height > Tk::sDetectBottom)
 						mDeleteLists.push_back(std::pair(idx, carId));
 					break;
 				case Tk::CARS_LEAVE_ROAD:

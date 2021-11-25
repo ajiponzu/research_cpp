@@ -52,6 +52,8 @@ namespace ImgProc
 
 	// 読み込んだフレーム数
 	uint64_t ImgProcToolkit::sFrameCount = 0;
+	// 初期フレーム
+	uint64_t ImgProcToolkit::sStartFrame = 0;
 	// 検出・追跡中車両台数
 	uint64_t ImgProcToolkit::sCarsNum = 0;
 	// 全フレーム中の検出・追跡中車両台数(前フレームのもの)

@@ -158,7 +158,7 @@ namespace ImgProc
 				auto bottomY = carRect.y + carRect.height;
 
 				/* 1フレーム目で検出されない領域を除外 */
-				if (Tk::sFrameCount == 1)
+				if (Tk::sFrameCount == Tk::sStartFrame)
 				{
 					doesntDetectCar = (carRect.y < Tk::sDetectTop) || (bottomY > Tk::sDetectBottom);
 					if (doesntDetectCar)
@@ -181,7 +181,7 @@ namespace ImgProc
 				/* end */
 
 				/* 2フレーム目以降は, 検出開始地点から遠い車両を検出しない */
-				if (Tk::sFrameCount > 1 && doesntDetectCar)
+				if (Tk::sFrameCount > Tk::sStartFrame && doesntDetectCar)
 					continue;
 
 				/* 検出開始位置近傍の車両を特定, 未検出車両なら車両IDを保存 */

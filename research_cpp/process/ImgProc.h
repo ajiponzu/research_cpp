@@ -71,6 +71,7 @@ namespace ImgProc
 
 		// 読み込んだフレーム数
 		static uint64_t sFrameCount;
+		static uint64_t sStartFrame;
 		// 全フレーム中の検出・追跡中車両台数
 		static uint64_t sCarsNum;
 		// 全フレーム中の検出・追跡中車両台数(前フレームのもの)
@@ -115,6 +116,7 @@ namespace ImgProc
 		static void SetDetectTop(const int& detectTop) { sDetectTop = detectTop; }
 		static void SetDetectBottom(const int& detectBottom) { sDetectBottom = detectBottom; }
 		static void SetDetectMergin(const int& detectMergin) { sDetectMergin = detectMergin; }
+		static void SetStartFrame(const int& startFrame) { sStartFrame = startFrame; }
 		static cv::VideoCapture& GetVideoCapture() { return sVideoCapture; }
 		static cv::VideoWriter& GetVideoWriter() { return sVideoWriter; }
 		static Image& GetFrame() { return sFrame; }
