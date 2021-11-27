@@ -1,7 +1,7 @@
 #pragma once
 #include "ImgProc.h"
 
-class ImgProc::CarsDetector
+class ImgProc::CarsExtractor
 {
 private:
 	/* 出力画像バッファ */
@@ -9,7 +9,6 @@ private:
 	Image mShadow; //車影画像, 1チャンネル固定
 	Image mReShadow;//車影再抽出画像, 1チャンネル固定
 	Image mCars; //車両画像, 1チャンネル固定
-	Image mCarRects; //車両検出矩形画像, 3チャンネル固定
 	/* end */
 
 	/* 画像処理に用いるバッファ */
@@ -25,12 +24,11 @@ private:
 	int mKernelCount = 1; // カーネル掛けの回数
 
 public:
-	CarsDetector()
+	CarsExtractor()
 	{
 		cv::Size imgSize(ImgProcToolkit::sVideoWidth, ImgProcToolkit::sVideoHeight);
 
 		/* メンバ画像の初期化 */
-		mCarRects = Image::zeros(imgSize, CV_8UC3);
 		mExceptedShadows = Image::zeros(imgSize, CV_8U);
 		mLab128 = Image::ones(imgSize, CV_8U) * 128;
 		/* end */
@@ -69,12 +67,6 @@ public:
 	void ExtractCars();
 
 	/// <summary>
-	/// 車両を矩形で囲む
-	/// </summary>
-	/// <param name="areaThr">面積の閾値</param>
-	void DrawRectangle(const int& areaThr = 30);
-
-	/// <summary>
 	/// 出力画像順次表示
 	/// </summary>
 	/// <param name="interval">待機時間[ms]</param>
@@ -84,24 +76,7 @@ public:
 	const Image& GetShadow() const { return mShadow; }
 	const Image& GetReShadow() const { return mReShadow; }
 	const Image& GetCars() const { return mCars; }
-	const Image& GetCarsRect() const { return mCarRects; }
 
 private:
-	CarsDetector(const CarsDetector& other) = delete;
-
-	/// <summary>
-	/// 横方向の負エッジをy方向微分によって求め, 切りだすy座標を処理によって選択
-	/// </summary>
-	/// <param name="inputImg">入力テンプレート画像</param>
-	/// <returns>切りだすy座</returns>
-	int ExtractAreaByEdgeH(Image& inputImg);
-
-	std::pair<int, int> ExtractAreaByEdgeV(Image& inputImg);
-
-	/// <summary>
-	/// 頻度値データを, 一行n列の1チャンネル(グレースケール)画像として考え, 極大値をもつインデックスを保存
-	/// </summary>
-	/// <param name="inputData">入力データ, 必ずcolsをn, rowを1にしておく</param>
-	/// <param name="retData">取得したいデータを格納するコンテナの参照</param>
-	void SplitLineByEdge(Image& inputData, std::vector<int>& retData);
+	CarsExtractor(const CarsExtractor& other) = delete;
 };

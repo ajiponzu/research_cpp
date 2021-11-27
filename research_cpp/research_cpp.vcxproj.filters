@@ -24,7 +24,7 @@
     <ClCompile Include="Main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="process\CarsDetector.cpp">
+    <ClCompile Include="process\CarsExtractor.cpp">
       <Filter>Process</Filter>
     </ClCompile>
     <ClCompile Include="process\CarsTracer.cpp">
@@ -35,7 +35,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="process\CarsDetector.h">
+    <ClInclude Include="process\CarsExtractor.h">
       <Filter>Process</Filter>
     </ClInclude>
     <ClInclude Include="process\CarsTracer.h">

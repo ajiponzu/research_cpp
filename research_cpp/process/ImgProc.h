@@ -8,13 +8,13 @@ namespace ImgProc
 {
 	using Image = cv::Mat;
 
-	class CarsDetector;
+	class CarsExtractor;
 	class CarsTracer;
 
 	class ImgProcToolkit
 	{
 		ImgProcToolkit() = delete; //staticクラスなので
-		friend class CarsDetector;
+		friend class CarsExtractor;
 		friend class CarsTracer;
 	public:
 		constexpr static int VIDEO_TYPE_HARE = 0;

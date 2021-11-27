@@ -1,4 +1,4 @@
-#include "process/CarsDetector.h"
+#include "process/CarsExtractor.h"
 #include "process/CarsTracer.h"
 
 using namespace ImgProc;
@@ -55,7 +55,7 @@ int main()
 	/* end */
 
 	/* 処理実行変数 */
-	ImgProc::CarsDetector detector;
+	ImgProc::CarsExtractor detector;
 	ImgProc::CarsTracer tracer;
 	/* end */
 
@@ -99,10 +99,6 @@ int main()
 
 		/* 車両追跡 */
 		tracer.FindCarsTemplates();
-		/* end */
-
-		/* 新規車両検出 */
-		detector.DrawRectangle(30);
 		/* end */
 
 		//detector.ShowOutImgs(1000); // 出力結果表示
