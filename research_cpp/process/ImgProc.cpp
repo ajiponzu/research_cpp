@@ -21,10 +21,8 @@ namespace ImgProc
 	// 背景画像
 	Image ImgProcToolkit::sBackImg;
 	// 道路マスク画像
-	Image ImgProcToolkit::sRoadMask;
 	Image ImgProcToolkit::sRoadMaskGray;
 	// 道路マスク画像(テンプレートマッチング)
-	std::vector<Image> ImgProcToolkit::sRoadMasks;
 	std::vector<Image> ImgProcToolkit::sRoadMasksGray;
 	/* end */
 
@@ -118,7 +116,6 @@ namespace ImgProc
 			return false;
 		}
 		binarizeImage(sRoadMaskGray);
-		cv::cvtColor(sRoadMaskGray, sRoadMask, cv::COLOR_GRAY2BGR);
 
 		size_t idx = 0;
 		while (true)
@@ -136,8 +133,6 @@ namespace ImgProc
 			}
 			binarizeImage(mask);
 			sRoadMasksGray.push_back(mask.clone());
-			cv::cvtColor(mask, mask, cv::COLOR_GRAY2BGR);
-			sRoadMasks.push_back(mask.clone());
 			idx++;
 		}
 		sRoadMasksNum = idx;
@@ -156,9 +151,9 @@ namespace ImgProc
 	{
 		cv::imshow("", sBackImg);
 		cv::waitKey(interval);
-		cv::imshow("", sRoadMask);
+		cv::imshow("", sRoadMaskGray);
 		cv::waitKey(interval);
-		for (auto itr = sRoadMasks.begin(); itr != sRoadMasks.end(); itr++)
+		for (auto itr = sRoadMasksGray.begin(); itr != sRoadMasksGray.end(); itr++)
 		{
 			cv::imshow("", *itr);
 			cv::waitKey(interval);
@@ -180,7 +175,7 @@ namespace ImgProc
 	/// 画像の二値化
 	/// </summary>
 	/// <param name="inputImg">二値化画像, 1チャンネル</param>
-	void binarizeImage(Image& inputImg)
+	void binarizeImage(const Image& inputImg)
 	{
 		if (inputImg.channels() == 3)
 			cv::cvtColor(inputImg, inputImg, cv::COLOR_BGR2GRAY);
@@ -196,7 +191,7 @@ namespace ImgProc
 	/// <param name="width">参照範囲矩形の横幅</param>
 	/// <param name="height">参照範囲矩形の縦幅</param>
 	/// <returns>参照範囲の部分画像(</returns>
-	Image GetImgSlice(Image& inputImg, const int& x, const int& y, const int& width, const int& height)
+	Image GetImgSlice(const Image& inputImg, const int& x, const int& y, const int& width, const int& height)
 	{
 		return inputImg(cv::Rect(x, y, width + 1, height + 1)); // 参照カウントのため, シャローコピーでもデータが解放されない.
 	}
@@ -210,7 +205,7 @@ namespace ImgProc
 	/// <param name="width">参照範囲矩形の横幅</param>
 	/// <param name="height">参照範囲矩形の縦幅</param>
 	/// <returns>参照範囲の部分画像(</returns>
-	Image GetImgSlice(Image& inputImg, const double& x, const double& y, const double& width, const double& height)
+	Image GetImgSlice(const Image& inputImg, const double& x, const double& y, const double& width, const double& height)
 	{
 		return inputImg(cv::Rect(static_cast<int>(x), static_cast<int>(y), static_cast<int>(width), static_cast<int>(height)));
 	}
@@ -221,18 +216,7 @@ namespace ImgProc
 	/// <param name="inputImg">参照元画像</param>
 	/// <param name="x">参照範囲矩形</param>
 	/// <returns>参照範囲の部分画像(</returns>
-	Image GetImgSlice(Image& inputImg, const cv::Rect& rect)
-	{
-		return inputImg(rect);
-	}
-
-	/// <summary>
-	///	画像の部分参照
-	/// </summary>
-	/// <param name="inputImg">参照元画像</param>
-	/// <param name="x">参照範囲矩形</param>
-	/// <returns>参照範囲の部分画像(</returns>
-	Image GetImgSlice(Image& inputImg, const cv::Rect2d& rect)
+	template<class T> Image GetImgSlice(const Image& inputImg, const cv::Rect_<T>& rect)
 	{
 		return inputImg(rect);
 	}
@@ -246,7 +230,7 @@ namespace ImgProc
 	/// <param name="width">抽出範囲矩形の横幅</param>
 	/// <param name="height">抽出範囲矩形の縦幅</param>
 	/// <returns>指定範囲の抽出画像(クローン後にムーブ)</returns>
-	Image ExtractTemplate(Image& inputImg, const int& x, const int& y, const int& width, const int& height)
+	Image ExtractTemplate(const Image& inputImg, const int& x, const int& y, const int& width, const int& height)
 	{
 		return inputImg(cv::Rect(x, y, width + 1, height + 1)).clone();
 	}
@@ -260,7 +244,7 @@ namespace ImgProc
 	/// <param name="width">抽出範囲矩形の横幅</param>
 	/// <param name="height">抽出範囲矩形の縦幅</param>
 	/// <returns>指定範囲の抽出画像(クローン後にムーブ)</returns>
-	Image ExtractTemplate(Image& inputImg, const double& x, const double& y, const double& width, const double& height)
+	Image ExtractTemplate(const Image& inputImg, const double& x, const double& y, const double& width, const double& height)
 	{
 		return inputImg(cv::Rect(static_cast<int>(x), static_cast<int>(y), static_cast<int>(width), static_cast<int>(height))).clone();
 	}
@@ -271,18 +255,7 @@ namespace ImgProc
 	/// <param name="inputImg">抽出元画像</param>
 	/// <param name="rect">抽出範囲矩形</param>
 	/// <returns>指定範囲の抽出画像(クローン後)</returns>
-	Image ExtractTemplate(Image& inputImg, const cv::Rect& rect)
-	{
-		return inputImg(rect).clone();
-	}
-
-	/// <summary>
-	/// テンプレート抽出
-	/// </summary>
-	/// <param name="inputImg">抽出元画像</param>
-	/// <param name="rect">抽出範囲矩形</param>
-	/// <returns>指定範囲の抽出画像(クローン後)</returns>
-	Image ExtractTemplate(Image& inputImg, const cv::Rect2d& rect)
+	template<class T> Image ExtractTemplate(const Image& inputImg, const cv::Rect_<T>& rect)
 	{
 		return inputImg(rect).clone();
 	}

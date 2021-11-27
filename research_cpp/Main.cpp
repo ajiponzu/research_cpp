@@ -55,7 +55,7 @@ int main()
 	/* end */
 
 	/* 処理実行変数 */
-	ImgProc::CarsExtractor detector;
+	ImgProc::CarsExtractor extractor;
 	ImgProc::CarsTracer tracer;
 	/* end */
 
@@ -91,17 +91,10 @@ int main()
 			break;
 
 		/* 車両検出の準備 */
-		detector.SubtractBackImage();
-		detector.ExtractShadow();
-		detector.ReExtractShadow(5, 1.6f);
-		detector.ExtractCars();
-		/* end */
-
-		/* 車両追跡 */
-		tracer.FindCarsTemplates();
-		/* end */
-
-		//detector.ShowOutImgs(1000); // 出力結果表示
+		extractor.SubtractBackImage();
+		extractor.ExtractShadow();
+		extractor.ReExtractShadow(5, 1.6f);
+		extractor.ExtractCars();
 		/* end */
 
 		//Image temp;
