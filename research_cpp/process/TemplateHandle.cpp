@@ -7,6 +7,54 @@ using Tk = ImgProc::ImgProcToolkit;
 namespace ImgProc
 {
 	/// <summary>
+	/// 頻度値データを, 一行n列の1チャンネル(グレースケール)画像として考え, 極大値をもつインデックスを保存
+	/// </summary>
+	/// <param name="inputData">入力データ, 必ずcolsをn, rowを1にしておく</param>
+	/// <param name="retData">取得したいデータを格納するコンテナの参照</param>
+	void CarsTracer::TemplateHandle::SplitLineByEdge(const Image& inputData, std::vector<int>& retData)
+	{
+		int nearMax = -1, nearMaxIdx = -1; // あえて自然数にとっての最小値?をいれておく
+		bool flag = false; // 0から単調増加するとtrue, 0以外の値から0に単調減少するとfalseになる
+
+		const auto& ptrInputData = inputData.data;
+		for (int idx = 0; idx < inputData.cols; idx++)
+		{
+			const auto& elem = ptrInputData[idx];
+			/* 登山中 */
+			if (flag)
+			{
+				/* 0を平野とすると, 値の山が終わったとき */
+				if (elem <= 0)
+				{
+					retData.push_back(nearMaxIdx); // 極大値をもつ添え字を保存
+					flag = false;
+					nearMax = -1; // 最大値をまたみつけるために, 最小値でリセット
+				}
+				/* end */
+				/* 山を探索中, より大きな峰をみつけた */
+				else if (elem > nearMax)
+				{
+					nearMaxIdx = idx; // 極大値を与える添え字を更新
+					nearMax = elem; // 極大値の更新
+				}
+				/* end */
+			}
+			/* end */
+			/* 平野を散歩中に山の麓をみつけた */
+			else if (elem > 0)
+			{
+				flag = true;
+				nearMaxIdx = idx;
+				nearMax = elem;
+			}
+			/* end */
+		}
+		
+		if (retData.size() == 0)
+			retData.push_back(-1);
+	}
+
+	/// <summary>
 	/// テンプレートマッチングの対象領域を制限する
 	/// </summary>
 	/// <param name="nearRect">制限区域矩形</param>
@@ -176,50 +224,5 @@ namespace ImgProc
 		/* end */
 
 		return ret;
-	}
-
-	/// <summary>
-	/// 頻度値データを, 一行n列の1チャンネル(グレースケール)画像として考え, 極大値をもつインデックスを保存
-	/// </summary>
-	/// <param name="inputData">入力データ, 必ずcolsをn, rowを1にしておく</param>
-	/// <param name="retData">取得したいデータを格納するコンテナの参照</param>
-	void CarsTracer::TemplateHandle::SplitLineByEdge(const Image& inputData, std::vector<int>& retData)
-	{
-		int nearMax = -1, nearMaxIdx = -1; // あえて自然数にとっての最小値?をいれておく
-		bool flag = false; // 0から単調増加するとtrue, 0以外の値から0に単調減少するとfalseになる
-
-		const auto& ptrInputData = inputData.data;
-		for (int idx = 0; idx < inputData.cols; idx++)
-		{
-			const auto& elem = ptrInputData[idx];
-			/* 登山中 */
-			if (flag)
-			{
-				/* 0を平野とすると, 値の山が終わったとき */
-				if (elem <= 0)
-				{
-					retData.push_back(nearMaxIdx); // 極大値をもつ添え字を保存
-					flag = false;
-					nearMax = -1; // 最大値をまたみつけるために, 最小値でリセット
-				}
-				/* end */
-				/* 山を探索中, より大きな峰をみつけた */
-				else if (elem > nearMax)
-				{
-					nearMaxIdx = idx; // 極大値を与える添え字を更新
-					nearMax = elem; // 極大値の更新
-				}
-				/* end */
-			}
-			/* end */
-			/* 平野を散歩中に山の麓をみつけた */
-			else if (elem > 0)
-			{
-				flag = true;
-				nearMaxIdx = idx;
-				nearMax = elem;
-			}
-			/* end */
-		}
 	}
 };

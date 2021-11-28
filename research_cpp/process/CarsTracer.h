@@ -6,7 +6,6 @@ class ImgProc::CarsTracer
 {
 private:
 	class TemplateHandle;
-	friend class TemplateHandle;
 
 	std::vector<std::pair<size_t, uint64_t>> mDeleteLists;
 	Image mTempFrame;
@@ -21,14 +20,8 @@ private:
 
 	cv::Point mMaxLoc;
 	cv::Rect2d mNearRect;
-
-	std::vector<std::unordered_set<uint64_t>> mMatchLabels;
 public:
-	CarsTracer() 
-	{
-		mLabelNum = 0;
-		mMatchLabels.resize(ImgProcToolkit::sRoadMasksNum);
-	}
+	CarsTracer() : mLabelNum(0) {}
 
 	/// <summary>
 	/// 車両検出
@@ -38,7 +31,12 @@ private:
 	CarsTracer(const CarsTracer& other) = delete;
 
 	void TraceCars(const size_t& idx);
-	void DetectNewCars(const size_t& idx);
+	void TraceByEdge() {}
+	void JudgeStopTraceAndDetect(const size_t& idx, const uint64_t& carId, const cv::Rect2d& carPos);
+	void DestructTracedCars();
 
-	template<class T> void TraceByLabels(const size_t& idx, cv::Rect_<T>& carPos);
+	void DetectNewCars(const size_t& idx);
+	bool IsntDetectedCars(const size_t& idx, const cv::Rect2d& carPos);
+	bool DoesntAddBoundCar(const size_t& idx, const cv::Rect2d& carPosRect);
+	void ReExtractTemplate(cv::Rect2d& carPos);
 };

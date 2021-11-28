@@ -24,7 +24,6 @@ namespace ImgProc
 				continue;
 			}
 
-			mMatchLabels[idx].clear();
 			TraceCars(idx);
 			DetectNewCars(idx);
 		}
@@ -54,27 +53,59 @@ namespace ImgProc
 			cv::matchTemplate(mTemp, carImg, mDataTemp, cv::TM_CCOEFF_NORMED);
 			cv::minMaxLoc(mDataTemp, nullptr, &maxValue, nullptr, &mMaxLoc);
 
-			/* 検出ラベルとの擦り合わせ */
+			if (maxValue < 0.45)
+			{
+				mDeleteLists.push_back(std::pair(idx, carId));
+				continue;
+			}
+
 			carPos.x = mNearRect.x + mMaxLoc.x;
 			carPos.y = mNearRect.y + mMaxLoc.y;
-			TraceByLabels(idx, carPos);
 			cv::rectangle(Tk::sResutImg, carPos, cv::Scalar(255, 0, 0), 1);
-			templates[carId] = ExtractTemplate(Tk::sFrame, carPos);
-			/* end */
+			//templates[carId] = ExtractTemplate(Tk::sFrame, carPos);
+
+			JudgeStopTraceAndDetect(idx, carId, carPos);
 		}
 		/* end */
+		DestructTracedCars();
+	}
 
-		for (int label = 1; label < mLabelNum; label++)
+	void CarsTracer::JudgeStopTraceAndDetect(const size_t& idx, const uint64_t& carId, const cv::Rect2d& carPos)
+	{
+		/* 追跡終了位置かどうかの判別 */
+		switch (Tk::sRoadCarsDirections[idx])
 		{
-			auto statsPtr = mStats.ptr<int>(label);
-			auto& x = statsPtr[cv::ConnectedComponentsTypes::CC_STAT_LEFT];
-			auto& y = statsPtr[cv::ConnectedComponentsTypes::CC_STAT_TOP];
-			auto& width = statsPtr[cv::ConnectedComponentsTypes::CC_STAT_WIDTH];
-			auto& height = statsPtr[cv::ConnectedComponentsTypes::CC_STAT_HEIGHT];
-			auto& area = statsPtr[cv::ConnectedComponentsTypes::CC_STAT_AREA];
-
-			cv::rectangle(Tk::sResutImg, cv::Rect(x, y, width, height), cv::Scalar(255, 255, 0), 1);
+		case Tk::CARS_APPROACH_ROAD:
+			if ((carPos.y + carPos.height) > Tk::sDetectBottom)
+				mDeleteLists.push_back(std::pair(idx, carId));
+			if (carPos.y > (Tk::sDetectTop + Tk::sDetectMergin))
+				Tk::sBoundaryCarIdLists[idx].erase(carId);
+			break;
+		case Tk::CARS_LEAVE_ROAD:
+			if (carPos.y < Tk::sDetectTop)
+				mDeleteLists.push_back(std::pair(idx, carId));
+			if ((carPos.y + carPos.height) < (Tk::sDetectTop - Tk::sDetectMergin))
+				Tk::sBoundaryCarIdLists[idx].erase(carId);
+			break;
+		default:
+			break;
 		}
+		/* end */
+	}
+
+	void CarsTracer::DestructTracedCars()
+	{
+		/* 追跡終了車両をデータから除外 */
+		for (const auto& [roadIdx, carId] : mDeleteLists)
+		{
+			Tk::sTemplatesList[roadIdx].erase(carId);
+			Tk::sTemplatePositionsList[roadIdx].erase(carId);
+			Tk::sBoundaryCarIdLists[roadIdx].erase(carId);
+			if (carId == Tk::sFrontCarsId)
+				Tk::sFrontCarsId++;
+		}
+		mDeleteLists.clear();
+		/* end */
 	}
 
 	void CarsTracer::DetectNewCars(const size_t& idx)
@@ -86,9 +117,6 @@ namespace ImgProc
 		/* 各領域ごとの処理, 0番は背景 */
 		for (int label = 1; label < mLabelNum; label++)
 		{
-			if (mMatchLabels[idx].find(label) != mMatchLabels[idx].end())
-				continue;
-
 			/* 統計情報分割 */
 			auto statsPtr = mStats.ptr<int>(label);
 			auto& x = statsPtr[cv::ConnectedComponentsTypes::CC_STAT_LEFT];
@@ -98,97 +126,42 @@ namespace ImgProc
 			auto& area = statsPtr[cv::ConnectedComponentsTypes::CC_STAT_AREA];
 			/* end */
 
-			if (area < 20)
+			if (area < 25)
 				continue;
 
 			/* 検出位置チェック */
-			cv::Rect carRect(x, y, width, height);
-			bool doesntDetectCar = true;
-			auto bottomY = carRect.y + carRect.height;
+			// 検出開始位置近傍の車両を特定, 未検出車両なら車両IDを保存
+			// 1フレーム目は, 車両として検出しても, IDを保存しないものもあることに注意
+			cv::Rect2d carPosRect(x, y, width, height);
+			bool doesntDetectCar = false;
 
 			/* 1フレーム目で検出されない領域を除外 */
 			if (Tk::sFrameCount == Tk::sStartFrame)
 			{
-				doesntDetectCar = (carRect.y < Tk::sDetectTop) || (bottomY > Tk::sDetectBottom);
-				if (doesntDetectCar)
-					continue;
+				auto bottomY = carPosRect.y + carPosRect.height;
+				doesntDetectCar = (carPosRect.y < Tk::sDetectTop) || (bottomY > Tk::sDetectBottom);
 			}
 			/* end */
+			else
+				doesntDetectCar = IsntDetectedCars(idx, carPosRect);
 
-			/* 検出開始地点から遠い領域かをチェック */
-			switch (Tk::sRoadCarsDirections[idx])
-			{
-			case Tk::CARS_APPROACH_ROAD:
-				doesntDetectCar = (carRect.y < Tk::sDetectTop) || (carRect.y > (Tk::sDetectTop + Tk::sDetectMergin));
-				break;
-			case Tk::CARS_LEAVE_ROAD:
-				doesntDetectCar = (bottomY < (Tk::sDetectBottom - Tk::sDetectMergin)) || (bottomY > Tk::sDetectBottom);
-				break;
-			default:
-				break;
-			}
-			/* end */
-
-			/* 2フレーム目以降は, 検出開始地点から遠い車両を検出しない */
-			if (Tk::sFrameCount > Tk::sStartFrame && doesntDetectCar)
+			if (doesntDetectCar)
 				continue;
 
-			/* 検出開始位置近傍の車両を特定, 未検出車両なら車両IDを保存 */
-			bool continueFlag = false;
-			if (!doesntDetectCar)
-			{
-				for (const auto& elem : boundaryCarIdList)
-				{
-					const auto& carPos = templatePositions[elem];
-					auto diffPosX = carRect.x - carPos.x;
-					auto diffPosY = carRect.y - carPos.y;
-					continueFlag = (std::abs(diffPosX) < 4) && (std::abs(diffPosY) < 4);
-					if (continueFlag)
-						break;
+			if (DoesntAddBoundCar(idx, carPosRect))
+				continue;
 
-					diffPosX = (carRect.x + carRect.width) - (carPos.x + carPos.width);
-					diffPosY = (carRect.y + carRect.height) - (carPos.y + carPos.height);
-					continueFlag = (std::abs(diffPosX) < 4) && (std::abs(diffPosY) < 4);
-					if (continueFlag)
-						break;
-				}
-
-				if (continueFlag)
-					continue;
-
-				boundaryCarIdList.insert(Tk::sCarsNum); // 1フレーム目は, 車両として検出しても, ここでIDを保存しないものもあることに注意
-			}
-			/* end */
+			boundaryCarIdList.insert(Tk::sCarsNum); 
 			/* end */
 
-			/* テンプレート再抽出 */
-			{
-			//	mTemp = GetImgSlice(Tk::sFrame, carRect);
-			//	auto cutY = ExtractAreaByEdgeH(mTemp);
-			//	auto cutPairX = ExtractAreaByEdgeV(mTemp);
+			ReExtractTemplate(carPosRect); // テンプレート再抽出
+			mTemp = ExtractTemplate(Tk::sFrame, carPosRect);
 
-			//	if (cutY <= (carRect.height * 0.35))
-			//		cutY = carRect.height - 1;
-
-				//auto wid = cutPairX.second - cutPairX.first + 1;
-				//if (wid < (carRect.width * 0.35))
-				//{
-				//	cutPairX.first = 0;
-				//	wid = carRect.width;
-				//}
-
-				//carRect.x += cutPairX.first;
-				//carRect.width = wid;
-				//carRect.height = cutY + 1;
-				mTemp = ExtractTemplate(Tk::sFrame, carRect);
-			}
-			/* end */
-
-			cv::rectangle(Tk::sResutImg, carRect, cv::Scalar(0, 0, 255), 1); // 矩形を描く
+			cv::rectangle(Tk::sResutImg, carPosRect, cv::Scalar(0, 0, 255), 1); // 矩形を描く
 
 			/* テンプレート抽出等 */
 			templates.insert(std::pair(Tk::sCarsNum, mTemp));
-			templatePositions.insert(std::pair(Tk::sCarsNum, carRect));
+			templatePositions.insert(std::pair(Tk::sCarsNum, carPosRect));
 			/* end */
 
 			/* 検出台数を更新 */
@@ -199,39 +172,77 @@ namespace ImgProc
 		/* end */
 	}
 
-	template<class T> void CarsTracer::TraceByLabels(const size_t& idx, cv::Rect_<T>& carPos)
+	bool CarsTracer::IsntDetectedCars(const size_t& idx, const cv::Rect2d& carPos)
 	{
-		const auto& label = mLabels.at<int>(static_cast<int>(carPos.y), static_cast<int>(carPos.x));
-		if (label == 0)
-			return;
+		/* 検出位置チェック */
+		bool doesntDetectCar = true;
+		auto bottomY = carPos.y + carPos.height;
 
-		/* 統計情報分割 */
-		auto statsPtr = mStats.ptr<int>(label);
-		const auto& x = statsPtr[cv::ConnectedComponentsTypes::CC_STAT_LEFT];
-		const auto& y = statsPtr[cv::ConnectedComponentsTypes::CC_STAT_TOP];
-		const auto& width = statsPtr[cv::ConnectedComponentsTypes::CC_STAT_WIDTH];
-		const auto& height = statsPtr[cv::ConnectedComponentsTypes::CC_STAT_HEIGHT];
-		const auto& area = statsPtr[cv::ConnectedComponentsTypes::CC_STAT_AREA];
+		/* 検出開始地点から遠い領域かをチェック */
+		switch (Tk::sRoadCarsDirections[idx])
+		{
+		case Tk::CARS_APPROACH_ROAD:
+			doesntDetectCar = (carPos.y < Tk::sDetectTop) || (carPos.y > (Tk::sDetectTop + Tk::sDetectMergin));
+			return doesntDetectCar;
+		case Tk::CARS_LEAVE_ROAD:
+			doesntDetectCar = (bottomY < (Tk::sDetectBottom - Tk::sDetectMergin)) || (bottomY > Tk::sDetectBottom);
+			return doesntDetectCar;
+		default:
+			break;
+		}
 		/* end */
 
-		auto labelRect = cv::RotatedRect(cv::Point2f(x, y), cv::Point2f(x + width, y + height), 0);
-		auto carRotatedRect = cv::RotatedRect(cv::Point2f(carPos.x, carPos.y), cv::Point2f(carPos.x + carPos.width, carPos.y + carPos.height), 0);
-		cv::Rect2d resultRect;
+		/* 2フレーム目以降は, 検出開始地点から遠い車両を検出しない */
+		if (Tk::sFrameCount > Tk::sStartFrame && doesntDetectCar)
+			return true;
 
-		std::vector<cv::Point2f> vertices;
-		cv::rotatedRectangleIntersection(carRotatedRect, labelRect, vertices);
-		if (vertices.size() == 4)
-			resultRect = cv::Rect2d(vertices[0], vertices[3]);
-		else
-			resultRect = carPos;
+		return false;
+	}
 
-		if (std::abs(resultRect.width - carPos.width) > carPos.width * 0.3)
-			resultRect.width = std::min(resultRect.width, carPos.width);
+	bool CarsTracer::DoesntAddBoundCar(const size_t& idx, const cv::Rect2d& carPosRect)
+	{
+		bool retFlag = false;
+		for (const auto& elem : Tk::sBoundaryCarIdLists[idx])
+		{
+			const auto& carPos = Tk::sTemplatePositionsList[idx][elem];
+			auto diffPosX = carPosRect.x - carPos.x;
+			auto diffPosY = carPosRect.y - carPos.y;
+			retFlag = (std::abs(diffPosX) < 6) && (std::abs(diffPosY) < 6);
+			if (retFlag)
+				break;
 
-		if (std::abs(resultRect.height - carPos.height) > carPos.height * 0.3)
-			resultRect.height = std::min(resultRect.height, carPos.height);
+			diffPosX = (carPosRect.x + carPosRect.width) - (carPos.x + carPos.width);
+			diffPosY = (carPosRect.y + carPosRect.height) - (carPos.y + carPos.height);
+			retFlag = (std::abs(diffPosX) < 6) && (std::abs(diffPosY) < 6);
+			if (retFlag)
+				break;
+		}
 
-		carPos = resultRect;
-		mMatchLabels[idx].insert(label);
+		return retFlag;
+	}
+
+	void CarsTracer::ReExtractTemplate(cv::Rect2d& carPos)
+	{
+		/* テンプレート再抽出 */
+		{
+			mTemp = GetImgSlice(Tk::sFrame, carPos);
+			auto cutY = TemplateHandle::ExtractAreaByEdgeH(mTemp);
+			auto cutPairX = TemplateHandle::ExtractAreaByEdgeV(mTemp);
+
+			if (cutY <= (carPos.height * 0.35))
+				cutY = carPos.height - 1;
+
+			auto wid = cutPairX.second - cutPairX.first + 1;
+			if (wid < (carPos.width * 0.35))
+			{
+				cutPairX.first = 0;
+				wid = carPos.width;
+			}
+
+			carPos.x += cutPairX.first;
+			carPos.width = wid;
+			carPos.height = cutY + 1;
+		}
+		/* end */
 	}
 };

@@ -8,9 +8,9 @@ constexpr static auto gStartCount = 1;
 //constexpr static auto gStartCount = 338;
 
 //constexpr static auto gEndCount = 1;
-constexpr static auto gEndCount = 4;
+//constexpr static auto gEndCount = 4;
 //constexpr static auto gEndCount = 345;
-//constexpr static auto gEndCount = 10000;
+constexpr static auto gEndCount = 10000;
 /* end */
 
 /// <summary>
@@ -44,7 +44,7 @@ int main()
 	/* 検出範囲の設定 */
 	ImgProcToolkit::SetDetectTop(235);
 	ImgProcToolkit::SetDetectBottom(530);
-	ImgProcToolkit::SetDetectMergin(0);
+	ImgProcToolkit::SetDetectMergin(50);
 	/* end */
 
 	//ImgProcToolkit::ShowResourceImgs(1500); // リソース表示
@@ -93,7 +93,7 @@ int main()
 		/* 車両検出の準備 */
 		extractor.SubtractBackImage();
 		extractor.ExtractShadow();
-		extractor.ReExtractShadow(5, 1.6f);
+		extractor.ReExtractShadow(5, 1.5f);
 		extractor.ExtractCars();
 		/* end */
 

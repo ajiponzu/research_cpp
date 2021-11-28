@@ -3,6 +3,14 @@
 
 class ImgProc::CarsTracer::TemplateHandle
 {
+private:
+	/// <summary>
+	/// 頻度値データを, 一行n列の1チャンネル(グレースケール)画像として考え, 極大値をもつインデックスを保存
+	/// </summary>
+	/// <param name="inputData">入力データ, 必ずcolsをn, rowを1にしておく</param>
+	/// <param name="retData">取得したいデータを格納するコンテナの参照</param>
+	static void SplitLineByEdge(const Image& inputData, std::vector<int>& retData);
+
 public:
 	/// <summary>
 	/// テンプレートマッチングの対象領域を制限する
@@ -29,12 +37,5 @@ public:
 	/// <param name="inputImg">入力テンプレート画像</param>
 	/// <returns>切りだすx座標二つを一組にして返す</returns>
 	static std::pair<int, int> ExtractAreaByEdgeV(const Image& inputImg);
-
-	/// <summary>
-	/// 頻度値データを, 一行n列の1チャンネル(グレースケール)画像として考え, 極大値をもつインデックスを保存
-	/// </summary>
-	/// <param name="inputData">入力データ, 必ずcolsをn, rowを1にしておく</param>
-	/// <param name="retData">取得したいデータを格納するコンテナの参照</param>
-	static void SplitLineByEdge(const Image& inputData, std::vector<int>& retData);
 };
 
