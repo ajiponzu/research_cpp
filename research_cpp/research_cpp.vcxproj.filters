@@ -33,6 +33,9 @@
     <ClCompile Include="process\ImgProc.cpp">
       <Filter>Process</Filter>
     </ClCompile>
+    <ClCompile Include="process\TemplateHandle.cpp">
+      <Filter>Process</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="process\CarsExtractor.h">
@@ -42,6 +45,9 @@
       <Filter>Process</Filter>
     </ClInclude>
     <ClInclude Include="process\ImgProc.h">
+      <Filter>Process</Filter>
+    </ClInclude>
+    <ClInclude Include="process\TemplateHandle.h">
       <Filter>Process</Filter>
     </ClInclude>
   </ItemGroup>
