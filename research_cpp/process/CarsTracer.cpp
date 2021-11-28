@@ -36,8 +36,8 @@ namespace ImgProc
 		auto& boundaryCarIdList = Tk::sBoundaryCarIdLists[idx];
 		auto& roadCarsDirection = Tk::sRoadCarsDirections[idx];
 
-		double maxValue = 0.0, magni = 1.0015;
-		int mergin = 6;
+		double maxValue = 0.0, magni = 1.0016;
+		int mergin = 8;
 
 		/* 検出済み車両ごとに処理 */
 		for (auto carId = Tk::sFrontCarsId; carId < Tk::sCarsNum; carId++)
@@ -53,7 +53,7 @@ namespace ImgProc
 			cv::matchTemplate(mTemp, carImg, mDataTemp, cv::TM_CCOEFF_NORMED);
 			cv::minMaxLoc(mDataTemp, nullptr, &maxValue, nullptr, &mMaxLoc);
 
-			if (maxValue < 0.45)
+			if (maxValue < 0.4)
 			{
 				mDeleteLists.push_back(std::pair(idx, carId));
 				continue;
@@ -78,13 +78,13 @@ namespace ImgProc
 		case Tk::CARS_APPROACH_ROAD:
 			if ((carPos.y + carPos.height) > Tk::sDetectBottom)
 				mDeleteLists.push_back(std::pair(idx, carId));
-			if (carPos.y > (Tk::sDetectTop + Tk::sDetectMergin))
+			if (carPos.y > (Tk::sDetectTop + Tk::sDetectMergin + Tk::sDetectMerginPad))
 				Tk::sBoundaryCarIdLists[idx].erase(carId);
 			break;
 		case Tk::CARS_LEAVE_ROAD:
 			if (carPos.y < Tk::sDetectTop)
 				mDeleteLists.push_back(std::pair(idx, carId));
-			if ((carPos.y + carPos.height) < (Tk::sDetectTop - Tk::sDetectMergin))
+			if ((carPos.y + carPos.height) < (Tk::sDetectTop - Tk::sDetectMergin - Tk::sDetectMerginPad))
 				Tk::sBoundaryCarIdLists[idx].erase(carId);
 			break;
 		default:
@@ -126,7 +126,7 @@ namespace ImgProc
 			auto& area = statsPtr[cv::ConnectedComponentsTypes::CC_STAT_AREA];
 			/* end */
 
-			if (area < 25)
+			if (width * height < 70)
 				continue;
 
 			/* 検出位置チェック */
@@ -139,7 +139,7 @@ namespace ImgProc
 			if (Tk::sFrameCount == Tk::sStartFrame)
 			{
 				auto bottomY = carPosRect.y + carPosRect.height;
-				doesntDetectCar = (carPosRect.y < Tk::sDetectTop) || (bottomY > Tk::sDetectBottom);
+				doesntDetectCar = (carPosRect.y < (Tk::sDetectTop + Tk::sDetectMergin + Tk::sDetectMerginPad)) || (bottomY > (Tk::sDetectBottom - Tk::sDetectMergin - Tk::sDetectMerginPad));
 			}
 			/* end */
 			else
@@ -207,13 +207,13 @@ namespace ImgProc
 			const auto& carPos = Tk::sTemplatePositionsList[idx][elem];
 			auto diffPosX = carPosRect.x - carPos.x;
 			auto diffPosY = carPosRect.y - carPos.y;
-			retFlag = (std::abs(diffPosX) < 6) && (std::abs(diffPosY) < 6);
+			retFlag = (std::abs(diffPosX) < Tk::sDetectedNearOffset) && (std::abs(diffPosY) < Tk::sDetectedNearOffset);
 			if (retFlag)
 				break;
 
 			diffPosX = (carPosRect.x + carPosRect.width) - (carPos.x + carPos.width);
 			diffPosY = (carPosRect.y + carPosRect.height) - (carPos.y + carPos.height);
-			retFlag = (std::abs(diffPosX) < 6) && (std::abs(diffPosY) < 6);
+			retFlag = (std::abs(diffPosX) < Tk::sDetectedNearOffset) && (std::abs(diffPosY) < Tk::sDetectedNearOffset);
 			if (retFlag)
 				break;
 		}
@@ -230,13 +230,13 @@ namespace ImgProc
 			auto cutPairX = TemplateHandle::ExtractAreaByEdgeV(mTemp);
 
 			if (cutY <= (carPos.height * 0.35))
-				cutY = carPos.height - 1;
+				cutY = static_cast<int>(carPos.height) - 1;
 
 			auto wid = cutPairX.second - cutPairX.first + 1;
 			if (wid < (carPos.width * 0.35))
 			{
 				cutPairX.first = 0;
-				wid = carPos.width;
+				wid = static_cast<int>(carPos.width);
 			}
 
 			carPos.x += cutPairX.first;

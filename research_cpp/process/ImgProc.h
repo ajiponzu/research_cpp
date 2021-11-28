@@ -85,6 +85,8 @@ namespace ImgProc
 		static int sDetectTop;
 		static int sDetectBottom;
 		static int sDetectMergin;
+		static int sDetectMerginPad;
+		static int sDetectedNearOffset;
 		/* end */
 
 	public:
@@ -116,6 +118,8 @@ namespace ImgProc
 		static void SetDetectTop(const int& detectTop) { sDetectTop = detectTop; }
 		static void SetDetectBottom(const int& detectBottom) { sDetectBottom = detectBottom; }
 		static void SetDetectMergin(const int& detectMergin) { sDetectMergin = detectMergin; }
+		static void SetDetectMerginPad(const int& detectMerginPad) { sDetectMerginPad = detectMerginPad; }
+		static void SetDetectedNearOffset(const int& detectedNearOffset) { sDetectedNearOffset = detectedNearOffset; }
 		static void SetStartFrame(const int& startFrame) { sStartFrame = startFrame; }
 		static cv::VideoCapture& GetVideoCapture() { return sVideoCapture; }
 		static cv::VideoWriter& GetVideoWriter() { return sVideoWriter; }

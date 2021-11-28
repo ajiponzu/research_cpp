@@ -67,6 +67,8 @@ namespace ImgProc
 	int ImgProcToolkit::sDetectTop = 230;
 	int ImgProcToolkit::sDetectBottom = 535;
 	int ImgProcToolkit::sDetectMergin = 5;
+	int ImgProcToolkit::sDetectMerginPad = 10;
+	int ImgProcToolkit::sDetectedNearOffset = 8;
 	/* end */
 
 	/* end */

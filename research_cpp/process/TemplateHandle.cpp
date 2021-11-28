@@ -75,9 +75,9 @@ namespace ImgProc
 		/* end */
 
 		/* テンプレートの拡大・縮小処理と, 座標矩形の縦横の変更 */
-		//rect.width *= magni;
-		//rect.height *= magni;
-		//cv::resize(carTemplate, carTemplate, cv::Size(), magni, magni, cv::INTER_NEAREST_EXACT);
+		rect.width *= magni;
+		rect.height *= magni;
+		cv::resize(carTemplate, carTemplate, cv::Size(), magni, magni, cv::INTER_NEAREST_EXACT);
 		/* end */
 
 		/* テンプレートマッチングの対象領域の限定 */

@@ -42,9 +42,11 @@ int main()
 	/* end */
 
 	/* 検出範囲の設定 */
-	ImgProcToolkit::SetDetectTop(235);
-	ImgProcToolkit::SetDetectBottom(530);
-	ImgProcToolkit::SetDetectMergin(50);
+	ImgProcToolkit::SetDetectTop(260);
+	ImgProcToolkit::SetDetectBottom(500);
+	ImgProcToolkit::SetDetectMergin(8);
+	ImgProcToolkit::SetDetectMerginPad(16);
+	ImgProcToolkit::SetDetectedNearOffset(8);
 	/* end */
 
 	//ImgProcToolkit::ShowResourceImgs(1500); // リソース表示
