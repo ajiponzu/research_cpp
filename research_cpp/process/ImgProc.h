@@ -35,6 +35,8 @@ namespace ImgProc
 		static Image sFrame;
 		// 結果画像
 		static Image sResutImg;
+		// 車両二値画像
+		static Image sCarsImg;
 		// 背景画像
 		static Image sBackImg;
 		// 道路マスク画像
@@ -123,13 +125,14 @@ namespace ImgProc
 		static const uint64_t& GetCarsNumPrev() { return sCarsNumPrev; }
 		static const uint64_t& GetFrameCarsNum() { return sFrameCarsNum; }
 		static const Image& GetResult() { return sResutImg; }
+		static const Image& GetCars() { return sCarsImg; }
 	};
 
 	/// <summary>
 	/// BGR二値化
 	/// </summary>
 	/// <param name="inputImg">二値化画像</param>
-	void binarizeImage(const Image& inputImg);
+	void binarizeImage(Image& inputImg);
 
 	/// <summary>
 	///	画像の部分参照
@@ -159,7 +162,7 @@ namespace ImgProc
 	/// <param name="inputImg">参照元画像</param>
 	/// <param name="x">参照範囲矩形</param>
 	/// <returns>参照範囲の部分画像(</returns>
-	template<class T> Image GetImgSlice(const Image& inputImg, const cv::Rect_<T>& rect);
+	Image GetImgSlice(const Image& inputImg, const cv::Rect2d& rect);
 
 	/// <summary>
 	/// テンプレート抽出
@@ -189,5 +192,5 @@ namespace ImgProc
 	/// <param name="inputImg">抽出元画像</param>
 	/// <param name="rect">抽出範囲矩形</param>
 	/// <returns>指定範囲の抽出画像(クローン後)</returns>
-	template<class T> Image ExtractTemplate(const Image& inputImg, const cv::Rect_<T>& rect);
+	Image ExtractTemplate(const Image& inputImg, const cv::Rect2d& rect);
 };

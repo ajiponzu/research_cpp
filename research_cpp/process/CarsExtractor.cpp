@@ -113,9 +113,9 @@ namespace ImgProc
 	/// </summary>
 	void CarsExtractor::ExtractCars()
 	{
-		mCars = mSubtracted - mReShadow; // 移動物体から車影を除去
-		cv::morphologyEx(mCars, mTemp, cv::MORPH_CLOSE, mMorphKernel, cv::Point(-1, -1), mKernelCount);
-		cv::bitwise_and(mTemp, Tk::sRoadMaskGray, mCars);
+		Tk::sCarsImg = mSubtracted - mReShadow; // 移動物体から車影を除去
+		cv::morphologyEx(Tk::sCarsImg, mTemp, cv::MORPH_CLOSE, mMorphKernel, cv::Point(-1, -1), mKernelCount);
+		cv::bitwise_and(mTemp, Tk::sRoadMaskGray, Tk::sCarsImg);
 	}
 
 	/// <summary>
@@ -131,9 +131,6 @@ namespace ImgProc
 		cv::waitKey(interval);
 
 		cv::imshow("detector", mReShadow);
-		cv::waitKey(interval);
-
-		cv::imshow("detector", mCars);
 		cv::waitKey(interval);
 	}
 };

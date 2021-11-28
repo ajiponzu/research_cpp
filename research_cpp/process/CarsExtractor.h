@@ -8,7 +8,6 @@ private:
 	Image mSubtracted; //背景差分画像, 1チャンネル固定
 	Image mShadow; //車影画像, 1チャンネル固定
 	Image mReShadow;//車影再抽出画像, 1チャンネル固定
-	Image mCars; //車両画像, 1チャンネル固定
 	/* end */
 
 	/* 画像処理に用いるバッファ */
@@ -75,7 +74,6 @@ public:
 	const Image& GetSubtracted() const { return mSubtracted; }
 	const Image& GetShadow() const { return mShadow; }
 	const Image& GetReShadow() const { return mReShadow; }
-	const Image& GetCars() const { return mCars; }
 
 private:
 	CarsExtractor(const CarsExtractor& other) = delete;

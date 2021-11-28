@@ -8,9 +8,9 @@ constexpr static auto gStartCount = 1;
 //constexpr static auto gStartCount = 338;
 
 //constexpr static auto gEndCount = 1;
-//constexpr static auto gEndCount = 60;
+constexpr static auto gEndCount = 4;
 //constexpr static auto gEndCount = 345;
-constexpr static auto gEndCount = 10000;
+//constexpr static auto gEndCount = 10000;
 /* end */
 
 /// <summary>
@@ -95,6 +95,10 @@ int main()
 		extractor.ExtractShadow();
 		extractor.ReExtractShadow(5, 1.6f);
 		extractor.ExtractCars();
+		/* end */
+
+		/* 車両検出・車両追跡 */
+		tracer.DetectCars();
 		/* end */
 
 		//Image temp;

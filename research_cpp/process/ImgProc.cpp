@@ -18,6 +18,8 @@ namespace ImgProc
 	Image ImgProcToolkit::sFrame;
 	// 結果画像
 	Image ImgProcToolkit::sResutImg;
+	// 車両二値画像
+	Image ImgProcToolkit::sCarsImg;
 	// 背景画像
 	Image ImgProcToolkit::sBackImg;
 	// 道路マスク画像
@@ -175,7 +177,7 @@ namespace ImgProc
 	/// 画像の二値化
 	/// </summary>
 	/// <param name="inputImg">二値化画像, 1チャンネル</param>
-	void binarizeImage(const Image& inputImg)
+	void binarizeImage(Image& inputImg)
 	{
 		if (inputImg.channels() == 3)
 			cv::cvtColor(inputImg, inputImg, cv::COLOR_BGR2GRAY);
@@ -216,7 +218,7 @@ namespace ImgProc
 	/// <param name="inputImg">参照元画像</param>
 	/// <param name="x">参照範囲矩形</param>
 	/// <returns>参照範囲の部分画像(</returns>
-	template<class T> Image GetImgSlice(const Image& inputImg, const cv::Rect_<T>& rect)
+	Image GetImgSlice(const Image& inputImg, const cv::Rect2d& rect)
 	{
 		return inputImg(rect);
 	}
@@ -255,7 +257,7 @@ namespace ImgProc
 	/// <param name="inputImg">抽出元画像</param>
 	/// <param name="rect">抽出範囲矩形</param>
 	/// <returns>指定範囲の抽出画像(クローン後)</returns>
-	template<class T> Image ExtractTemplate(const Image& inputImg, const cv::Rect_<T>& rect)
+	Image ExtractTemplate(const Image& inputImg, const cv::Rect2d& rect)
 	{
 		return inputImg(rect).clone();
 	}
