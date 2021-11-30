@@ -49,7 +49,18 @@ namespace ImgProc
 			auto& carImg = templates[carId];
 			auto& carPos = templatePositions[carId];
 			TemplateHandle::ExtractCarsNearestArea(mNearRect, idx, carId, magni, mergin);
-			mTemp = GetImgSlice(Tk::sFrame, mNearRect);
+			mTemp = GetImgSlice(Tk::sFrame, mNearRect).clone();
+
+			//Image edge, edgeTempl;
+			//cv::cvtColor(mTemp, mTemp, cv::COLOR_BGR2GRAY);
+			//cv::Laplacian(mTemp, edge, CV_8U);
+			//cv::cvtColor(edge, edge, cv::COLOR_GRAY2BGR);
+
+			//cv::cvtColor(carImg, mTemp, cv::COLOR_BGR2GRAY);
+			//cv::Laplacian(mTemp, edgeTempl, CV_8U);
+			//cv::cvtColor(edgeTempl, edgeTempl, cv::COLOR_GRAY2BGR);
+			//cv::matchTemplate(edge, edgeTempl, mDataTemp, cv::TM_CCOEFF_NORMED);
+
 			cv::matchTemplate(mTemp, carImg, mDataTemp, cv::TM_CCOEFF_NORMED);
 			cv::minMaxLoc(mDataTemp, nullptr, &maxValue, nullptr, &mMaxLoc);
 
@@ -62,7 +73,7 @@ namespace ImgProc
 			carPos.x = mNearRect.x + mMaxLoc.x;
 			carPos.y = mNearRect.y + mMaxLoc.y;
 			cv::rectangle(Tk::sResutImg, carPos, cv::Scalar(255, 0, 0), 1);
-			//templates[carId] = ExtractTemplate(Tk::sFrame, carPos);
+			templates[carId] = ExtractTemplate(Tk::sFrame, carPos);
 
 			JudgeStopTraceAndDetect(idx, carId, carPos);
 		}
