@@ -5,11 +5,11 @@ using namespace ImgProc;
 
 /* ループ回数決定 */
 constexpr static auto gStartCount = 1;
-//constexpr static auto gStartCount = 338;
+//constexpr static auto gStartCount = 900;
 
 //constexpr static auto gEndCount = 1;
 //constexpr static auto gEndCount = 4;
-//constexpr static auto gEndCount = 345;
+//constexpr static auto gEndCount = 1000;
 constexpr static auto gEndCount = 10000;
 /* end */
 
@@ -67,6 +67,8 @@ int main()
 	double tick = cv::getTickFrequency();
 	// 実行結果画像
 	auto& result = ImgProcToolkit::GetResult();
+	//auto& result = extractor.GetReShadow();
+	//auto& result = ImgProcToolkit::GetCars();
 
 	/* 検出台数監視 */
 	auto& carsNum = ImgProcToolkit::GetCarsNum();
@@ -95,7 +97,7 @@ int main()
 		/* 車両検出の準備 */
 		extractor.SubtractBackImage();
 		extractor.ExtractShadow();
-		extractor.ReExtractShadow(5, 1.5f);
+		extractor.ReExtractShadow(10, 1.6f);
 		extractor.ExtractCars();
 		/* end */
 
@@ -109,7 +111,7 @@ int main()
 
 		videoWriter << result; // ビデオ書き出し
 		std::cout << count << std::endl; // カウントアップ
-		std::string path = "./frame_" + std::to_string(count) + ".png";
+		//std::string path = "./frame_" + std::to_string(count) + ".png";
 		//cv::imwrite(path, result);
 
 		/* 結果表示 */

@@ -73,7 +73,7 @@ namespace ImgProc
 			carPos.x = mNearRect.x + mMaxLoc.x;
 			carPos.y = mNearRect.y + mMaxLoc.y;
 			cv::rectangle(Tk::sResutImg, carPos, cv::Scalar(255, 0, 0), 1);
-			templates[carId] = ExtractTemplate(Tk::sFrame, carPos);
+			//templates[carId] = ExtractTemplate(Tk::sFrame, carPos);
 
 			JudgeStopTraceAndDetect(idx, carId, carPos);
 		}
@@ -137,9 +137,12 @@ namespace ImgProc
 			auto& area = statsPtr[cv::ConnectedComponentsTypes::CC_STAT_AREA];
 			/* end */
 
-			if (width * height < 70)
+			if (area < width * height * 0.4)
 				continue;
 
+			if (area < (y - Tk::sDetectTop) / 6 + 20)
+				continue;
+ 
 			/* 検出位置チェック */
 			// 検出開始位置近傍の車両を特定, 未検出車両なら車両IDを保存
 			// 1フレーム目は, 車両として検出しても, IDを保存しないものもあることに注意
@@ -240,11 +243,11 @@ namespace ImgProc
 			auto cutY = TemplateHandle::ExtractAreaByEdgeH(mTemp);
 			auto cutPairX = TemplateHandle::ExtractAreaByEdgeV(mTemp);
 
-			if (cutY <= (carPos.height * 0.35))
+			if (cutY <= (carPos.height * 0.45))
 				cutY = static_cast<int>(carPos.height) - 1;
 
 			auto wid = cutPairX.second - cutPairX.first + 1;
-			if (wid < (carPos.width * 0.35))
+			if (wid < (carPos.width * 0.45))
 			{
 				cutPairX.first = 0;
 				wid = static_cast<int>(carPos.width);

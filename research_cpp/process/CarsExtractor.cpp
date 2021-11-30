@@ -79,6 +79,7 @@ namespace ImgProc
 	{
 		//ラベリングによって求められるラベル数
 		auto labelNum = cv::connectedComponentsWithStats(mShadow, mLabels, mStats, mCentroids, 4);
+		int count = 0;
 
 		mExceptedShadows.setTo(0); // 除外すべき影画像を0で初期化
 		/* 各領域ごとの処理, 0番は背景 */
@@ -86,6 +87,7 @@ namespace ImgProc
 		{
 			/* 統計情報分割 */
 			auto statsPtr = mStats.ptr<int>(label);
+			auto& x = statsPtr[cv::ConnectedComponentsTypes::CC_STAT_LEFT];
 			auto& y = statsPtr[cv::ConnectedComponentsTypes::CC_STAT_TOP];
 			auto& width = statsPtr[cv::ConnectedComponentsTypes::CC_STAT_WIDTH];
 			auto& height = statsPtr[cv::ConnectedComponentsTypes::CC_STAT_HEIGHT];
@@ -99,7 +101,7 @@ namespace ImgProc
 			bool condAspect = aspect > aspectThr;
 			if (condArea || condAspect)
 			{
-				auto idxGroup = (mLabels == label); // 車影出ない部分を抜き出す
+				auto idxGroup = (mLabels == label); // 車影でない部分を抜き出す
 				mExceptedShadows.setTo(255, idxGroup); //車影でない部分を白画素で塗る
 			}
 		}
@@ -114,7 +116,7 @@ namespace ImgProc
 	void CarsExtractor::ExtractCars()
 	{
 		Tk::sCarsImg = mSubtracted - mReShadow; // 移動物体から車影を除去
-		cv::morphologyEx(Tk::sCarsImg, mTemp, cv::MORPH_CLOSE, mMorphKernel, cv::Point(-1, -1), mKernelCount);
+		cv::morphologyEx(Tk::sCarsImg, mTemp, cv::MORPH_CLOSE, mCloseKernel, cv::Point(-1, -1), mCloseCount);
 		cv::bitwise_and(mTemp, Tk::sRoadMaskGray, Tk::sCarsImg);
 	}
 
