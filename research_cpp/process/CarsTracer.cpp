@@ -29,6 +29,10 @@ namespace ImgProc
 		}
 	}
 
+	/// <summary>
+	/// 車両追跡
+	/// </summary>
+	/// <param name="idx">道路マスク番号</param>
 	void CarsTracer::TraceCars(const size_t& idx)
 	{
 		auto& templates = Tk::sTemplatesList[idx];
@@ -69,32 +73,39 @@ namespace ImgProc
 				mDeleteLists.push_back(std::pair(idx, carId));
 				continue;
 			}
+			/* end */
 
 			carPos.x = mNearRect.x + mMaxLoc.x;
 			carPos.y = mNearRect.y + mMaxLoc.y;
 			cv::rectangle(Tk::sResutImg, carPos, cv::Scalar(255, 0, 0), 1);
 			//templates[carId] = ExtractTemplate(Tk::sFrame, carPos);
 
-			JudgeStopTraceAndDetect(idx, carId, carPos);
+			JudgeStopTraceAndDetect(idx, carId, carPos); // 追跡終了判定
 		}
 		/* end */
-		DestructTracedCars();
+		DestructTracedCars(); // 追跡終了処理
 	}
 
+	/// <summary>
+	/// 車両追跡の停止・新規検出車両判定の停止を判断する
+	/// </summary>
+	/// <param name="idx">道路マスク番号</param>
+	/// <param name="carId">車両番号</param>
+	/// <param name="carPos">車両位置</param>
 	void CarsTracer::JudgeStopTraceAndDetect(const size_t& idx, const uint64_t& carId, const cv::Rect2d& carPos)
 	{
-		/* 追跡終了位置かどうかの判別 */
+		/* 追跡終了位置か, 新規車両かどうかの判別 */
 		switch (Tk::sRoadCarsDirections[idx])
 		{
 		case Tk::CARS_APPROACH_ROAD:
 			if ((carPos.y + carPos.height) > Tk::sDetectBottom)
-				mDeleteLists.push_back(std::pair(idx, carId));
+				mDeleteLists.push_back(std::pair(idx, carId)); // 追跡停止判定
 			if (carPos.y > (Tk::sDetectTop + Tk::sDetectMergin + Tk::sDetectMerginPad))
 				Tk::sBoundaryCarIdLists[idx].erase(carId);
 			break;
 		case Tk::CARS_LEAVE_ROAD:
 			if (carPos.y < Tk::sDetectTop)
-				mDeleteLists.push_back(std::pair(idx, carId));
+				mDeleteLists.push_back(std::pair(idx, carId)); // 追跡停止判定
 			if ((carPos.y + carPos.height) < (Tk::sDetectTop - Tk::sDetectMergin - Tk::sDetectMerginPad))
 				Tk::sBoundaryCarIdLists[idx].erase(carId);
 			break;
@@ -104,6 +115,9 @@ namespace ImgProc
 		/* end */
 	}
 
+	/// <summary>
+	/// 追跡停止処理
+	/// </summary>
 	void CarsTracer::DestructTracedCars()
 	{
 		/* 追跡終了車両をデータから除外 */
@@ -119,6 +133,10 @@ namespace ImgProc
 		/* end */
 	}
 
+	/// <summary>
+	/// 車両検出, 開始フレームとそれ以降で検出範囲が変化
+	/// </summary>
+	/// <param name="idx"></param>
 	void CarsTracer::DetectNewCars(const size_t& idx)
 	{
 		auto& templates = Tk::sTemplatesList[idx];
@@ -137,7 +155,7 @@ namespace ImgProc
 			auto& area = statsPtr[cv::ConnectedComponentsTypes::CC_STAT_AREA];
 			/* end */
 
-			if (area < width * height * 0.4)
+			if (area < width * height * 0.4) // 外周や直線だけで面積を稼いでるラベルを除外
 				continue;
 
 			if (area < (y - Tk::sDetectTop) / 6 + 20)
@@ -157,15 +175,15 @@ namespace ImgProc
 			}
 			/* end */
 			else
-				doesntDetectCar = IsntDetectedCars(idx, carPosRect);
+				doesntDetectCar = IsntDetectedCars(idx, carPosRect); // 検出範囲にあるか判定
 
-			if (doesntDetectCar)
+			if (doesntDetectCar) // 検出しない場合スキップ
 				continue;
 
-			if (DoesntAddBoundCar(idx, carPosRect))
+			if (DoesntAddBoundCar(idx, carPosRect)) // 検出範囲にある車両に対し検出するか判定. その後, 検出しない場合スキップ
 				continue;
 
-			boundaryCarIdList.insert(Tk::sCarsNum); 
+			boundaryCarIdList.insert(Tk::sCarsNum); // 新規検出車両として登録
 			/* end */
 
 			ReExtractTemplate(carPosRect); // テンプレート再抽出
@@ -173,7 +191,7 @@ namespace ImgProc
 
 			cv::rectangle(Tk::sResutImg, carPosRect, cv::Scalar(0, 0, 255), 1); // 矩形を描く
 
-			/* テンプレート抽出等 */
+			/* テンプレート抽出・保存 */
 			templates.insert(std::pair(Tk::sCarsNum, mTemp));
 			templatePositions.insert(std::pair(Tk::sCarsNum, carPosRect));
 			/* end */
@@ -186,6 +204,12 @@ namespace ImgProc
 		/* end */
 	}
 
+	/// <summary>
+	/// 車両が検出範囲に存在するか判定
+	/// </summary>
+	/// <param name="idx">道路マスク番号</param>
+	/// <param name="carPos">車両位置</param>
+	/// <returns>判定結果, trueなら検出しない</returns>
 	bool CarsTracer::IsntDetectedCars(const size_t& idx, const cv::Rect2d& carPos)
 	{
 		/* 検出位置チェック */
@@ -213,6 +237,12 @@ namespace ImgProc
 		return false;
 	}
 
+	/// <summary>
+	/// 新規車両として検出するか判定. 以前検出した新規車両との位置関係を考える.
+	/// </summary>
+	/// <param name="idx">道路マスク番号</param>
+	/// <param name="carPosRect">車両位置</param>
+	/// <returns>判定結果, trueなら検出しない</returns>
 	bool CarsTracer::DoesntAddBoundCar(const size_t& idx, const cv::Rect2d& carPosRect)
 	{
 		bool retFlag = false;
@@ -235,6 +265,10 @@ namespace ImgProc
 		return retFlag;
 	}
 
+	/// <summary>
+	/// テンプレート再抽出
+	/// </summary>
+	/// <param name="carPos">車両位置</param>
 	void CarsTracer::ReExtractTemplate(cv::Rect2d& carPos)
 	{
 		/* テンプレート再抽出 */
