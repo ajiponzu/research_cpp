@@ -68,6 +68,8 @@ namespace ImgProc
 
 		cv::cvtColor(mTemp, mTemp, cv::COLOR_BGR2GRAY);
 		cv::bitwise_and(mTemp, Tk::sRoadMaskGray, mShadow); //マスキング処理
+		cv::bitwise_and(mShadow, mSubtracted, mTemp);
+		mShadow = mTemp;
 	}
 
 	/// <summary>
