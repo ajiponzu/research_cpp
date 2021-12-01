@@ -155,10 +155,10 @@ namespace ImgProc
 			auto& area = statsPtr[cv::ConnectedComponentsTypes::CC_STAT_AREA];
 			/* end */
 
-			if (area < width * height * 0.4) // 外周や直線だけで面積を稼いでるラベルを除外
+			if (area < width * height * 0.3) // 外周や直線だけで面積を稼いでるラベルを除外
 				continue;
 
-			if (area < (y - Tk::sDetectTop) / 6 + 20)
+			if (area < (y - Tk::sDetectTop) / 6 + 30)
 				continue;
  
 			/* 検出位置チェック */
