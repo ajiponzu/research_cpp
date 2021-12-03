@@ -45,6 +45,7 @@ namespace ImgProc
 	const std::string ImgProcToolkit::sOutputPathList[3] = { "./output/hare/output.mp4", "./output/kumori/output.mp4", "./output/ame/output.mp4" };
 	const std::string ImgProcToolkit::sTemplatesPathList[3] = { "./output/hare/template/", "./output/kumori/template/", "./output/ame/template/" };
 	const std::string ImgProcToolkit::sRoadMaskPath = "./resource/back_kaikai.png";
+	//const std::string ImgProcToolkit::sRoadMaskPath = "./resource/back_kai.png";
 	const std::string ImgProcToolkit::sRoadMasksBasePath = "./resource/back_kai";
 	size_t ImgProcToolkit::sRoadMasksNum = 0;
 	int ImgProcToolkit::sVideoType = ImgProcToolkit::VIDEO_TYPE_HARE;
