@@ -77,7 +77,7 @@ namespace ImgProc
 		/* テンプレートの拡大・縮小処理と, 座標矩形の縦横の変更 */
 		rect.width *= magni;
 		rect.height *= magni;
-		cv::resize(carTemplate, carTemplate, cv::Size(), magni, magni, cv::INTER_NEAREST_EXACT);
+		cv::resize(carTemplate, carTemplate, rect.size());
 		/* end */
 
 		/* テンプレートマッチングの対象領域の限定 */
@@ -140,17 +140,17 @@ namespace ImgProc
 		std::vector<int> yFreqs;
 		SplitLineByEdge(sumElems, yFreqs);
 
-		Image output;
-		cv::Point a(0, 0), b(inputImg.cols, 0);
-		output = inputImg.clone();
-		for (const auto& elem : yFreqs)
-		{
-			a.y = elem;
-			b.y = elem;
-			cv::line(output, a, b, cv::Scalar(0, 0, 255));
-		}
-		const std::string path = Tk::sTemplatesPathList[Tk::sVideoType] + "template_" + std::to_string(Tk::sCarsNum) + ".png";
-		cv::imwrite(path, output);
+		//Image output;
+		//cv::Point a(0, 0), b(inputImg.cols, 0);
+		//output = inputImg.clone();
+		//for (const auto& elem : yFreqs)
+		//{
+		//	a.y = elem;
+		//	b.y = elem;
+		//	cv::line(output, a, b, cv::Scalar(0, 0, 255));
+		//}
+		//const std::string path = Tk::sTemplatesPathList[Tk::sVideoType] + "template_" + std::to_string(Tk::sCarsNum) + ".png";
+		//cv::imwrite(path, output);
 
 		return *yFreqs.rbegin(); // 縦方向は最下部のエッジがわかればよいので, 候補の一番最後の添え字が最下部のy座標
 	}

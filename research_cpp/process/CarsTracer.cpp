@@ -78,6 +78,12 @@ namespace ImgProc
 			carPos.x = mNearRect.x + mMaxLoc.x;
 			carPos.y = mNearRect.y + mMaxLoc.y;
 			cv::rectangle(Tk::sResutImg, carPos, cv::Scalar(255, 0, 0), 1);
+
+			if (carId % 5 == 0)
+			{
+				const std::string path = Tk::sTemplatesPathList[Tk::sVideoType] + "template_" + std::to_string(carId) + "_" + std::to_string(Tk::sFrameCount) + ".png";
+				cv::imwrite(path, templates[carId]);
+			}
 			//templates[carId] = ExtractTemplate(Tk::sFrame, carPos);
 
 			JudgeStopTraceAndDetect(idx, carId, carPos); // 追跡終了判定
