@@ -61,6 +61,9 @@ int main()
 	ImgProc::CarsTracer tracer;
 	/* end */
 
+	// 背景画像初期化
+	extractor.InitBackgroundImage();
+
 	// フレームカウント
 	uint64_t& count = ImgProcToolkit::GetFrameCount();
 	// 1秒あたりのフレーム数

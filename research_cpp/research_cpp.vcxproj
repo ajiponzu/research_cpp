@@ -146,12 +146,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="process\BackImageHandle.cpp" />
     <ClCompile Include="process\CarsExtractor.cpp" />
     <ClCompile Include="process\CarsTracer.cpp" />
     <ClCompile Include="process\ImgProc.cpp" />
     <ClCompile Include="process\TemplateHandle.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="process\BackImageHandle.h" />
     <ClInclude Include="process\CarsExtractor.h" />
     <ClInclude Include="process\CarsTracer.h" />
     <ClInclude Include="process\ImgProc.h" />
