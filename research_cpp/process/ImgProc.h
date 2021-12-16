@@ -20,6 +20,7 @@ namespace ImgProc
 		constexpr static int VIDEO_TYPE_HARE = 0;
 		constexpr static int VIDEO_TYPE_KUMORI = 1;
 		constexpr static int VIDEO_TYPE_AME = 2;
+		constexpr static int VIDEO_TYPE_YU = 3;
 		constexpr static int CARS_LEAVE_ROAD = 0;
 		constexpr static int CARS_APPROACH_ROAD = 1;
 	private:
@@ -57,10 +58,10 @@ namespace ImgProc
 		/* end */
 
 		/* ファイルパス関連 */
-		const static std::string sVideoPathList[3];
-		const static std::string sOutputPathList[3];
-		const static std::string sBackImgPathList[3];
-		const static std::string sTemplatesPathList[3];
+		const static std::string sVideoPathList[4];
+		const static std::string sOutputPathList[4];
+		const static std::string sBackImgPathList[4];
+		const static std::string sTemplatesPathList[4];
 		const static std::string sRoadMaskPath;
 		const static std::string sRoadMasksBasePath;
 		// sRoadMasksのsize数

@@ -4,6 +4,8 @@
 class ImgProc::CarsExtractor
 {
 private:
+	class BackImageHandle;
+
 	/* 出力画像バッファ */
 	Image mSubtracted; //背景差分画像, 1チャンネル固定
 	Image mShadow; //車影画像, 1チャンネル固定
@@ -52,6 +54,11 @@ public:
 		mOpenKernel = Image(3, 3, CV_8U, kernelList);
 		/* end */
 	}
+
+	/// <summary>
+	/// 初期背景画像を作成(500フレーム使用)
+	/// </summary>
+	void InitBackgroundImage();
 
 	/// <summary>
 	/// 背景差分, 移動物体検出

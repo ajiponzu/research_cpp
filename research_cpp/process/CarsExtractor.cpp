@@ -1,17 +1,25 @@
 #include "CarsExtractor.h"
+#include "BackImageHandle.h"
 
 using Tk = ImgProc::ImgProcToolkit;
 
 namespace ImgProc
 {
 	/// <summary>
+	/// 初期背景画像を作成(500フレーム使用)
+	/// </summary>
+	void CarsExtractor::InitBackgroundImage()
+	{
+		BackImageHandle::CreatePreBackImg();
+	}
+
+	/// <summary>
 	/// 背景差分, 移動物体検出
 	/// </summary>
 	void CarsExtractor::SubtractBackImage()
 	{
-		cv::absdiff(Tk::sFrame, Tk::sBackImg, mTemp); // 差分を取ってからその絶対値を画素値として格納
-		binarizeImage(mTemp);
-		cv::bitwise_and(mTemp, Tk::sRoadMaskGray, mSubtracted); // マスキング処理
+		auto& subtracted = BackImageHandle::GetSubtracted();
+		cv::bitwise_and(subtracted, Tk::sRoadMaskGray, mSubtracted); // マスキング処理
 	}
 
 	/// <summary>
