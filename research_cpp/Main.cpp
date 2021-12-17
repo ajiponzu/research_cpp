@@ -8,9 +8,9 @@ constexpr static auto gStartCount = 1;
 //constexpr static auto gStartCount = 900;
 
 //constexpr static auto gEndCount = 1;
-//constexpr static auto gEndCount = 4;
-//constexpr static auto gEndCount = 1000;
-constexpr static auto gEndCount = 10000;
+constexpr static auto gEndCount = 120;
+//constexpr static auto gEndCount = 1;
+//constexpr static auto gEndCount = 100000;
 /* end */
 
 /// <summary>
@@ -22,7 +22,7 @@ int main()
 	std::ios::sync_with_stdio(false); // デバッグ出力高速化
 
 	/* リソース読み込み */
-	ImgProcToolkit::SetVideoType(ImgProcToolkit::VIDEO_TYPE_HARE); // リソース指定
+	ImgProcToolkit::SetVideoType(ImgProcToolkit::VIDEO_TYPE_YU); // リソース指定
 
 	auto isCreatedVideo = ImgProcToolkit::CreateVideoResource(); // リソース登録
 	if (!isCreatedVideo)
@@ -42,11 +42,11 @@ int main()
 	/* end */
 
 	/* 検出範囲の設定 */
-	ImgProcToolkit::SetDetectTop(260);
-	ImgProcToolkit::SetDetectBottom(500);
-	ImgProcToolkit::SetDetectMergin(8);
-	ImgProcToolkit::SetDetectMerginPad(16);
-	ImgProcToolkit::SetDetectedNearOffset(8);
+	ImgProcToolkit::SetDetectTop(400);
+	ImgProcToolkit::SetDetectBottom(700);
+	ImgProcToolkit::SetDetectMergin(16);
+	ImgProcToolkit::SetDetectMerginPad(24);
+	ImgProcToolkit::SetDetectedNearOffset(16);
 	/* end */
 
 	//ImgProcToolkit::ShowResourceImgs(1500); // リソース表示
@@ -70,7 +70,6 @@ int main()
 	double tick = cv::getTickFrequency();
 	// 実行結果画像
 	auto& result = ImgProcToolkit::GetResult();
-	//auto& result = extractor.GetReShadow();
 	//auto& result = ImgProcToolkit::GetCars();
 
 	/* 検出台数監視 */
@@ -100,7 +99,7 @@ int main()
 		/* 車両検出の準備 */
 		extractor.SubtractBackImage();
 		extractor.ExtractShadow();
-		extractor.ReExtractShadow(10, 1.6f);
+		extractor.ReExtractShadow(20, 1.8f);
 		extractor.ExtractCars();
 		/* end */
 
@@ -108,16 +107,14 @@ int main()
 		tracer.DetectCars();
 		/* end */
 
-		//Image temp;
-		//cv::cvtColor(detector.GetCars(), temp, cv::COLOR_GRAY2BGR);
-		//videoWriter << temp;
-
 		videoWriter << result; // ビデオ書き出し
 		std::cout << count << std::endl; // カウントアップ
 		//std::string path = "./frame_" + std::to_string(count) + ".png";
 		//cv::imwrite(path, result);
 
 		/* 結果表示 */
+		//cv::imshow("result2", ImgProcToolkit::GetCars());
+		//cv::imshow("result2", extractor.GetSubtracted());
 		cv::imshow("result", result);
 		cv::waitKey(1);
 		/* end */

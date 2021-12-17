@@ -41,12 +41,13 @@ namespace ImgProc
 
 	/* ファイルパス関連 */
 	const std::string ImgProcToolkit::sVideoPathList[4] = { "./resource/hare/input.mp4", "./resource/kumori/input.mp4", "./resource/ame/input.mp4", "./resource/yugata/input.mp4" };
-	const std::string ImgProcToolkit::sBackImgPathList[4] = { "./resource/hare/back.png", "./resource/kumori/back.png", "./resource/ame/back.png", "./resource/ame/back.png"};
+	const std::string ImgProcToolkit::sBackImgPathList[4] = { "./resource/hare/back.png", "./resource/kumori/back.png", "./resource/ame/back.png", "./resource/yugata/back.png"};
 	const std::string ImgProcToolkit::sOutputPathList[4] = { "./output/hare/output.mp4", "./output/kumori/output.mp4", "./output/ame/output.mp4", "./output/yugata/output.mp4" };
 	const std::string ImgProcToolkit::sTemplatesPathList[4] = { "./output/hare/template/", "./output/kumori/template/", "./output/ame/template/", "./output/yugata/template/" };
-	const std::string ImgProcToolkit::sRoadMaskPath = "./resource/back_kaikai.png";
-	//const std::string ImgProcToolkit::sRoadMaskPath = "./resource/back_kai.png";
-	const std::string ImgProcToolkit::sRoadMasksBasePath = "./resource/back_kai";
+	//const std::string ImgProcToolkit::sRoadMaskPath = "./resource/back_kaikai.png";
+	const std::string ImgProcToolkit::sRoadMaskPath = "./resource/2k/back_kaikai.png";
+	//const std::string ImgProcToolkit::sRoadMasksBasePath = "./resource/back_kai";
+	const std::string ImgProcToolkit::sRoadMasksBasePath = "./resource/2k/back_kai";
 	size_t ImgProcToolkit::sRoadMasksNum = 0;
 	int ImgProcToolkit::sVideoType = ImgProcToolkit::VIDEO_TYPE_HARE;
 	/* end */

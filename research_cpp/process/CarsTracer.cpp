@@ -41,7 +41,7 @@ namespace ImgProc
 		auto& roadCarsDirection = Tk::sRoadCarsDirections[idx];
 
 		double maxValue = 0.0, magni = 1.0016;
-		int mergin = 8;
+		int mergin = 16;
 
 		/* 検出済み車両ごとに処理 */
 		for (auto carId = Tk::sFrontCarsId; carId < Tk::sCarsNum; carId++)
@@ -79,11 +79,11 @@ namespace ImgProc
 			carPos.y = mNearRect.y + mMaxLoc.y;
 			cv::rectangle(Tk::sResutImg, carPos, cv::Scalar(255, 0, 0), 1);
 
-			if (carId % 5 == 0)
-			{
-				const std::string path = Tk::sTemplatesPathList[Tk::sVideoType] + "template_" + std::to_string(carId) + "_" + std::to_string(Tk::sFrameCount) + ".png";
-				cv::imwrite(path, templates[carId]);
-			}
+			//if (carId % 5 == 0)
+			//{
+			//	const std::string path = Tk::sTemplatesPathList[Tk::sVideoType] + "template_" + std::to_string(carId) + "_" + std::to_string(Tk::sFrameCount) + ".png";
+			//	cv::imwrite(path, templates[carId]);
+			//}
 			//templates[carId] = ExtractTemplate(Tk::sFrame, carPos);
 
 			JudgeStopTraceAndDetect(idx, carId, carPos); // 追跡終了判定
@@ -164,7 +164,7 @@ namespace ImgProc
 			if (area < width * height * 0.3) // 外周や直線だけで面積を稼いでるラベルを除外
 				continue;
 
-			if (area < (y - Tk::sDetectTop) / 6 + 30)
+			if (area < (y - Tk::sDetectTop) / 4 + 30)
 				continue;
  
 			/* 検出位置チェック */
@@ -295,7 +295,7 @@ namespace ImgProc
 
 			carPos.x += cutPairX.first;
 			carPos.width = wid;
-			carPos.height = cutY + 1;
+			//carPos.height = cutY + 1;
 		}
 		/* end */
 	}

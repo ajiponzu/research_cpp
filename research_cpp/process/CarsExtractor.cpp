@@ -18,6 +18,7 @@ namespace ImgProc
 	/// </summary>
 	void CarsExtractor::SubtractBackImage()
 	{
+		BackImageHandle::UpdateBackground();
 		auto& subtracted = BackImageHandle::GetSubtracted();
 		cv::bitwise_and(subtracted, Tk::sRoadMaskGray, mSubtracted); // マスキング処理
 	}
@@ -75,9 +76,7 @@ namespace ImgProc
 		/* end */
 
 		cv::cvtColor(mTemp, mTemp, cv::COLOR_BGR2GRAY);
-		cv::bitwise_and(mTemp, Tk::sRoadMaskGray, mShadow); //マスキング処理
-		cv::bitwise_and(mShadow, mSubtracted, mTemp);
-		mShadow = mTemp;
+		cv::bitwise_and(mTemp, mSubtracted, mShadow);
 	}
 
 	/// <summary>
@@ -88,7 +87,7 @@ namespace ImgProc
 	void CarsExtractor::ReExtractShadow(const int& areaThr, const float& aspectThr)
 	{
 		//ラベリングによって求められるラベル数
-		auto labelNum = cv::connectedComponentsWithStats(mShadow, mLabels, mStats, mCentroids, 4);
+		auto labelNum = cv::connectedComponentsWithStats(mShadow, mLabels, mStats, mCentroids, 8);
 		int count = 0;
 
 		mExceptedShadows.setTo(0); // 除外すべき影画像を0で初期化
@@ -105,7 +104,7 @@ namespace ImgProc
 			/* end */
 
 			auto aspect = static_cast<float>(width) / height; //アスペクト比の導出
-			auto tAreaThr = (y - Tk::sDetectTop) / 12 + areaThr; // 位置に応じた面積の閾値
+			auto tAreaThr = (y - Tk::sDetectTop) / 6 + areaThr; // 位置に応じた面積の閾値
 
 			bool condArea = area < tAreaThr;
 			bool condAspect = aspect > aspectThr;
@@ -125,9 +124,9 @@ namespace ImgProc
 	/// </summary>
 	void CarsExtractor::ExtractCars()
 	{
-		Tk::sCarsImg = mSubtracted - mReShadow; // 移動物体から車影を除去
-		cv::morphologyEx(Tk::sCarsImg, mTemp, cv::MORPH_CLOSE, mCloseKernel, cv::Point(-1, -1), mCloseCount);
-		cv::bitwise_and(mTemp, Tk::sRoadMaskGray, Tk::sCarsImg);
+		mTemp = mSubtracted - mReShadow; // 移動物体から車影を除去
+		cv::morphologyEx(mTemp, Tk::sCarsImg, cv::MORPH_CLOSE, mCloseKernel, cv::Point(-1, -1), mCloseCount);
+		cv::bitwise_and(Tk::sCarsImg, Tk::sRoadMaskGray, Tk::sCarsImg);
 	}
 
 	/// <summary>

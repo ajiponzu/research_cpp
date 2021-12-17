@@ -23,8 +23,7 @@ private:
 	Image mOpenKernel; // クロージングで使用するカーネル
 	/* end */
 
-	int mCloseCount = 2; // クロージング回数
-	int mOpenCount = 1; // オープニング回数
+	int mCloseCount = 3; // クロージング回数
 
 public:
 	CarsExtractor()
@@ -37,21 +36,7 @@ public:
 		/* end */
 
 		/* モルフォロジカーネルの初期化 */
-		int kernelList[9] =
-		{
-			1, 1, 1,
-			1, 1, 1,
-			1, 1, 1
-		};
-		mCloseKernel = Image(3, 3, CV_8U, kernelList);
-
-		kernelList[0] = 0;
-		kernelList[1] = 0;
-		kernelList[2] = 0;
-		kernelList[6] = 0;
-		kernelList[7] = 0;
-		kernelList[8] = 0;
-		mOpenKernel = Image(3, 3, CV_8U, kernelList);
+		mCloseKernel = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(5, 5)); // モルフォロジカーネル取得関数, RECTのほかにCROSS, ELIPSEがある
 		/* end */
 	}
 

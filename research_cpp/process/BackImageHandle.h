@@ -14,7 +14,7 @@ private:
 
 public:
 	static const Image& GetBackImg() { return sBackImg; }
-	static const Image& GetSubtracted() { return sSubtracted; }
+	static Image& GetSubtracted() { return sSubtracted; }
 
 	static void CreatePreBackImg();
 	static void UpdateBackground();
