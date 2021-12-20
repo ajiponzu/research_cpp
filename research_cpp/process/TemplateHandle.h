@@ -4,6 +4,17 @@
 class ImgProc::CarsTracer::TemplateHandle
 {
 private:
+	static double mMagni; // 拡大・縮小の度合を決める
+	static double mMergin; // 推定移動幅
+	static Image mLabels; //ラベル画像
+	static Image mStats; //ラベリングにおける統計情報
+	static Image mCentroids; //ラベリングにおける中心点座標群
+	static Image mTemp1;
+	static Image mTemp2;
+	static Image mTemp3;
+	static Image mCloseKernel; // クロージングで使用するカーネル
+	static int mCloseCount; // クロージング回数
+private:
 	/// <summary>
 	/// 頻度値データを, 一行n列の1チャンネル(グレースケール)画像として考え, 極大値をもつインデックスを保存
 	/// </summary>
@@ -18,9 +29,14 @@ public:
 	/// <param name="nearRect">制限区域矩形</param>
 	/// <param name="maskId">道路マスク番号</param>
 	/// <param name="carId">車両番号</param>
-	/// <param name="orgMagni">拡大・縮小倍率</param>
-	/// <param name="orgMergin">車両の1フレーム後における推定移動幅</param>
-	static void ExtractCarsNearestArea(cv::Rect2d& nearRect, const size_t& maskId, const uint64_t& carId, const double& orgMagni = 1.001, const int& orgMergin = 8);
+	static void ExtractCarsNearestArea(cv::Rect2d& nearRect, const size_t& maskId, const uint64_t& carId);
+
+	/// <summary>
+	/// テンプレートに対してもう一度ラベリングを行い, ラベルの左上座標を参照リストに入れる
+	/// </summary>
+	/// <param name="finCarPosList">ラベル座標を格納するために渡されたリストの参照</param>
+	/// <param name="carPos">テンプレートの絶対座標</param>
+	static void ReLabelingTemplate(std::vector<cv::Rect>& finCarPosList, const cv::Rect2d& carPos);
 
 	/// <summary>
 	/// 横方向の負エッジをy方向微分によって求め, 切りだすy座標を処理によって選択
@@ -36,6 +52,6 @@ public:
 	/// </summary>
 	/// <param name="inputImg">入力テンプレート画像</param>
 	/// <returns>切りだすx座標二つを一組にして返す</returns>
-	static std::pair<int, int> ExtractAreaByEdgeV(const Image& inputImg);
+	static std::pair<const int&, const int&> ExtractAreaByEdgeV(const Image& inputImg);
 };
 

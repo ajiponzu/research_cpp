@@ -47,8 +47,7 @@ namespace ImgProc
 		auto& refBoundaryCarIdList = Tk::GetBoundaryCarIdLists()[idx];
 		auto& refRoadCarsDirection = Tk::GetRoadCarsDirections()[idx];
 
-		double maxValue = 0.0, magni = 1.0016;
-		int mergin = 16;
+		double maxValue = 0.0;
 
 		/* 検出済み車両ごとに処理 */
 		for (auto carId = Tk::GetFrontCarId(); carId < Tk::GetCarsNum(); carId++)
@@ -59,7 +58,7 @@ namespace ImgProc
 			/* テンプレートマッチング */
 			auto& refCarImg = refTemplates[carId];
 			auto& refCarPos = refTemplatePositions[carId];
-			TemplateHandle::ExtractCarsNearestArea(mNearRect, idx, carId, magni, mergin);
+			TemplateHandle::ExtractCarsNearestArea(mNearRect, idx, carId);
 			mTemp = GetImgSlice(crefFrame, mNearRect).clone();
 
 			//Image edge, edgeTempl;
@@ -305,40 +304,6 @@ namespace ImgProc
 	/// <param name="carPos">車両位置</param>
 	void CarsTracer::ReExtractTemplate(const cv::Rect2d& carPos)
 	{
-		const auto& crefFrame = Tk::GetFrame();
-		const auto& crefBackImg = Tk::GetBackImg();
-
-		mTempTempTemp = ExtractTemplate(crefFrame, carPos);
-		mTemp = ExtractTemplate(crefBackImg, carPos);
-		cv::fastNlMeansDenoisingColored(mTempTempTemp, mTempTemp, 10.0f, 10.0f, 3);
-		cv::fastNlMeansDenoisingColored(mTemp, mTempTempTemp, 10.0f, 10.0f, 3);
-
-		cv::absdiff(mTempTemp, mTempTempTemp, mTemp);
-		binarizeImage(mTemp);
-		cv::morphologyEx(mTemp, mTempTemp, cv::MORPH_CLOSE, mCloseKernel, cv::Point(-1, -1), mCloseCount);
-
-		Image labels, stats, centroids;
-
-		//ラベリングによって求められるラベル数
-		auto labelNum = cv::connectedComponentsWithStats(mTempTemp, labels, stats, centroids, 8);
-		/* 各領域ごとの処理, 0番は背景 */
-		for (int label = 1; label < labelNum; label++)
-		{
-			/* 統計情報分割 */
-			auto statsPtr = stats.ptr<int>(label);
-			auto& x = statsPtr[cv::ConnectedComponentsTypes::CC_STAT_LEFT];
-			auto& y = statsPtr[cv::ConnectedComponentsTypes::CC_STAT_TOP];
-			auto& width = statsPtr[cv::ConnectedComponentsTypes::CC_STAT_WIDTH];
-			auto& height = statsPtr[cv::ConnectedComponentsTypes::CC_STAT_HEIGHT];
-			auto& area = statsPtr[cv::ConnectedComponentsTypes::CC_STAT_AREA];
-			/* end */
-
-			auto tAreaThr = (carPos.y - Tk::GetDetectTop()) / 4 + 10; // 位置に応じた面積の閾値
-			if (area < tAreaThr)
-				continue;
-
-			mFinCarPosList.push_back(cv::Rect(carPos.x + x, carPos.y + y, width, height));
-		}
-		/* end */
+		TemplateHandle::ReLabelingTemplate(mFinCarPosList, carPos);
 	}
 };

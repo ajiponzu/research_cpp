@@ -9,16 +9,12 @@ private:
 	std::vector<std::pair<size_t, uint64_t>> mDeleteLists;
 	Image mTempFrame;
 	Image mTemp;
-	Image mTempTemp;
-	Image mTempTempTemp;
 	Image mDataTemp;
 
 	Image mLabels; //ラベル画像
 	Image mStats; //ラベリングにおける統計情報
 	Image mCentroids; //ラベリングにおける中心点座標群
 
-	Image mCloseKernel; // クロージングで使用するカーネル
-	int mCloseCount = 2; // クロージング回数
 	int mLabelNum; // ラベル数
 
 	cv::Point mMaxLoc;
@@ -26,12 +22,7 @@ private:
 
 	std::vector<cv::Rect> mFinCarPosList;
 public:
-	CarsTracer() : mLabelNum(0) 
-	{
-		/* モルフォロジカーネルの初期化 */
-		mCloseKernel = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(3, 3)); // モルフォロジカーネル取得関数, RECTのほかにCROSS, ELIPSEがある
-		/* end */
-	}
+	CarsTracer() : mLabelNum(0) {}
 
 	/// <summary>
 	/// 車両検出
