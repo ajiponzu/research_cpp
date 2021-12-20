@@ -170,9 +170,29 @@ namespace ImgProc
 			cv::Rect2d carPosRect(x, y, width, height);
 			bool doesntDetectCar = false;
 
+			///* 検出位置チェック */
+			//// 検出開始位置近傍の車両を特定, 未検出車両なら車両IDを保存
+			//// 1フレーム目は, 車両として検出しても, IDを保存しないものもあることに注意
+			///* 1フレーム目で検出されない領域を除外 */
+			//if (Tk::sFrameCount == Tk::sStartFrame)
+			//{
+			//	auto bottomY = carPosRect.y + carPosRect.height;
+			//	doesntDetectCar = (carPosRect.y < (Tk::sDetectTop + Tk::sDetectMergin + Tk::sDetectMerginPad)) || (bottomY > (Tk::sDetectBottom - Tk::sDetectMergin - Tk::sDetectMerginPad));
+			//}
+			///* end */
+			//else
+			//	doesntDetectCar = IsntDetectedCars(idx, carPosRect); // 検出範囲にあるか判定
+
+			//if (doesntDetectCar) // 検出しない場合スキップ
+			//	continue;
+
+			//if (DoesntAddBoundCar(idx, carPosRect)) // 検出範囲にある車両に対し検出するか判定. その後, 検出しない場合スキップ
+			//	continue;
+			///* end */
+
 			ReExtractTemplate(carPosRect); // テンプレート再抽出
 
-			for (auto& finPos : mFinCarPosList)
+			for (const auto& finPos : mFinCarPosList)
 			{
 				/* 検出位置チェック */
 				// 検出開始位置近傍の車両を特定, 未検出車両なら車両IDを保存
@@ -279,25 +299,26 @@ namespace ImgProc
 	/// テンプレート再抽出
 	/// </summary>
 	/// <param name="carPos">車両位置</param>
-	void CarsTracer::ReExtractTemplate(cv::Rect2d& carPos)
+	void CarsTracer::ReExtractTemplate(const cv::Rect2d& carPos)
 	{
-		mTemp = ExtractTemplate(Tk::sFrame, carPos);
-		auto temp = ExtractTemplate(Tk::sBackImg, carPos);
-		cv::fastNlMeansDenoisingColored(mTemp, mTempTemp, 3.0f, 3.0f, 3);
-		cv::fastNlMeansDenoisingColored(temp, mTemp, 3.0f, 3.0f, 3);
+		mTempTempTemp = ExtractTemplate(Tk::sFrame, carPos);
+		mTemp = ExtractTemplate(Tk::sBackImg, carPos);
+		cv::fastNlMeansDenoisingColored(mTempTempTemp, mTempTemp, 10.0f, 10.0f, 3);
+		cv::fastNlMeansDenoisingColored(mTemp, mTempTempTemp, 10.0f, 10.0f, 3);
 
-		cv::absdiff(mTempTemp, mTemp, temp);
-		binarizeImage(temp);
-		cv::morphologyEx(temp, mTemp, cv::MORPH_CLOSE, mCloseKernel, cv::Point(-1, -1), mCloseCount);
+		cv::absdiff(mTempTemp, mTempTempTemp, mTemp);
+		binarizeImage(mTemp);
+		cv::morphologyEx(mTemp, mTempTemp, cv::MORPH_CLOSE, mCloseKernel, cv::Point(-1, -1), mCloseCount);
+
+		Image labels, stats, centroids;
 
 		//ラベリングによって求められるラベル数
-		auto labelNum = cv::connectedComponentsWithStats(mTemp, mLabels, mStats, mCentroids, 4);
-
+		auto labelNum = cv::connectedComponentsWithStats(mTempTemp, labels, stats, centroids, 8);
 		/* 各領域ごとの処理, 0番は背景 */
-		for (int label = labelNum - 1; label > 0; label--)
+		for (int label = 1; label < labelNum; label++)
 		{
 			/* 統計情報分割 */
-			auto statsPtr = mStats.ptr<int>(label);
+			auto statsPtr = stats.ptr<int>(label);
 			auto& x = statsPtr[cv::ConnectedComponentsTypes::CC_STAT_LEFT];
 			auto& y = statsPtr[cv::ConnectedComponentsTypes::CC_STAT_TOP];
 			auto& width = statsPtr[cv::ConnectedComponentsTypes::CC_STAT_WIDTH];
@@ -305,9 +326,9 @@ namespace ImgProc
 			auto& area = statsPtr[cv::ConnectedComponentsTypes::CC_STAT_AREA];
 			/* end */
 
-			//auto tAreaThr = (carPos.y - Tk::sDetectTop) / 4 + 10; // 位置に応じた面積の閾値
-			//if (area < tAreaThr)
-			//	continue;
+			auto tAreaThr = (carPos.y - Tk::sDetectTop) / 4 + 10; // 位置に応じた面積の閾値
+			if (area < tAreaThr)
+				continue;
 
 			mFinCarPosList.push_back(cv::Rect(carPos.x + x, carPos.y + y, width, height));
 		}

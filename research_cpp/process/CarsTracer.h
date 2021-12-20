@@ -10,6 +10,7 @@ private:
 	Image mTempFrame;
 	Image mTemp;
 	Image mTempTemp;
+	Image mTempTempTemp;
 	Image mDataTemp;
 
 	Image mLabels; //ラベル画像
@@ -84,5 +85,5 @@ private:
 	/// テンプレート再抽出
 	/// </summary>
 	/// <param name="carPos">車両位置</param>
-	void ReExtractTemplate(cv::Rect2d& carPos);
+	void ReExtractTemplate(const cv::Rect2d& carPos);
 };
