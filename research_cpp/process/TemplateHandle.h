@@ -52,6 +52,6 @@ public:
 	/// </summary>
 	/// <param name="inputImg">入力テンプレート画像</param>
 	/// <returns>切りだすx座標二つを一組にして返す</returns>
-	static std::pair<const int&, const int&> ExtractAreaByEdgeV(const Image& inputImg);
+	static std::pair<int, int> ExtractAreaByEdgeV(const Image& inputImg);
 };
 

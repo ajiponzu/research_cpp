@@ -13,6 +13,7 @@ namespace ImgProc
 		HARE = 0,
 		KUMORI = 1,
 		AME = 2,
+		YU = 3,
 	};
 
 	enum class RoadDirect
@@ -56,7 +57,7 @@ namespace ImgProc
 		// テンプレートの抽出位置を保存, 車線ごとに保存
 		static std::vector<std::unordered_map<uint64_t, cv::Rect2d>> sTemplatePositionsList;
 		// 車線ごとの車の移動方向を保存
-		static std::unordered_map<size_t, int> sRoadCarsDirections;
+		static std::unordered_map<size_t, RoadDirect> sRoadCarsDirections;
 		// 車線ごとに検出境界に最も近い(高さの大小)車両IDを保存
 		static std::vector<std::unordered_set<uint64_t>> sBoundaryCarIdLists;
 		/* end */
@@ -105,7 +106,7 @@ namespace ImgProc
 		/// 車線ごとの車の移動方向を設定
 		/// </summary>
 		/// <param name="directions">key: 車線番号(0~), value: CARS_~_ROADマクロのハッシュ</param>
-		static void SetRoadCarsDirections(const std::unordered_map<size_t, int>&& directions);
+		static void SetRoadCarsDirections(const std::unordered_map<size_t, RoadDirect>&& directions);
 
 		/// <summary>
 		/// リソース画像表示
@@ -129,7 +130,7 @@ namespace ImgProc
 		/* ゲッタ */
 		static cv::VideoCapture& GetVideoCapture() { return sVideoCapture; }
 		static cv::VideoWriter& GetVideoWriter() { return sVideoWriter; }
-		static std::pair<const int&, const int&> GetVideoWidAndHigh() { return std::make_pair(sVideoWidth, sVideoHeight); }
+		static std::pair<int, int> GetVideoWidAndHigh() { return std::make_pair(sVideoWidth, sVideoHeight); }
 		static const VideoType& GetVideoType() { return sVideoType; }
 		static const int& GetDetectTop() { return sDetectTop; }
 		static const int& GetDetectBottom() { return sDetectBottom; }
@@ -144,14 +145,14 @@ namespace ImgProc
 		static const size_t& GetRoadMasksNum() { return sRoadMasksNum; }
 		static Image& GetRoadMaskGray() { return sRoadMaskGray; }
 		static std::vector<Image>& GetRoadMasksGray() { return sRoadMasksGray; }
-		static const uint64_t& GetFrameCount() { return sFrameCount; }
+		static uint64_t& GetFrameCount() { return sFrameCount; }
 		static uint64_t& GetFrontCarId() { return sFrontCarId; }
 		static uint64_t& GetCarsNum() { return sCarsNum; }
 		static uint64_t& GetFrameCarsNum() { return sFrameCarsNum; }
 		static const uint64_t& GetCarsNumPrev() { return sCarsNumPrev; }
 		static std::vector<std::unordered_map<uint64_t, Image>>& GetTemplatesList() { return sTemplatesList; }
 		static std::vector<std::unordered_map<uint64_t, cv::Rect2d>>& GetTemplatePositionsList() { return sTemplatePositionsList; }
-		static std::unordered_map<size_t, int>& GetRoadCarsDirections() { return sRoadCarsDirections; }
+		static std::unordered_map<size_t, RoadDirect>& GetRoadCarsDirections() { return sRoadCarsDirections; }
 		static std::vector<std::unordered_set<uint64_t>>& GetBoundaryCarIdLists() { return sBoundaryCarIdLists; }
 		/* end */
 		/* end */

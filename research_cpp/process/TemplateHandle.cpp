@@ -81,7 +81,7 @@ namespace ImgProc
 		const auto& crefRoadCarsDirection = Tk::GetRoadCarsDirections()[maskId];
 
 		/* 車両が遠ざかっていくとき */
-		if (crefRoadCarsDirection == static_cast<int>(RoadDirect::LEAVE))
+		if (crefRoadCarsDirection == RoadDirect::LEAVE)
 			magni = 1 / mMagni; // 縮小するために逆数にする
 		/* end */
 
@@ -154,7 +154,7 @@ namespace ImgProc
 			if (area < tAreaThr)
 				continue;
 
-			finCarPosList.push_back(cv::Rect(carPos.x + x, carPos.y + y, width, height));
+			finCarPosList.push_back(cv::Rect(static_cast<int>(carPos.x) + x, static_cast<int>(carPos.y) + y, width, height));
 		}
 		/* end */
 	}
@@ -216,7 +216,7 @@ namespace ImgProc
 	/// </summary>
 	/// <param name="inputImg">入力テンプレート画像</param>
 	/// <returns>切りだすx座標二つを一組にして返す</returns>
-	std::pair<const int&, const int&> CarsTracer::TemplateHandle::ExtractAreaByEdgeV(const Image& inputImg)
+	std::pair<int, int> CarsTracer::TemplateHandle::ExtractAreaByEdgeV(const Image& inputImg)
 	{
 		Image gray[2], temp[2], sumElems[2];
 		/* エッジ抽出部. cv関数では, 場合によってsrc=dstのように引数を与えると動作しないことがあるので注意 */

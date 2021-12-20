@@ -111,13 +111,13 @@ namespace ImgProc
 		/* 追跡終了位置か, 新規車両かどうかの判別 */
 		switch (crefRoadCarsDirection)
 		{
-		case static_cast<int>(RoadDirect::APPROACH):
+		case RoadDirect::APPROACH:
 			if ((carPos.y + carPos.height) > Tk::GetDetectBottom())
 				mDeleteLists.push_back(std::pair(idx, carId)); // 追跡停止判定
 			if (carPos.y > (Tk::GetDetectTop() + Tk::GetDetectMergin() + Tk::GetDetectMerginPad()))
 				refBoundaryCarIdList.erase(carId);
 			break;
-		case static_cast<int>(RoadDirect::LEAVE):
+		case RoadDirect::LEAVE:
 			if (carPos.y < Tk::GetDetectTop())
 				mDeleteLists.push_back(std::pair(idx, carId)); // 追跡停止判定
 			if ((carPos.y + carPos.height) < (Tk::GetDetectTop() - Tk::GetDetectMergin() - Tk::GetDetectMerginPad()))
@@ -246,11 +246,11 @@ namespace ImgProc
 		/* 検出開始地点から遠い領域かをチェック */
 		switch (crefRoadCarsDirection)
 		{
-		case static_cast<int>(RoadDirect::APPROACH):
+		case RoadDirect::APPROACH:
 			doesntDetectCar = (carPos.y < Tk::GetDetectTop())
 				|| (carPos.y > (Tk::GetDetectTop() + Tk::GetDetectMergin()));
 			return doesntDetectCar;
-		case static_cast<int>(RoadDirect::LEAVE):
+		case RoadDirect::LEAVE:
 			doesntDetectCar = (bottomY < (Tk::GetDetectBottom() - Tk::GetDetectMergin()))
 				|| (bottomY > Tk::GetDetectBottom());
 			return doesntDetectCar;

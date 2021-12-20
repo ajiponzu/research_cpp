@@ -28,7 +28,7 @@ private:
 public:
 	CarsExtractor()
 	{
-		auto [crefVideoWidth, crefVideoHeight] = ImgProcToolkit::GetVideoWidAndHigh();
+		const auto& [crefVideoWidth, crefVideoHeight] = ImgProcToolkit::GetVideoWidAndHigh();
 		cv::Size imgSize(crefVideoWidth, crefVideoHeight);
 
 		/* メンバ画像の初期化 */

@@ -46,7 +46,7 @@ namespace ImgProc
 	// テンプレートの抽出位置を保存, 車線ごとに保存
 	std::vector<std::unordered_map<uint64_t, cv::Rect2d>> ImgProcToolkit::sTemplatePositionsList;
 	// 車線ごとの車の移動方向を保存
-	std::unordered_map<size_t, int> ImgProcToolkit::sRoadCarsDirections;
+	std::unordered_map<size_t, RoadDirect> ImgProcToolkit::sRoadCarsDirections;
 	// 車線ごとに検出境界に最も近い(高さの大小)車両IDを保存
 	std::vector<std::unordered_set<uint64_t>> ImgProcToolkit::sBoundaryCarIdLists;
 	/* end */
@@ -172,7 +172,7 @@ namespace ImgProc
 	/// 車線ごとの車の移動方向を設定
 	/// </summary>
 	/// <param name="directions">key: 車線番号(0~), value: CARS_~_ROADマクロのハッシュ</param>
-	void ImgProcToolkit::SetRoadCarsDirections(const std::unordered_map<size_t, int>&& directions)
+	void ImgProcToolkit::SetRoadCarsDirections(const std::unordered_map<size_t, RoadDirect>&& directions)
 	{
 		sRoadCarsDirections = directions;
 	}

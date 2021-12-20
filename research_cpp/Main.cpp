@@ -4,13 +4,13 @@
 using namespace ImgProc;
 
 /* ループ回数決定 */
-//constexpr static auto gStartCount = 1;
-constexpr static auto gStartCount = 1300;
+constexpr static auto gStartCount = 1;
+//constexpr static auto gStartCount = 1300;
 
 //constexpr static auto gEndCount = 1;
-constexpr static auto gEndCount = 2000;
+//constexpr static auto gEndCount = 2000;
 //constexpr static auto gEndCount = 1;
-//constexpr static auto gEndCount = 100000;
+constexpr static auto gEndCount = 100000;
 /* end */
 
 /// <summary>
@@ -22,7 +22,7 @@ int main()
 	std::ios::sync_with_stdio(false); // デバッグ出力高速化
 
 	/* リソース読み込み */
-	ImgProcToolkit::SetVideoType(ImgProcToolkit::VIDEO_TYPE_YU); // リソース指定
+	ImgProcToolkit::SetVideoType(VideoType::YU); // リソース指定
 
 	auto isCreatedVideo = ImgProcToolkit::CreateVideoResource(); // リソース登録
 	if (!isCreatedVideo)
@@ -33,11 +33,11 @@ int main()
 		return 0;
 
 	/* 車線方向の設定 */
-	std::unordered_map<size_t, int> directions;
-	directions[0] = ImgProcToolkit::CARS_LEAVE_ROAD;
-	directions[2] = ImgProcToolkit::CARS_LEAVE_ROAD;
-	directions[1] = ImgProcToolkit::CARS_APPROACH_ROAD;
-	directions[3] = ImgProcToolkit::CARS_APPROACH_ROAD;
+	std::unordered_map<size_t, RoadDirect> directions;
+	directions[0] = RoadDirect::LEAVE;
+	directions[2] = RoadDirect::LEAVE;
+	directions[1] = RoadDirect::APPROACH;
+	directions[3] = RoadDirect::APPROACH;
 	ImgProcToolkit::SetRoadCarsDirections(std::move(directions));
 	/* end */
 
