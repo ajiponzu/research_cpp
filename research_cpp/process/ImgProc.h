@@ -8,21 +8,25 @@ namespace ImgProc
 {
 	using Image = cv::Mat;
 
+	enum class VideoType
+	{
+		HARE = 0,
+		KUMORI = 1,
+		AME = 2,
+	};
+
+	enum class RoadDirect
+	{
+		LEAVE = 0,
+		APPROACH = 1,
+	};
+
 	class CarsExtractor;
 	class CarsTracer;
 
 	class ImgProcToolkit
 	{
 		ImgProcToolkit() = delete; //staticクラスなので
-		friend class CarsExtractor;
-		friend class CarsTracer;
-	public:
-		constexpr static int VIDEO_TYPE_HARE = 0;
-		constexpr static int VIDEO_TYPE_KUMORI = 1;
-		constexpr static int VIDEO_TYPE_AME = 2;
-		constexpr static int VIDEO_TYPE_YU = 3;
-		constexpr static int CARS_LEAVE_ROAD = 0;
-		constexpr static int CARS_APPROACH_ROAD = 1;
 	private:
 		// 入力ビデオキャプチャ
 		static cv::VideoCapture sVideoCapture;
@@ -58,16 +62,10 @@ namespace ImgProc
 		/* end */
 
 		/* ファイルパス関連 */
-		const static std::string sVideoPathList[4];
-		const static std::string sOutputPathList[4];
-		const static std::string sBackImgPathList[4];
-		const static std::string sTemplatesPathList[4];
-		const static std::string sRoadMaskPath;
-		const static std::string sRoadMasksBasePath;
 		// sRoadMasksのsize数
 		static size_t sRoadMasksNum;
 		// 使用リソースの指定
-		static int sVideoType;
+		static VideoType sVideoType;
 		/* end */
 
 		// 読み込んだフレーム数
@@ -115,22 +113,28 @@ namespace ImgProc
 		/// <param name="interval">待機時間[ms]</param>
 		static void ShowResourceImgs(const int& interval);
 
-		static void SetVideoType(const int& videoType) { sVideoType = videoType; }
+		/* セッタ・ゲッタ */
+		/* セッタ */
+		static void SetVideoType(const VideoType& videoType) { sVideoType = videoType; }
 		static void SetDetectTop(const int& detectTop) { sDetectTop = detectTop; }
 		static void SetDetectBottom(const int& detectBottom) { sDetectBottom = detectBottom; }
 		static void SetDetectMergin(const int& detectMergin) { sDetectMergin = detectMergin; }
 		static void SetDetectMerginPad(const int& detectMerginPad) { sDetectMerginPad = detectMerginPad; }
 		static void SetDetectedNearOffset(const int& detectedNearOffset) { sDetectedNearOffset = detectedNearOffset; }
 		static void SetStartFrame(const int& startFrame) { sStartFrame = startFrame; }
+		/* end */
+		/* ゲッタ */
 		static cv::VideoCapture& GetVideoCapture() { return sVideoCapture; }
 		static cv::VideoWriter& GetVideoWriter() { return sVideoWriter; }
 		static Image& GetFrame() { return sFrame; }
 		static uint64_t& GetFrameCount() { return sFrameCount; }
-		static const uint64_t& GetCarsNum() { return sCarsNum; }
-		static const uint64_t& GetCarsNumPrev() { return sCarsNumPrev; }
-		static const uint64_t& GetFrameCarsNum() { return sFrameCarsNum; }
-		static const Image& GetResult() { return sResutImg; }
-		static const Image& GetCars() { return sCarsImg; }
+		static uint64_t& GetCarsNum() { return sCarsNum; }
+		static uint64_t& GetCarsNumPrev() { return sCarsNumPrev; }
+		static uint64_t& GetFrameCarsNum() { return sFrameCarsNum; }
+		static Image& GetResult() { return sResutImg; }
+		static Image& GetCars() { return sCarsImg; }
+		/* end */
+		/* end */
 	};
 
 	/// <summary>

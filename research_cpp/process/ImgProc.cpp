@@ -2,10 +2,22 @@
 
 namespace ImgProc
 {
+	/* グローバル変数 */
+	/* ファイルパス関連 */
+	static const std::string gsVideoPathList[4] = { "./resource/hare/input.mp4", "./resource/kumori/input.mp4", "./resource/ame/input.mp4", "./resource/yugata/input.mp4" };
+	static const std::string gsBackImgPathList[4] = { "./resource/hare/back.png", "./resource/kumori/back.png", "./resource/ame/back.png", "./resource/yugata/back.png"};
+	static const std::string gsOutputPathList[4] = { "./output/hare/output.mp4", "./output/kumori/output.mp4", "./output/ame/output.mp4", "./output/yugata/output.mp4" };
+	static const std::string gsTemplatesPathList[4] = { "./output/hare/template/", "./output/kumori/template/", "./output/ame/template/", "./output/yugata/template/" };
+	//static const std::string gsRoadMaskPath = "./resource/back_kaikai.png";
+	static const std::string gsRoadMaskPath = "./resource/2k/back_kaikai.png";
+	//static const std::string gsRoadMasksBasePath = "./resource/back_kai";
+	static const std::string gsRoadMasksBasePath = "./resource/2k/back_kai";
+	/* end */
+	/* end */
+
 	/* ImgProcToolkit */
 
 	/* static変数再宣言 */
-
 	// 入力ビデオキャプチャ
 	cv::VideoCapture ImgProcToolkit::sVideoCapture;
 	// ビデオレコーダー
@@ -39,18 +51,8 @@ namespace ImgProc
 	std::vector<std::unordered_set<uint64_t>> ImgProcToolkit::sBoundaryCarIdLists;
 	/* end */
 
-	/* ファイルパス関連 */
-	const std::string ImgProcToolkit::sVideoPathList[4] = { "./resource/hare/input.mp4", "./resource/kumori/input.mp4", "./resource/ame/input.mp4", "./resource/yugata/input.mp4" };
-	const std::string ImgProcToolkit::sBackImgPathList[4] = { "./resource/hare/back.png", "./resource/kumori/back.png", "./resource/ame/back.png", "./resource/yugata/back.png"};
-	const std::string ImgProcToolkit::sOutputPathList[4] = { "./output/hare/output.mp4", "./output/kumori/output.mp4", "./output/ame/output.mp4", "./output/yugata/output.mp4" };
-	const std::string ImgProcToolkit::sTemplatesPathList[4] = { "./output/hare/template/", "./output/kumori/template/", "./output/ame/template/", "./output/yugata/template/" };
-	//const std::string ImgProcToolkit::sRoadMaskPath = "./resource/back_kaikai.png";
-	const std::string ImgProcToolkit::sRoadMaskPath = "./resource/2k/back_kaikai.png";
-	//const std::string ImgProcToolkit::sRoadMasksBasePath = "./resource/back_kai";
-	const std::string ImgProcToolkit::sRoadMasksBasePath = "./resource/2k/back_kai";
 	size_t ImgProcToolkit::sRoadMasksNum = 0;
-	int ImgProcToolkit::sVideoType = ImgProcToolkit::VIDEO_TYPE_HARE;
-	/* end */
+	VideoType ImgProcToolkit::sVideoType = VideoType::HARE;
 
 	// 読み込んだフレーム数
 	uint64_t ImgProcToolkit::sFrameCount = 0;
@@ -66,11 +68,11 @@ namespace ImgProc
 	uint64_t ImgProcToolkit::sFrontCarsId = 0;
 
 	/* 検出範囲指定 */
-	int ImgProcToolkit::sDetectTop = 230;
-	int ImgProcToolkit::sDetectBottom = 535;
-	int ImgProcToolkit::sDetectMergin = 5;
-	int ImgProcToolkit::sDetectMerginPad = 10;
-	int ImgProcToolkit::sDetectedNearOffset = 8;
+	int ImgProcToolkit::sDetectTop = 0;
+	int ImgProcToolkit::sDetectBottom = 0;
+	int ImgProcToolkit::sDetectMergin = 0;
+	int ImgProcToolkit::sDetectMerginPad = 0;
+	int ImgProcToolkit::sDetectedNearOffset = 0;
 	/* end */
 
 	/* end */
@@ -81,10 +83,10 @@ namespace ImgProc
 	/// <returns>処理成功の真偽</returns>
 	bool ImgProcToolkit::CreateVideoResource()
 	{
-		sVideoCapture.open(sVideoPathList[sVideoType]);
+		sVideoCapture.open(gsVideoPathList[static_cast<int>(sVideoType)]);
 		if (!sVideoCapture.isOpened())
 		{
-			std::cout << sVideoPathList[sVideoType] << ": doesn't exist" << std::endl;
+			std::cout << gsVideoPathList[static_cast<int>(sVideoType)] << ": doesn't exist" << std::endl;
 			return false;
 		}
 
@@ -92,10 +94,10 @@ namespace ImgProc
 		sVideoWidth = static_cast<int>(sVideoCapture.get(cv::CAP_PROP_FRAME_WIDTH));
 		sVideoHeight = static_cast<int>(sVideoCapture.get(cv::CAP_PROP_FRAME_HEIGHT));
 		auto videoFps = sVideoCapture.get(cv::CAP_PROP_FPS);
-		sVideoWriter.open(sOutputPathList[sVideoType], fourcc, videoFps, cv::Size(sVideoWidth, sVideoHeight));
+		sVideoWriter.open(gsOutputPathList[static_cast<int>(sVideoType)], fourcc, videoFps, cv::Size(sVideoWidth, sVideoHeight));
 		if (!sVideoWriter.isOpened())
 		{
-			std::cout << sOutputPathList[sVideoType] << ": can't create or overwrite" << std::endl;
+			std::cout << gsOutputPathList[static_cast<int>(sVideoType)] << ": can't create or overwrite" << std::endl;
 			return false;
 		}
 
@@ -108,17 +110,17 @@ namespace ImgProc
 	/// <returns>処理成功の真偽</returns>
 	bool ImgProcToolkit::CreateImageResource()
 	{
-		sBackImg = cv::imread(sBackImgPathList[sVideoType]);
+		sBackImg = cv::imread(gsBackImgPathList[static_cast<int>(sVideoType)]);
 		if (sBackImg.empty())
 		{
-			std::cout << sBackImgPathList[sVideoType] << ": can't read this." << std::endl;
+			std::cout << gsBackImgPathList[static_cast<int>(sVideoType)] << ": can't read this." << std::endl;
 			return false;
 		}
 
-		sRoadMaskGray = cv::imread(sRoadMaskPath);
+		sRoadMaskGray = cv::imread(gsRoadMaskPath);
 		if (sRoadMaskGray.empty())
 		{
-			std::cout << sRoadMaskPath << ": can't read this." << std::endl;
+			std::cout << gsRoadMaskPath << ": can't read this." << std::endl;
 			return false;
 		}
 		binarizeImage(sRoadMaskGray);
@@ -126,7 +128,7 @@ namespace ImgProc
 		size_t idx = 0;
 		while (true)
 		{
-			const auto filePath = sRoadMasksBasePath + std::to_string(idx) + ".png";
+			const auto filePath = gsRoadMasksBasePath + std::to_string(idx) + ".png";
 			auto mask = cv::imread(filePath);
 			if (mask.empty())
 			{
