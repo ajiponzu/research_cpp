@@ -39,7 +39,7 @@ namespace ImgProc
 		// 入力フレーム
 		static Image sFrame;
 		// 結果画像
-		static Image sResutImg;
+		static Image sResultImg;
 		// 車両二値画像
 		static Image sCarsImg;
 		// 背景画像
@@ -78,7 +78,7 @@ namespace ImgProc
 		// 現在のフレーム中の車両台数
 		static uint64_t sFrameCarsNum;
 		// 検出車両のうち, もっとも最初に検出した車両のID
-		static uint64_t sFrontCarsId;
+		static uint64_t sFrontCarId;
 
 		/* 検出範囲指定 */
 		static int sDetectTop;
@@ -122,28 +122,37 @@ namespace ImgProc
 		static void SetDetectMerginPad(const int& detectMerginPad) { sDetectMerginPad = detectMerginPad; }
 		static void SetDetectedNearOffset(const int& detectedNearOffset) { sDetectedNearOffset = detectedNearOffset; }
 		static void SetStartFrame(const int& startFrame) { sStartFrame = startFrame; }
+		static void SetCarsNum(const uint64_t& carsNum) { sCarsNum = carsNum; }
+		static void SetCarsNumPrev(const uint64_t& carsNumPrev) { sCarsNumPrev = carsNumPrev; }
+		static void SetFrameCarsNum(const uint64_t& frameCarsNum) { sFrameCarsNum = frameCarsNum; }
 		/* end */
 		/* ゲッタ */
 		static cv::VideoCapture& GetVideoCapture() { return sVideoCapture; }
 		static cv::VideoWriter& GetVideoWriter() { return sVideoWriter; }
 		static std::pair<const int&, const int&> GetVideoWidAndHigh() { return std::make_pair(sVideoWidth, sVideoHeight); }
-		static VideoType& GetVideoType() { return sVideoType; }
-		static int& GetDetectTop() { return sDetectTop; }
-		static int& GetDetectBottom() { return sDetectBottom; }
-		static int& GetDetectMergin() { return sDetectMergin; }
-		static int& GetDetectMerginPad() { return sDetectMerginPad; }
-		static int& GetDetectedNearOffset() { return sDetectedNearOffset; }
+		static const VideoType& GetVideoType() { return sVideoType; }
+		static const int& GetDetectTop() { return sDetectTop; }
+		static const int& GetDetectBottom() { return sDetectBottom; }
+		static const int& GetDetectMergin() { return sDetectMergin; }
+		static const int& GetDetectMerginPad() { return sDetectMerginPad; }
+		static const int& GetDetectedNearOffset() { return sDetectedNearOffset; }
 		static uint64_t& GetStartFrame() { return sStartFrame; }
 		static Image& GetFrame() { return sFrame; }
-		static Image& GetResult() { return sResutImg; }
+		static Image& GetResult() { return sResultImg; }
 		static Image& GetCars() { return sCarsImg; }
 		static Image& GetBackImg() { return sBackImg; }
+		static const size_t& GetRoadMasksNum() { return sRoadMasksNum; }
 		static Image& GetRoadMaskGray() { return sRoadMaskGray; }
 		static std::vector<Image>& GetRoadMasksGray() { return sRoadMasksGray; }
-		static uint64_t& GetFrameCount() { return sFrameCount; }
+		static const uint64_t& GetFrameCount() { return sFrameCount; }
+		static uint64_t& GetFrontCarId() { return sFrontCarId; }
 		static uint64_t& GetCarsNum() { return sCarsNum; }
-		static uint64_t& GetCarsNumPrev() { return sCarsNumPrev; }
 		static uint64_t& GetFrameCarsNum() { return sFrameCarsNum; }
+		static const uint64_t& GetCarsNumPrev() { return sCarsNumPrev; }
+		static std::vector<std::unordered_map<uint64_t, Image>>& GetTemplatesList() { return sTemplatesList; }
+		static std::vector<std::unordered_map<uint64_t, cv::Rect2d>>& GetTemplatePositionsList() { return sTemplatePositionsList; }
+		static std::unordered_map<size_t, int>& GetRoadCarsDirections() { return sRoadCarsDirections; }
+		static std::vector<std::unordered_set<uint64_t>>& GetBoundaryCarIdLists() { return sBoundaryCarIdLists; }
 		/* end */
 		/* end */
 	};

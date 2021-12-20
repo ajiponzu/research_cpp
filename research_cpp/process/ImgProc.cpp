@@ -29,7 +29,7 @@ namespace ImgProc
 	// 入力フレーム
 	Image ImgProcToolkit::sFrame;
 	// 結果画像
-	Image ImgProcToolkit::sResutImg;
+	Image ImgProcToolkit::sResultImg;
 	// 車両二値画像
 	Image ImgProcToolkit::sCarsImg;
 	// 背景画像
@@ -65,7 +65,7 @@ namespace ImgProc
 	// 現在のフレーム中の車両台数
 	uint64_t ImgProcToolkit::sFrameCarsNum = 0;
 	// 検出車両のうち, もっとも最初に検出した車両のID
-	uint64_t ImgProcToolkit::sFrontCarsId = 0;
+	uint64_t ImgProcToolkit::sFrontCarId = 0;
 
 	/* 検出範囲指定 */
 	int ImgProcToolkit::sDetectTop = 0;
