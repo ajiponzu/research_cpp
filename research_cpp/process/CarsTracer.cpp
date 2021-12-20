@@ -166,46 +166,50 @@ namespace ImgProc
 
 			if (area < (y - Tk::sDetectTop) / 4 + 30)
 				continue;
- 
-			/* 検出位置チェック */
-			// 検出開始位置近傍の車両を特定, 未検出車両なら車両IDを保存
-			// 1フレーム目は, 車両として検出しても, IDを保存しないものもあることに注意
+
 			cv::Rect2d carPosRect(x, y, width, height);
 			bool doesntDetectCar = false;
 
-			/* 1フレーム目で検出されない領域を除外 */
-			if (Tk::sFrameCount == Tk::sStartFrame)
-			{
-				auto bottomY = carPosRect.y + carPosRect.height;
-				doesntDetectCar = (carPosRect.y < (Tk::sDetectTop + Tk::sDetectMergin + Tk::sDetectMerginPad)) || (bottomY > (Tk::sDetectBottom - Tk::sDetectMergin - Tk::sDetectMerginPad));
-			}
-			/* end */
-			else
-				doesntDetectCar = IsntDetectedCars(idx, carPosRect); // 検出範囲にあるか判定
-
-			if (doesntDetectCar) // 検出しない場合スキップ
-				continue;
-
-			if (DoesntAddBoundCar(idx, carPosRect)) // 検出範囲にある車両に対し検出するか判定. その後, 検出しない場合スキップ
-				continue;
-
-			boundaryCarIdList.insert(Tk::sCarsNum); // 新規検出車両として登録
-			/* end */
-
 			ReExtractTemplate(carPosRect); // テンプレート再抽出
-			mTemp = ExtractTemplate(Tk::sFrame, carPosRect);
 
-			cv::rectangle(Tk::sResutImg, carPosRect, cv::Scalar(0, 0, 255), 1); // 矩形を描く
+			for (auto& finPos : mFinCarPosList)
+			{
+				/* 検出位置チェック */
+				// 検出開始位置近傍の車両を特定, 未検出車両なら車両IDを保存
+				// 1フレーム目は, 車両として検出しても, IDを保存しないものもあることに注意
+				/* 1フレーム目で検出されない領域を除外 */
+				if (Tk::sFrameCount == Tk::sStartFrame)
+				{
+					auto bottomY = finPos.y + finPos.height;
+					doesntDetectCar = (finPos.y < (Tk::sDetectTop + Tk::sDetectMergin + Tk::sDetectMerginPad)) || (bottomY > (Tk::sDetectBottom - Tk::sDetectMergin - Tk::sDetectMerginPad));
+				}
+				/* end */
+				else
+					doesntDetectCar = IsntDetectedCars(idx, finPos); // 検出範囲にあるか判定
 
-			/* テンプレート抽出・保存 */
-			templates.insert(std::pair(Tk::sCarsNum, mTemp));
-			templatePositions.insert(std::pair(Tk::sCarsNum, carPosRect));
-			/* end */
+				if (doesntDetectCar) // 検出しない場合スキップ
+					continue;
 
-			/* 検出台数を更新 */
-			Tk::sCarsNum++;
-			Tk::sFrameCarsNum++;
-			/* end */
+				if (DoesntAddBoundCar(idx, finPos)) // 検出範囲にある車両に対し検出するか判定. その後, 検出しない場合スキップ
+					continue;
+				/* end */
+
+				boundaryCarIdList.insert(Tk::sCarsNum); // 新規検出車両として登録
+				mTemp = ExtractTemplate(Tk::sFrame, finPos);
+
+				cv::rectangle(Tk::sResutImg, finPos, cv::Scalar(0, 0, 255), 1); // 矩形を描く
+
+				/* テンプレート抽出・保存 */
+				templates.insert(std::pair(Tk::sCarsNum, mTemp));
+				templatePositions.insert(std::pair(Tk::sCarsNum, finPos));
+				/* end */
+
+				/* 検出台数を更新 */
+				Tk::sCarsNum++;
+				Tk::sFrameCarsNum++;
+				/* end */
+			}
+			mFinCarPosList.clear();
 		}
 		/* end */
 	}
@@ -277,25 +281,35 @@ namespace ImgProc
 	/// <param name="carPos">車両位置</param>
 	void CarsTracer::ReExtractTemplate(cv::Rect2d& carPos)
 	{
-		/* テンプレート再抽出 */
+		mTemp = ExtractTemplate(Tk::sFrame, carPos);
+		auto temp = ExtractTemplate(Tk::sBackImg, carPos);
+		cv::fastNlMeansDenoisingColored(mTemp, mTempTemp, 3.0f, 3.0f, 3);
+		cv::fastNlMeansDenoisingColored(temp, mTemp, 3.0f, 3.0f, 3);
+
+		cv::absdiff(mTempTemp, mTemp, temp);
+		binarizeImage(temp);
+		cv::morphologyEx(temp, mTemp, cv::MORPH_CLOSE, mCloseKernel, cv::Point(-1, -1), mCloseCount);
+
+		//ラベリングによって求められるラベル数
+		auto labelNum = cv::connectedComponentsWithStats(mTemp, mLabels, mStats, mCentroids, 4);
+
+		/* 各領域ごとの処理, 0番は背景 */
+		for (int label = labelNum - 1; label > 0; label--)
 		{
-			mTemp = GetImgSlice(Tk::sFrame, carPos);
-			auto cutY = TemplateHandle::ExtractAreaByEdgeH(mTemp);
-			auto cutPairX = TemplateHandle::ExtractAreaByEdgeV(mTemp);
+			/* 統計情報分割 */
+			auto statsPtr = mStats.ptr<int>(label);
+			auto& x = statsPtr[cv::ConnectedComponentsTypes::CC_STAT_LEFT];
+			auto& y = statsPtr[cv::ConnectedComponentsTypes::CC_STAT_TOP];
+			auto& width = statsPtr[cv::ConnectedComponentsTypes::CC_STAT_WIDTH];
+			auto& height = statsPtr[cv::ConnectedComponentsTypes::CC_STAT_HEIGHT];
+			auto& area = statsPtr[cv::ConnectedComponentsTypes::CC_STAT_AREA];
+			/* end */
 
-			if (cutY <= (carPos.height * 0.45))
-				cutY = static_cast<int>(carPos.height) - 1;
+			//auto tAreaThr = (carPos.y - Tk::sDetectTop) / 4 + 10; // 位置に応じた面積の閾値
+			//if (area < tAreaThr)
+			//	continue;
 
-			auto wid = cutPairX.second - cutPairX.first + 1;
-			if (wid < (carPos.width * 0.45))
-			{
-				cutPairX.first = 0;
-				wid = static_cast<int>(carPos.width);
-			}
-
-			carPos.x += cutPairX.first;
-			carPos.width = wid;
-			//carPos.height = cutY + 1;
+			mFinCarPosList.push_back(cv::Rect(carPos.x + x, carPos.y + y, width, height));
 		}
 		/* end */
 	}

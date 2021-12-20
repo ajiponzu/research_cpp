@@ -4,11 +4,11 @@
 using namespace ImgProc;
 
 /* ループ回数決定 */
-constexpr static auto gStartCount = 1;
-//constexpr static auto gStartCount = 900;
+//constexpr static auto gStartCount = 1;
+constexpr static auto gStartCount = 1300;
 
 //constexpr static auto gEndCount = 1;
-constexpr static auto gEndCount = 120;
+constexpr static auto gEndCount = 2000;
 //constexpr static auto gEndCount = 1;
 //constexpr static auto gEndCount = 100000;
 /* end */
@@ -90,6 +90,8 @@ int main()
 		if (frame.empty())
 			break;
 
+		extractor.SubtractBackImage();
+
 		if (count < gStartCount)
 			continue;
 
@@ -97,7 +99,6 @@ int main()
 			break;
 
 		/* 車両検出の準備 */
-		extractor.SubtractBackImage();
 		extractor.ExtractShadow();
 		extractor.ReExtractShadow(20, 1.8f);
 		extractor.ExtractCars();
@@ -115,8 +116,8 @@ int main()
 		/* 結果表示 */
 		//cv::imshow("result2", ImgProcToolkit::GetCars());
 		//cv::imshow("result2", extractor.GetSubtracted());
-		cv::imshow("result", result);
-		cv::waitKey(1);
+		//cv::imshow("result", result);
+		//cv::waitKey(1);
 		/* end */
 
 		/* 計測時間表示 */

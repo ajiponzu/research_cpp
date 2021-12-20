@@ -88,7 +88,6 @@ namespace ImgProc
 	{
 		//ラベリングによって求められるラベル数
 		auto labelNum = cv::connectedComponentsWithStats(mShadow, mLabels, mStats, mCentroids, 8);
-		int count = 0;
 
 		mExceptedShadows.setTo(0); // 除外すべき影画像を0で初期化
 		/* 各領域ごとの処理, 0番は背景 */
