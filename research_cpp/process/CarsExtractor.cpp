@@ -29,11 +29,11 @@ namespace ImgProc
 	/// </summary>
 	void CarsExtractor::ExtractShadow()
 	{
-		auto& refFrame = Tk::GetFrame();
+		const auto& crefFrame = Tk::GetFrame();
 		// [0], [1], [2]にl, a, bが分割して代入される動的配列
 		std::vector<Image> vLab;
 
-		cv::cvtColor(refFrame, mTemp, cv::COLOR_BGR2Lab); //l*a*b*に変換
+		cv::cvtColor(crefFrame, mTemp, cv::COLOR_BGR2Lab); //l*a*b*に変換
 		cv::split(mTemp, vLab); //split: チャンネルごとに分割する関数
 
 		/* 参照型でリソース削減しつつ, わかりやすいエイリアスを定義 */

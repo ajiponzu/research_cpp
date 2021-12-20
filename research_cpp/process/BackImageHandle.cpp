@@ -12,43 +12,47 @@ namespace ImgProc
 
 	void CarsExtractor::BackImageHandle::CreatePreBackImg()
 	{
-		auto& frame = Tk::sFrame;
+		auto& refFrame = Tk::GetFrame();
+		auto& refBackImg = Tk::GetBackImg();
+
 		auto& videoCapture = ImgProcToolkit::GetVideoCapture();
 		auto fgbg = cv::createBackgroundSubtractorMOG2();
 
-		videoCapture >> frame;
-		frame.convertTo(sBackImgFloat, CV_32FC3);
+		videoCapture >> refFrame;
+		refFrame.convertTo(sBackImgFloat, CV_32FC3);
 		sBackImgFloat.setTo(0.0);
 
 		for (int count = 1; count <= fgbg->getHistory(); count++)
 		{
-			videoCapture >> frame;
-			if (frame.empty())
+			videoCapture >> refFrame;
+			if (refFrame.empty())
 				break;
 
-			frame.convertTo(sFrameFloat, CV_32FC3);
+			refFrame.convertTo(sFrameFloat, CV_32FC3);
 
-			fgbg->apply(frame, sMoveCarsMask);
+			fgbg->apply(refFrame, sMoveCarsMask);
 			binarizeImage(sMoveCarsMask);
 			cv::bitwise_not(sMoveCarsMask, sMoveCarsMask);
 			cv::accumulateWeighted(sFrameFloat, sBackImgFloat, 0.025, sMoveCarsMask);
 		}
 
-		sBackImgFloat.convertTo(Tk::sBackImg, CV_8UC3);
+		sBackImgFloat.convertTo(refBackImg, CV_8UC3);
 		sIsExistPreBackImg = true;
 	}
 
 
 	void CarsExtractor::BackImageHandle::UpdateBackground()
 	{
-		cv::absdiff(Tk::sFrame, Tk::sBackImg, sSubtracted); // 差分を取ってからその絶対値を画素値として格納
+		const auto& crefFrame = Tk::GetFrame();
+		const auto& refBackImg = Tk::GetBackImg();
+		cv::absdiff(crefFrame, refBackImg, sSubtracted); // 差分を取ってからその絶対値を画素値として格納
 		binarizeImage(sSubtracted);
 		
 		/* 背景更新処理 */
 		cv::bitwise_not(sSubtracted, sMoveCarsMask);
-		Tk::sFrame.convertTo(sFrameFloat, CV_32FC3);
+		crefFrame.convertTo(sFrameFloat, CV_32FC3);
 		cv::accumulateWeighted(sFrameFloat, sBackImgFloat, 0.025, sMoveCarsMask);
-		sBackImgFloat.convertTo(Tk::sBackImg, CV_8UC3);
+		sBackImgFloat.convertTo(refBackImg, CV_8UC3);
 		/* end */
 	}
 };
