@@ -28,7 +28,8 @@ private:
 public:
 	CarsExtractor()
 	{
-		cv::Size imgSize(ImgProcToolkit::sVideoWidth, ImgProcToolkit::sVideoHeight);
+		auto [videoWidth, videoHeight] = ImgProcToolkit::GetVideoWidAndHigh();
+		cv::Size imgSize(videoWidth, videoHeight);
 
 		/* メンバ画像の初期化 */
 		mExceptedShadows = Image::zeros(imgSize, CV_8U);

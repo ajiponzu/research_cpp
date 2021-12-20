@@ -126,13 +126,24 @@ namespace ImgProc
 		/* ゲッタ */
 		static cv::VideoCapture& GetVideoCapture() { return sVideoCapture; }
 		static cv::VideoWriter& GetVideoWriter() { return sVideoWriter; }
+		static std::pair<const int&, const int&> GetVideoWidAndHigh() { return std::make_pair(sVideoWidth, sVideoHeight); }
+		static VideoType& GetVideoType() { return sVideoType; }
+		static int& GetDetectTop() { return sDetectTop; }
+		static int& GetDetectBottom() { return sDetectBottom; }
+		static int& GetDetectMergin() { return sDetectMergin; }
+		static int& GetDetectMerginPad() { return sDetectMerginPad; }
+		static int& GetDetectedNearOffset() { return sDetectedNearOffset; }
+		static uint64_t& GetStartFrame() { return sStartFrame; }
 		static Image& GetFrame() { return sFrame; }
+		static Image& GetResult() { return sResutImg; }
+		static Image& GetCars() { return sCarsImg; }
+		static Image& GetBackImg() { return sBackImg; }
+		static Image& GetRoadMaskGray() { return sRoadMaskGray; }
+		static std::vector<Image>& GetRoadMasksGray() { return sRoadMasksGray; }
 		static uint64_t& GetFrameCount() { return sFrameCount; }
 		static uint64_t& GetCarsNum() { return sCarsNum; }
 		static uint64_t& GetCarsNumPrev() { return sCarsNumPrev; }
 		static uint64_t& GetFrameCarsNum() { return sFrameCarsNum; }
-		static Image& GetResult() { return sResutImg; }
-		static Image& GetCars() { return sCarsImg; }
 		/* end */
 		/* end */
 	};

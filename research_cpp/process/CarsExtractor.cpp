@@ -19,8 +19,9 @@ namespace ImgProc
 	void CarsExtractor::SubtractBackImage()
 	{
 		BackImageHandle::UpdateBackground();
-		auto& subtracted = BackImageHandle::GetSubtracted();
-		cv::bitwise_and(subtracted, Tk::sRoadMaskGray, mSubtracted); // マスキング処理
+		const auto& crefSubtracted = BackImageHandle::GetSubtracted();
+		const auto& crefRoadMaskGray = Tk::GetRoadMaskGray();
+		cv::bitwise_and(crefSubtracted, crefRoadMaskGray, mSubtracted); // マスキング処理
 	}
 
 	/// <summary>
@@ -28,10 +29,11 @@ namespace ImgProc
 	/// </summary>
 	void CarsExtractor::ExtractShadow()
 	{
+		auto& refFrame = Tk::GetFrame();
 		// [0], [1], [2]にl, a, bが分割して代入される動的配列
 		std::vector<Image> vLab;
 
-		cv::cvtColor(Tk::sFrame, mTemp, cv::COLOR_BGR2Lab); //l*a*b*に変換
+		cv::cvtColor(refFrame, mTemp, cv::COLOR_BGR2Lab); //l*a*b*に変換
 		cv::split(mTemp, vLab); //split: チャンネルごとに分割する関数
 
 		/* 参照型でリソース削減しつつ, わかりやすいエイリアスを定義 */
@@ -103,7 +105,7 @@ namespace ImgProc
 			/* end */
 
 			auto aspect = static_cast<float>(width) / height; //アスペクト比の導出
-			auto tAreaThr = (y - Tk::sDetectTop) / 6 + areaThr; // 位置に応じた面積の閾値
+			auto tAreaThr = (y - Tk::GetDetectTop()) / 6 + areaThr; // 位置に応じた面積の閾値
 
 			bool condArea = area < tAreaThr;
 			bool condAspect = aspect > aspectThr;
@@ -123,9 +125,11 @@ namespace ImgProc
 	/// </summary>
 	void CarsExtractor::ExtractCars()
 	{
+		auto& refCarsImg = Tk::GetCars();
+		const auto& crefRoadMaskGray = Tk::GetRoadMaskGray();
 		mTemp = mSubtracted - mReShadow; // 移動物体から車影を除去
-		cv::morphologyEx(mTemp, Tk::sCarsImg, cv::MORPH_CLOSE, mCloseKernel, cv::Point(-1, -1), mCloseCount);
-		cv::bitwise_and(Tk::sCarsImg, Tk::sRoadMaskGray, Tk::sCarsImg);
+		cv::morphologyEx(mTemp, refCarsImg, cv::MORPH_CLOSE, mCloseKernel, cv::Point(-1, -1), mCloseCount);
+		cv::bitwise_and(refCarsImg, crefRoadMaskGray, refCarsImg);
 	}
 
 	/// <summary>
