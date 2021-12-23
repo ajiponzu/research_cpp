@@ -74,7 +74,7 @@ namespace ImgProc
 			cv::matchTemplate(mTemp, refCarImg, mDataTemp, cv::TM_CCOEFF_NORMED);
 			cv::minMaxLoc(mDataTemp, nullptr, &maxValue, nullptr, &mMaxLoc);
 
-			if (maxValue < 0.4)
+			if (maxValue < 0.55)
 			{
 				mDeleteLists.push_back(std::pair(idx, carId));
 				continue;
@@ -83,7 +83,7 @@ namespace ImgProc
 
 			refCarPos.x = mNearRect.x + mMaxLoc.x;
 			refCarPos.y = mNearRect.y + mMaxLoc.y;
-			cv::rectangle(refResultImg, refCarPos, cv::Scalar(255, 0, 0), 1);
+			cv::rectangle(refResultImg, refCarPos, cv::Scalar(0, 0, 255), 3);
 
 			//if (carId % 5 == 0)
 			//{
@@ -213,7 +213,7 @@ namespace ImgProc
 				refBoundaryCarIdList.insert(refCarsNum); // 新規検出車両として登録
 				mTemp = ExtractTemplate(crefFrame, finPos);
 
-				cv::rectangle(refResultImg, finPos, cv::Scalar(0, 0, 255), 1); // 矩形を描く
+				cv::rectangle(refResultImg, finPos, cv::Scalar(255, 0, 0), 3); // 矩形を描く
 
 				/* テンプレート抽出・保存 */
 				refTemplates.insert(std::pair(refCarsNum, mTemp));

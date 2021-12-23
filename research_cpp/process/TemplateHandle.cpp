@@ -7,7 +7,7 @@ using Tk = ImgProc::ImgProcToolkit;
 namespace ImgProc
 {
 	/* スタティック変数 */
-	double CarsTracer::TemplateHandle::mMagni = 1.0016; // 拡大・縮小の度合を決める
+	double CarsTracer::TemplateHandle::mMagni = 1.0006; // 拡大・縮小の度合を決める
 	double CarsTracer::TemplateHandle::mMergin = 16; // 推定移動幅
 	Image CarsTracer::TemplateHandle::mLabels; //ラベル画像
 	Image CarsTracer::TemplateHandle::mStats; //ラベリングにおける統計情報
@@ -129,8 +129,8 @@ namespace ImgProc
 
 		mTemp1 = ExtractTemplate(crefFrame, carPos);
 		mTemp2 = ExtractTemplate(crefBackImg, carPos);
-		cv::fastNlMeansDenoisingColored(mTemp1, mTemp3, 10.0f, 10.0f, 3);
-		cv::fastNlMeansDenoisingColored(mTemp2, mTemp1, 10.0f, 10.0f, 3);
+		cv::fastNlMeansDenoisingColored(mTemp1, mTemp3, 3.0f, 3.0f, 3);
+		cv::fastNlMeansDenoisingColored(mTemp2, mTemp1, 3.0f, 3.0f, 3);
 
 		cv::absdiff(mTemp3, mTemp1, mTemp2);
 		binarizeImage(mTemp2);
@@ -152,6 +152,9 @@ namespace ImgProc
 
 			auto tAreaThr = (carPos.y - Tk::GetDetectTop()) / 4 + 10; // 位置に応じた面積の閾値
 			if (area < tAreaThr)
+				continue;
+
+			if (area < width * height * 0.3) // 外周や直線だけで面積を稼いでるラベルを除外
 				continue;
 
 			finCarPosList.push_back(cv::Rect(static_cast<int>(carPos.x) + x, static_cast<int>(carPos.y) + y, width, height));

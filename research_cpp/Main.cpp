@@ -4,13 +4,13 @@
 using namespace ImgProc;
 
 /* ループ回数決定 */
-constexpr static auto gStartCount = 1;
-//constexpr static auto gStartCount = 1300;
+//constexpr static auto gStartCount = 1;
+constexpr static auto gStartCount = 1300;
 
 //constexpr static auto gEndCount = 1;
-//constexpr static auto gEndCount = 2000;
+constexpr static auto gEndCount = 2000;
 //constexpr static auto gEndCount = 1;
-constexpr static auto gEndCount = 100000;
+//constexpr static auto gEndCount = 100000;
 /* end */
 
 /// <summary>
@@ -42,8 +42,8 @@ int main()
 	/* end */
 
 	/* 検出範囲の設定 */
-	ImgProcToolkit::SetDetectTop(400);
-	ImgProcToolkit::SetDetectBottom(700);
+	ImgProcToolkit::SetDetectTop(310);
+	ImgProcToolkit::SetDetectBottom(720);
 	ImgProcToolkit::SetDetectMergin(16);
 	ImgProcToolkit::SetDetectMerginPad(24);
 	ImgProcToolkit::SetDetectedNearOffset(16);
