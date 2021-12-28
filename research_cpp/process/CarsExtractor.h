@@ -23,8 +23,6 @@ private:
 	Image mOpenKernel; // クロージングで使用するカーネル
 	/* end */
 
-	int mCloseCount = 3; // クロージング回数
-
 public:
 	CarsExtractor()
 	{
@@ -37,9 +35,22 @@ public:
 		/* end */
 
 		/* モルフォロジカーネルの初期化 */
-		mCloseKernel = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(5, 5)); // モルフォロジカーネル取得関数, RECTのほかにCROSS, ELIPSEがある
+		const auto& kernelSize = ImgProcToolkit::GetExtractorParams().kernelSize;
+		mCloseKernel = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(kernelSize, kernelSize)); // モルフォロジカーネル取得関数, RECTのほかにCROSS, ELIPSEがある
 		/* end */
 	}
+
+	const Image& GetSubtracted() const { return mSubtracted; }
+	const Image& GetShadow() const { return mShadow; }
+	const Image& GetReShadow() const { return mReShadow; }
+
+	/// <summary>
+	/// 車両抽出
+	/// </summary>
+	void ExtractCars();
+
+private:
+	CarsExtractor(const CarsExtractor& other) = delete;
 
 	/// <summary>
 	/// 初期背景画像を作成(500フレーム使用)
@@ -61,23 +72,11 @@ public:
 	/// </summary>
 	/// <param name="areaThr">面積の閾値</param>
 	/// <param name="aspectThr">アスペクト比の閾値</param>
-	void ReExtractShadow(const int& areaThr = 5, const float& aspectThr = 1.6);
-
-	/// <summary>
-	/// 車両抽出
-	/// </summary>
-	void ExtractCars();
+	void ReExtractShadow();
 
 	/// <summary>
 	/// 出力画像順次表示
 	/// </summary>
 	/// <param name="interval">待機時間[ms]</param>
 	void ShowOutImgs(const int& interval = 1500);
-
-	const Image& GetSubtracted() const { return mSubtracted; }
-	const Image& GetShadow() const { return mShadow; }
-	const Image& GetReShadow() const { return mReShadow; }
-
-private:
-	CarsExtractor(const CarsExtractor& other) = delete;
 };

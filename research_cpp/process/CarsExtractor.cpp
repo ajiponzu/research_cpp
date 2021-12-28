@@ -5,6 +5,21 @@ using Tk = ImgProc::ImgProcToolkit;
 
 namespace ImgProc
 {
+	void CarsExtractor::ExtractCars()
+	{
+		InitBackgroundImage();
+		SubtractBackImage();
+		ExtractShadow();
+		ReExtractShadow();
+
+		const auto& crefParams = Tk::GetExtractorParams();
+		auto& refCarsImg = Tk::GetCars();
+		const auto& crefRoadMaskGray = Tk::GetRoadMaskGray();
+		mTemp = mSubtracted - mReShadow; // 移動物体から車影を除去
+		cv::morphologyEx(mTemp, refCarsImg, cv::MORPH_CLOSE, mCloseKernel, cv::Point(-1, -1), crefParams.closeCount);
+		cv::bitwise_and(refCarsImg, crefRoadMaskGray, refCarsImg);
+	}
+
 	/// <summary>
 	/// 初期背景画像を作成(500フレーム使用)
 	/// </summary>
@@ -30,6 +45,8 @@ namespace ImgProc
 	void CarsExtractor::ExtractShadow()
 	{
 		const auto& crefFrame = Tk::GetFrame();
+		const auto& crefParams = Tk::GetExtractorParams();
+
 		// [0], [1], [2]にl, a, bが分割して代入される動的配列
 		std::vector<Image> vLab;
 
@@ -61,10 +78,7 @@ namespace ImgProc
 			l = (l <= thr);
 		}
 		else
-		{
-			int thr_l = 10, thr_b = 5;
-			l = (l <= thr_l).mul(b <= thr_b);
-		}
+			l = (l <= crefParams.shadowThrL).mul(b <= crefParams.shadowThrB);
 		/* end */
 
 		/* a, b値を128で埋めてグレースケール化 */
@@ -86,10 +100,12 @@ namespace ImgProc
 	/// </summary>
 	/// <param name="areaThr">面積の閾値</param>
 	/// <param name="aspectThr">アスペクト比の閾値</param>
-	void CarsExtractor::ReExtractShadow(const int& areaThr, const float& aspectThr)
+	void CarsExtractor::ReExtractShadow()
 	{
 		//ラベリングによって求められるラベル数
 		auto labelNum = cv::connectedComponentsWithStats(mShadow, mLabels, mStats, mCentroids, 8);
+		const auto& crefDetectArea = Tk::GetDetectAreaInf();
+		const auto& crefParams = Tk::GetExtractorParams();
 
 		mExceptedShadows.setTo(0); // 除外すべき影画像を0で初期化
 		/* 各領域ごとの処理, 0番は背景 */
@@ -105,10 +121,10 @@ namespace ImgProc
 			/* end */
 
 			auto aspect = static_cast<float>(width) / height; //アスペクト比の導出
-			auto tAreaThr = (y - Tk::GetDetectTop()) / 6 + areaThr; // 位置に応じた面積の閾値
+			auto tAreaThr = (y - crefDetectArea.top) / 6 + crefParams.reshadowAreaThr; // 位置に応じた面積の閾値
 
 			bool condArea = area < tAreaThr;
-			bool condAspect = aspect > aspectThr;
+			bool condAspect = aspect > crefParams.reshadowAspectThr;
 			if (condArea || condAspect)
 			{
 				auto idxGroup = (mLabels == label); // 車影でない部分を抜き出す
@@ -118,18 +134,6 @@ namespace ImgProc
 		/* end */
 
 		cv::bitwise_xor(mExceptedShadows, mShadow, mReShadow); //車影のみ抽出, xorなので先ほど作ったマスク以外の部分を車影として残す
-	}
-
-	/// <summary>
-	/// 車両抽出
-	/// </summary>
-	void CarsExtractor::ExtractCars()
-	{
-		auto& refCarsImg = Tk::GetCars();
-		const auto& crefRoadMaskGray = Tk::GetRoadMaskGray();
-		mTemp = mSubtracted - mReShadow; // 移動物体から車影を除去
-		cv::morphologyEx(mTemp, refCarsImg, cv::MORPH_CLOSE, mCloseKernel, cv::Point(-1, -1), mCloseCount);
-		cv::bitwise_and(refCarsImg, crefRoadMaskGray, refCarsImg);
 	}
 
 	/// <summary>

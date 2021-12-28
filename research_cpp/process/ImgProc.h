@@ -168,6 +168,7 @@ namespace ImgProc
 		static cv::VideoWriter& GetVideoWriter() { return sVideoWriter; }
 		static std::pair<int, int> GetVideoWidAndHigh() { return std::make_pair(sVideoWidth, sVideoHeight); }
 		static uint64_t& GetStartFrame() { return sStartFrame; }
+		static uint64_t& GetEndFrame() { return sEndFrame; }
 		static Image& GetFrame() { return sFrame; }
 		static Image& GetResult() { return sResultImg; }
 		static Image& GetCars() { return sCarsImg; }
