@@ -14,6 +14,7 @@ namespace ImgProc
 	{
 		auto& refFrame = Tk::GetFrame();
 		auto& refBackImg = Tk::GetBackImg();
+		const auto& crefParams = Tk::GetBackImgHandleParams();
 
 		auto& videoCapture = ImgProcToolkit::GetVideoCapture();
 		auto fgbg = cv::createBackgroundSubtractorMOG2();
@@ -33,7 +34,7 @@ namespace ImgProc
 			fgbg->apply(refFrame, sMoveCarsMask);
 			binarizeImage(sMoveCarsMask);
 			cv::bitwise_not(sMoveCarsMask, sMoveCarsMask);
-			cv::accumulateWeighted(sFrameFloat, sBackImgFloat, 0.025, sMoveCarsMask);
+			cv::accumulateWeighted(sFrameFloat, sBackImgFloat, crefParams.blendAlpha, sMoveCarsMask);
 		}
 
 		sBackImgFloat.convertTo(refBackImg, CV_8UC3);
@@ -43,6 +44,7 @@ namespace ImgProc
 
 	void CarsExtractor::BackImageHandle::UpdateBackground()
 	{
+		const auto& crefParams = Tk::GetBackImgHandleParams();
 		const auto& crefFrame = Tk::GetFrame();
 		const auto& refBackImg = Tk::GetBackImg();
 		cv::absdiff(crefFrame, refBackImg, sSubtracted); // 差分を取ってからその絶対値を画素値として格納
@@ -51,7 +53,7 @@ namespace ImgProc
 		/* 背景更新処理 */
 		cv::bitwise_not(sSubtracted, sMoveCarsMask);
 		crefFrame.convertTo(sFrameFloat, CV_32FC3);
-		cv::accumulateWeighted(sFrameFloat, sBackImgFloat, 0.025, sMoveCarsMask);
+		cv::accumulateWeighted(sFrameFloat, sBackImgFloat, crefParams.blendAlpha, sMoveCarsMask);
 		sBackImgFloat.convertTo(refBackImg, CV_8UC3);
 		/* end */
 	}
