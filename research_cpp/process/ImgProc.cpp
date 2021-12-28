@@ -90,7 +90,7 @@ namespace ImgProc
 			return false;
 		}
 
-		auto fourcc = cv::VideoWriter::fourcc('m', 'p', '4', 'v');
+		auto fourcc = static_cast<int>(sVideoCapture.get(cv::CAP_PROP_FOURCC));
 		sVideoWidth = static_cast<int>(sVideoCapture.get(cv::CAP_PROP_FRAME_WIDTH));
 		sVideoHeight = static_cast<int>(sVideoCapture.get(cv::CAP_PROP_FRAME_HEIGHT));
 		auto videoFps = sVideoCapture.get(cv::CAP_PROP_FPS);

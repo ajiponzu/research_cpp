@@ -1,0 +1,18 @@
+{
+  "TestCases": [
+    {
+      "Resources": {
+        "video": "./fhd/yugata/input.mp4",
+        "mask": "./fhd/back_kaikai.png",
+        "roadMaskBase": "./fhd/back_kai"
+      },
+      "DetectAreaInf": {
+        "top": 310,
+        "bottom": 720,
+        "mergin": 16,
+        "merginPad": 24,
+        "nearOffset": 16
+      }
+    }
+  ]
+}
