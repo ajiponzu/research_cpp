@@ -14,6 +14,7 @@ namespace ImgProc
 	{
 		auto& refFrame = Tk::GetFrame();
 		auto& refBackImg = Tk::GetBackImg();
+		auto& refFrameCount = Tk::GetFrameCount();
 		const auto& crefParams = Tk::GetBackImgHandleParams();
 
 		auto& videoCapture = ImgProcToolkit::GetVideoCapture();
@@ -23,10 +24,18 @@ namespace ImgProc
 		refFrame.convertTo(sBackImgFloat, CV_32FC3);
 		sBackImgFloat.setTo(0.0);
 
+		uint64_t count = 0;
 		for (int count = 1; count <= fgbg->getHistory(); count++)
+		while (count <= fgbg->getHistory())
 		{
+			refFrameCount++;
 			videoCapture >> refFrame;
 			if (refFrame.empty())
+				break;
+
+			if (refFrameCount < Tk::GetStartFrame())
+				continue;
+			else if (refFrameCount > Tk::GetEndFrame())
 				break;
 
 			refFrame.convertTo(sFrameFloat, CV_32FC3);
@@ -35,6 +44,9 @@ namespace ImgProc
 			binarizeImage(sMoveCarsMask);
 			cv::bitwise_not(sMoveCarsMask, sMoveCarsMask);
 			cv::accumulateWeighted(sFrameFloat, sBackImgFloat, crefParams.blendAlpha, sMoveCarsMask);
+
+			std::cout << refFrameCount << std::endl;
+			count++;
 		}
 
 		sBackImgFloat.convertTo(refBackImg, CV_8UC3);

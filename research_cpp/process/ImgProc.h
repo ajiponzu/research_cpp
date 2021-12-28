@@ -143,7 +143,7 @@ namespace ImgProc
 		/// 車線ごとの車の移動方向を設定
 		/// </summary>
 		/// <param name="directions">"L"か"R"が格納された配列</param>
-		static void SetRoadCarsDirections(const std::vector<const std::string>& directions);
+		static void SetRoadCarsDirections(const std::vector<std::string>& directions);
 
 		/// <summary>
 		/// リソース画像表示
@@ -156,6 +156,16 @@ namespace ImgProc
 		/// リソース読み込み
 		/// </summary>
 		static void SetResourcesAndParams();
+
+		/// <summary>
+		/// リソース確認
+		/// </summary>
+		static void ShowResourcesAndParams();
+
+		/// <summary>
+		/// 処理実行
+		/// </summary>
+		static void RunImageProcedure();
 
 		/* セッタ・ゲッタ */
 		/* セッタ */

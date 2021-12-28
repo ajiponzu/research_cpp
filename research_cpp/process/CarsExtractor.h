@@ -45,17 +45,17 @@ public:
 	const Image& GetReShadow() const { return mReShadow; }
 
 	/// <summary>
+	/// 初期背景画像を作成(500フレーム使用)
+	/// </summary>
+	void InitBackgroundImage();
+
+	/// <summary>
 	/// 車両抽出
 	/// </summary>
 	void ExtractCars();
 
 private:
 	CarsExtractor(const CarsExtractor& other) = delete;
-
-	/// <summary>
-	/// 初期背景画像を作成(500フレーム使用)
-	/// </summary>
-	void InitBackgroundImage();
 
 	/// <summary>
 	/// 背景差分, 移動物体検出

@@ -7,7 +7,6 @@ namespace ImgProc
 {
 	void CarsExtractor::ExtractCars()
 	{
-		InitBackgroundImage();
 		SubtractBackImage();
 		ExtractShadow();
 		ReExtractShadow();
@@ -121,7 +120,7 @@ namespace ImgProc
 			/* end */
 
 			auto aspect = static_cast<float>(width) / height; //アスペクト比の導出
-			auto tAreaThr = (y - crefDetectArea.top) / 6 + crefParams.reshadowAreaThr; // 位置に応じた面積の閾値
+			auto tAreaThr = (y - crefDetectArea.top) / 4 + crefParams.reshadowAreaThr; // 位置に応じた面積の閾値
 
 			bool condArea = area < tAreaThr;
 			bool condAspect = aspect > crefParams.reshadowAspectThr;

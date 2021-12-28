@@ -1,4 +1,6 @@
 #include "ImgProc.h"
+#include "CarsExtractor.h"
+#include "CarsTracer.h"
 
 namespace ImgProc
 {
@@ -79,7 +81,7 @@ namespace ImgProc
 			assert("failed to read video");
 		}
 
-		auto fourcc = static_cast<int>(sVideoCapture.get(cv::CAP_PROP_FOURCC));
+		auto fourcc = cv::VideoWriter::fourcc('m', 'p', '4', 'v');
 		sVideoWidth = static_cast<int>(sVideoCapture.get(cv::CAP_PROP_FRAME_WIDTH));
 		sVideoHeight = static_cast<int>(sVideoCapture.get(cv::CAP_PROP_FRAME_HEIGHT));
 		auto videoFps = sVideoCapture.get(cv::CAP_PROP_FPS);
@@ -135,7 +137,7 @@ namespace ImgProc
 	/// 車線ごとの車の移動方向を設定
 	/// </summary>
 	/// <param name="directions">"L"か"R"が格納された配列</param>
-	void ImgProcToolkit::SetRoadCarsDirections(const std::vector<const std::string>& directions)
+	void ImgProcToolkit::SetRoadCarsDirections(const std::vector<std::string>& directions)
 	{
 		size_t idx = 0;
 		RoadDirect directTemp{};
@@ -190,7 +192,7 @@ namespace ImgProc
 		const auto roadMaskPath = resources["mask"].string();
 		const auto roadMasksBasePath = resources["roadMasksBase"].string();
 
-		std::vector<const std::string> directions{};
+		std::vector<std::string> directions{};
 		const auto roadDirections = resources["roadDirections"];
 		for (int i = 0; i < roadDirections.size(); i++)
 			directions.push_back(roadDirections[i].string());
@@ -235,7 +237,7 @@ namespace ImgProc
 		sTemplateHandleParams.closeCount = static_cast<int>(templateHandleParams["closeCount"].real());
 		sTemplateHandleParams.minAreaRatio = templateHandleParams["minAreaRatio"].real();
 		sTemplateHandleParams.areaThr = static_cast<int>(templateHandleParams["areaThr"].real());
-		sTemplateHandleParams.nlDenoising = (templateHandleParams["mergin"].string() == "on");
+		sTemplateHandleParams.nlDenoising = (templateHandleParams["nlDenoising"].string() == "on");
 		/* end */
 
 		/* その5 */
@@ -243,6 +245,63 @@ namespace ImgProc
 		sBackImgHandleParams.blendAlpha = backImgHandleParams["blendAlpha"].real();
 		/* end */
 		/* end */
+	}
+
+	/// <summary>
+	/// リソース確認
+	/// </summary>
+	void ImgProcToolkit::ShowResourcesAndParams()
+	{
+		std::cout << sStartFrame << std::endl;
+		std::cout << sEndFrame << std::endl;
+
+		//cv::imshow("", sRoadMaskGray);
+		//cv::waitKey(1000);
+	}
+
+	/// <summary>
+	/// 処理実行
+	/// </summary>
+	void ImgProcToolkit::RunImageProcedure()
+	{
+		std::ios::sync_with_stdio(false); // デバッグ出力高速化
+
+		double tick = cv::getTickFrequency(); // 1秒あたりのフレーム数
+
+		CarsExtractor extractor; // 抽出器
+		CarsTracer tracer; // 検出器
+
+		extractor.InitBackgroundImage();
+
+		while (true)
+		{
+			// 実行時間計測開始
+			auto startTime = cv::getTickCount();
+
+			/* ビデオフレーム読み込み */
+			sFrameCount++;
+			sVideoCapture >> sFrame;
+			if (sFrame.empty())
+				break;
+			/* end */
+
+			if (sFrameCount < sStartFrame)
+				continue;
+			else if (sFrameCount > sEndFrame)
+				break;
+
+			/* メイン処理 */
+			extractor.ExtractCars(); // 車両抽出
+			tracer.DetectCars(); // 車両検出・追跡
+			/* end */
+
+			/* 結果出力・実行時間計測 */
+			sVideoWriter << sResultImg;
+			std::cout << sFrameCount << std::endl;
+			auto endTime = cv::getTickCount();
+			std::cout << (double)(endTime - startTime) / tick << std::endl;
+			/* end */
+		}
 	}
 
 	/* ImgProcToolkit外 */

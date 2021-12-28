@@ -159,7 +159,7 @@ namespace ImgProc
 			auto& area = statsPtr[cv::ConnectedComponentsTypes::CC_STAT_AREA];
 			/* end */
 
-			auto tAreaThr = (carPos.y - crefDetectArea.top) / 6 + crefParams.areaThr; // 位置に応じた面積の閾値
+			auto tAreaThr = (carPos.y - crefDetectArea.top) / 4 + crefParams.areaThr; // 位置に応じた面積の閾値
 			if (area < tAreaThr)
 				continue;
 

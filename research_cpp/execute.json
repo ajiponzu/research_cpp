@@ -2,8 +2,8 @@
   "executeCaseNum": 0,
   "TestCases": [
     {
-      "startFrame": 1,
-      "endFrame": 120,
+      "startFrame": 1001,
+      "endFrame": 1720,
       "Resources": {
         "video": "./resource/fhd/yugata/input.mp4",
         "result": "./output/result1.mp4",
@@ -17,7 +17,7 @@
         ]
       },
       "DetectAreaInf": {
-        "top": 310,
+        "top": 350,
         "bottom": 720,
         "mergin": 16,
         "merginPad": 24,
@@ -33,17 +33,17 @@
       },
       "TracerParams": {
         "minAreaRatio": 0.3,
-        "detectAreaThr": 30,
-        "minMatchingThr": 0.55
+        "detectAreaThr": 20,
+        "minMatchingThr": 0.4
       },
       "TemplateHandleParams": {
         "mergin": 16,
-        "magni": 1.0006,
+        "magni": 1.0009,
         "kernelSize": 3,
         "closeCount": 2,
         "minAreaRatio": 0.3,
         "areaThr": 10,
-        "nlDenoising": "on"
+        "nlDenoising": "off"
       },
       "BackImgHandleParams": {
         "blendAlpha": 0.025
