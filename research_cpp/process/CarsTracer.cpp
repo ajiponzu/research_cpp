@@ -41,6 +41,7 @@ namespace ImgProc
 	void CarsTracer::TraceCars(const size_t& idx)
 	{
 		const auto& crefFrame = Tk::GetFrame();
+		const auto& crefParams = Tk::GetTracerParams();
 		auto& refResultImg = Tk::GetResult();
 		auto& refTemplates = Tk::GetTemplatesList()[idx];
 		auto& refTemplatePositions = Tk::GetTemplatePositionsList()[idx];
@@ -74,7 +75,7 @@ namespace ImgProc
 			cv::matchTemplate(mTemp, refCarImg, mDataTemp, cv::TM_CCOEFF_NORMED);
 			cv::minMaxLoc(mDataTemp, nullptr, &maxValue, nullptr, &mMaxLoc);
 
-			if (maxValue < 0.55)
+			if (maxValue < crefParams.minMatchingThr)
 			{
 				mDeleteLists.push_back(std::pair(idx, carId));
 				continue;
@@ -107,20 +108,21 @@ namespace ImgProc
 	void CarsTracer::JudgeStopTraceAndDetect(const size_t& idx, const uint64_t& carId, const cv::Rect2d& carPos)
 	{
 		const auto& crefRoadCarsDirection = Tk::GetRoadCarsDirections()[idx];
+		const auto& crefDetectArea = Tk::GetDetectAreaInf();
 		auto& refBoundaryCarIdList = Tk::GetBoundaryCarIdLists()[idx];
 		/* 追跡終了位置か, 新規車両かどうかの判別 */
 		switch (crefRoadCarsDirection)
 		{
 		case RoadDirect::APPROACH:
-			if ((carPos.y + carPos.height) > Tk::GetDetectBottom())
+			if ((carPos.y + carPos.height) > crefDetectArea.bottom)
 				mDeleteLists.push_back(std::pair(idx, carId)); // 追跡停止判定
-			if (carPos.y > (Tk::GetDetectTop() + Tk::GetDetectMergin() + Tk::GetDetectMerginPad()))
+			if (carPos.y > (crefDetectArea.top + crefDetectArea.mergin + crefDetectArea.merginPad))
 				refBoundaryCarIdList.erase(carId);
 			break;
 		case RoadDirect::LEAVE:
-			if (carPos.y < Tk::GetDetectTop())
+			if (carPos.y < crefDetectArea.top)
 				mDeleteLists.push_back(std::pair(idx, carId)); // 追跡停止判定
-			if ((carPos.y + carPos.height) < (Tk::GetDetectTop() - Tk::GetDetectMergin() - Tk::GetDetectMerginPad()))
+			if ((carPos.y + carPos.height) < (crefDetectArea.top - crefDetectArea.mergin - crefDetectArea.merginPad))
 				refBoundaryCarIdList.erase(carId);
 			break;
 		default:
@@ -158,6 +160,8 @@ namespace ImgProc
 	void CarsTracer::DetectNewCars(const size_t& idx)
 	{
 		const auto& crefFrame = Tk::GetFrame();
+		const auto& crefDetectArea = Tk::GetDetectAreaInf();
+		const auto& crefParams = Tk::GetTracerParams();
 		auto& refCarsNum = Tk::GetCarsNum();
 		auto& refFrameCarsNum = Tk::GetFrameCarsNum();
 		auto& refResultImg = Tk::GetResult();
@@ -177,10 +181,10 @@ namespace ImgProc
 			auto& area = statsPtr[cv::ConnectedComponentsTypes::CC_STAT_AREA];
 			/* end */
 
-			if (area < width * height * 0.3) // 外周や直線だけで面積を稼いでるラベルを除外
+			if (area < width * height * crefParams.minAreaRatio) // 外周や直線だけで面積を稼いでるラベルを除外
 				continue;
 
-			if (area < (y - Tk::GetDetectTop()) / 4 + 30)
+			if (area < (y - crefDetectArea.top) / 4 + crefParams.detectAreaThr)
 				continue;
 
 			cv::Rect2d carPosRect(x, y, width, height);
@@ -196,8 +200,8 @@ namespace ImgProc
 				if (Tk::GetFrameCount() == Tk::GetStartFrame())
 				{
 					auto bottomY = finPos.y + finPos.height;
-					doesntDetectCar = (finPos.y < (Tk::GetDetectTop() + Tk::GetDetectMergin() + Tk::GetDetectMerginPad()))
-						|| (bottomY > (Tk::GetDetectBottom() - Tk::GetDetectMergin() - Tk::GetDetectMerginPad()));
+					doesntDetectCar = (finPos.y < (crefDetectArea.top + crefDetectArea.mergin + crefDetectArea.merginPad))
+						|| (bottomY > (crefDetectArea.bottom - crefDetectArea.mergin - crefDetectArea.merginPad));
 				}
 				/* end */
 				else
@@ -240,6 +244,7 @@ namespace ImgProc
 	{
 		/* 検出位置チェック */
 		const auto& crefRoadCarsDirection = Tk::GetRoadCarsDirections()[idx];
+		const auto& crefDetectArea = Tk::GetDetectAreaInf();
 		bool doesntDetectCar = true;
 		auto bottomY = carPos.y + carPos.height;
 
@@ -247,12 +252,12 @@ namespace ImgProc
 		switch (crefRoadCarsDirection)
 		{
 		case RoadDirect::APPROACH:
-			doesntDetectCar = (carPos.y < Tk::GetDetectTop())
-				|| (carPos.y > (Tk::GetDetectTop() + Tk::GetDetectMergin()));
+			doesntDetectCar = (carPos.y < crefDetectArea.top)
+				|| (carPos.y > (crefDetectArea.top + crefDetectArea.mergin));
 			return doesntDetectCar;
 		case RoadDirect::LEAVE:
-			doesntDetectCar = (bottomY < (Tk::GetDetectBottom() - Tk::GetDetectMergin()))
-				|| (bottomY > Tk::GetDetectBottom());
+			doesntDetectCar = (bottomY < (crefDetectArea.bottom - crefDetectArea.mergin))
+				|| (bottomY > crefDetectArea.bottom);
 			return doesntDetectCar;
 		default:
 			break;
@@ -274,6 +279,7 @@ namespace ImgProc
 	/// <returns>判定結果, trueなら検出しない</returns>
 	bool CarsTracer::DoesntAddBoundCar(const size_t& idx, const cv::Rect2d& carPosRect)
 	{
+		const auto& crefDetectArea = Tk::GetDetectAreaInf();
 		const auto& crefBoundaryCarIdList = Tk::GetBoundaryCarIdLists()[idx];
 		auto& crefTemplatePositions = Tk::GetTemplatePositionsList()[idx];
 		bool retFlag = false;
@@ -282,15 +288,15 @@ namespace ImgProc
 			const auto& crefCarPos = crefTemplatePositions[elem];
 			auto diffPosX = carPosRect.x - crefCarPos.x;
 			auto diffPosY = carPosRect.y - crefCarPos.y;
-			retFlag = (std::abs(diffPosX) < Tk::GetDetectedNearOffset())
-				&& (std::abs(diffPosY) < Tk::GetDetectedNearOffset());
+			retFlag = (std::abs(diffPosX) < crefDetectArea.nearOffset)
+				&& (std::abs(diffPosY) < crefDetectArea.nearOffset);
 			if (retFlag)
 				break;
 
 			diffPosX = (carPosRect.x + carPosRect.width) - (crefCarPos.x + crefCarPos.width);
 			diffPosY = (carPosRect.y + carPosRect.height) - (crefCarPos.y + crefCarPos.height);
-			retFlag = (std::abs(diffPosX) < Tk::GetDetectedNearOffset())
-				&& (std::abs(diffPosY) < Tk::GetDetectedNearOffset());
+			retFlag = (std::abs(diffPosX) < crefDetectArea.nearOffset)
+				&& (std::abs(diffPosY) < crefDetectArea.nearOffset);
 			if (retFlag)
 				break;
 		}
