@@ -8,18 +8,52 @@ namespace ImgProc
 {
 	using Image = cv::Mat;
 
-	enum class VideoType
-	{
-		HARE = 0,
-		KUMORI = 1,
-		AME = 2,
-		YU = 3,
-	};
-
 	enum class RoadDirect
 	{
 		LEAVE = 0,
 		APPROACH = 1,
+	};
+
+	struct DetectAreaInf
+	{
+		int top = 0;
+		int bottom = 0;
+		int mergin = 0;
+		int merginPad = 0;
+		int nearOffset = 0;
+	};
+
+	struct ExtractorParams
+	{
+		int shadowThrL = 0;
+		int shadowThrB = 0;
+		int closeCount = 0;
+		int kernelSize = 0;
+		int reshadowAreaThr = 0;
+		float reshadowAspectThr = 0.0f;
+	};
+
+	struct TracerParams
+	{
+		double minAreaRatio = 0.0;
+		double minMatchingThr = 0.0;
+		int detectAreaThr = 0;
+	};
+
+	struct TemplateHandleParams
+	{
+		int mergin = 0;
+		double magni = 0.0;
+		int kernelSize = 0;
+		int closeCount = 0;
+		double minAreaRatio = 0.0;
+		int areaThr = 0;
+		bool nlDenoising = false;
+	};
+
+	struct BackImgHandleParams
+	{
+		double blendAlpha = 0.0;
 	};
 
 	class CarsExtractor;
@@ -65,13 +99,14 @@ namespace ImgProc
 		/* ファイルパス関連 */
 		// sRoadMasksのsize数
 		static size_t sRoadMasksNum;
-		// 使用リソースの指定
-		static VideoType sVideoType;
 		/* end */
 
 		// 読み込んだフレーム数
 		static uint64_t sFrameCount;
+		// 初期フレーム
 		static uint64_t sStartFrame;
+		// 終了フレーム
+		static uint64_t sEndFrame;
 		// 全フレーム中の検出・追跡中車両台数
 		static uint64_t sCarsNum;
 		// 全フレーム中の検出・追跡中車両台数(前フレームのもの)
@@ -81,32 +116,34 @@ namespace ImgProc
 		// 検出車両のうち, もっとも最初に検出した車両のID
 		static uint64_t sFrontCarId;
 
-		/* 検出範囲指定 */
-		static int sDetectTop;
-		static int sDetectBottom;
-		static int sDetectMergin;
-		static int sDetectMerginPad;
-		static int sDetectedNearOffset;
+		/* パラメータ構造体 */
+		static DetectAreaInf sDetectAreaInf; // 検出範囲
+		static ExtractorParams sExtractorParams; // 車両抽出パラメータ
+		static TracerParams sTracerParams; // 車両追跡パラメータ
+		static TemplateHandleParams sTemplateHandleParams; // テンプレート操作パラメータ
+		static BackImgHandleParams sBackImgHandleParams; // 背景処理パラメータ
 		/* end */
 
-	public:
+	private:
 		/// <summary>
-		/// ビデオリソース読み込み・初期設定
+		/// ビデオリソース読み込み・書き出し設定
 		/// </summary>
-		/// <returns>処理成功の真偽</returns>
-		static bool CreateVideoResource();
+		/// <param name="inputPath">入力ビデオパス</param>
+		/// <param name="outputPath">出力パス</param>
+		static void CreateVideoResource(const std::string& inputPath, const std::string& outputPath);
 
 		/// <summary>
-		/// 背景画像・道路マスク画像等, 画像リソース読み込み
+		/// マスク画像等読み込み
 		/// </summary>
-		/// <returns>処理成功の真偽</returns>
-		static bool CreateImageResource();
+		/// <param name="roadMaskPath">マスク画像（全体）パス</param>
+		/// <param name="roadMasksBasePath">道路マスク画像ベースパス</param>
+		static void CreateImageResource(const std::string& roadMaskPath, const std::string& roadMasksBasePath);
 
 		/// <summary>
 		/// 車線ごとの車の移動方向を設定
 		/// </summary>
-		/// <param name="directions">key: 車線番号(0~), value: CARS_~_ROADマクロのハッシュ</param>
-		static void SetRoadCarsDirections(const std::unordered_map<size_t, RoadDirect>&& directions);
+		/// <param name="directions">"L"か"R"が格納された配列</param>
+		static void SetRoadCarsDirections(const std::vector<const std::string>& directions);
 
 		/// <summary>
 		/// リソース画像表示
@@ -114,15 +151,14 @@ namespace ImgProc
 		/// <param name="interval">待機時間[ms]</param>
 		static void ShowResourceImgs(const int& interval);
 
+	public:
+		/// <summary>
+		/// リソース読み込み
+		/// </summary>
+		static void SetResourcesAndParams();
+
 		/* セッタ・ゲッタ */
 		/* セッタ */
-		static void SetVideoType(const VideoType& videoType) { sVideoType = videoType; }
-		static void SetDetectTop(const int& detectTop) { sDetectTop = detectTop; }
-		static void SetDetectBottom(const int& detectBottom) { sDetectBottom = detectBottom; }
-		static void SetDetectMergin(const int& detectMergin) { sDetectMergin = detectMergin; }
-		static void SetDetectMerginPad(const int& detectMerginPad) { sDetectMerginPad = detectMerginPad; }
-		static void SetDetectedNearOffset(const int& detectedNearOffset) { sDetectedNearOffset = detectedNearOffset; }
-		static void SetStartFrame(const int& startFrame) { sStartFrame = startFrame; }
 		static void SetCarsNum(const uint64_t& carsNum) { sCarsNum = carsNum; }
 		static void SetCarsNumPrev(const uint64_t& carsNumPrev) { sCarsNumPrev = carsNumPrev; }
 		static void SetFrameCarsNum(const uint64_t& frameCarsNum) { sFrameCarsNum = frameCarsNum; }
@@ -131,12 +167,6 @@ namespace ImgProc
 		static cv::VideoCapture& GetVideoCapture() { return sVideoCapture; }
 		static cv::VideoWriter& GetVideoWriter() { return sVideoWriter; }
 		static std::pair<int, int> GetVideoWidAndHigh() { return std::make_pair(sVideoWidth, sVideoHeight); }
-		static const VideoType& GetVideoType() { return sVideoType; }
-		static const int& GetDetectTop() { return sDetectTop; }
-		static const int& GetDetectBottom() { return sDetectBottom; }
-		static const int& GetDetectMergin() { return sDetectMergin; }
-		static const int& GetDetectMerginPad() { return sDetectMerginPad; }
-		static const int& GetDetectedNearOffset() { return sDetectedNearOffset; }
 		static uint64_t& GetStartFrame() { return sStartFrame; }
 		static Image& GetFrame() { return sFrame; }
 		static Image& GetResult() { return sResultImg; }
@@ -154,6 +184,11 @@ namespace ImgProc
 		static std::vector<std::unordered_map<uint64_t, cv::Rect2d>>& GetTemplatePositionsList() { return sTemplatePositionsList; }
 		static std::unordered_map<size_t, RoadDirect>& GetRoadCarsDirections() { return sRoadCarsDirections; }
 		static std::vector<std::unordered_set<uint64_t>>& GetBoundaryCarIdLists() { return sBoundaryCarIdLists; }
+		static const DetectAreaInf& GetDetectAreaInf() { return sDetectAreaInf; }
+		static const ExtractorParams& GetExtractorParams() { return sExtractorParams; }
+		static const TracerParams& GetTracerParams() { return sTracerParams; }
+		static const TemplateHandleParams& GetTemplateHandleParams() { return sTemplateHandleParams; }
+		static const BackImgHandleParams& GetBackImgHandleParams() { return sBackImgHandleParams; }
 		/* end */
 		/* end */
 	};

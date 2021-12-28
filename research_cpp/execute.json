@@ -1,0 +1,53 @@
+{
+  "executeCaseNum": 0,
+  "TestCases": [
+    {
+      "startFrame": 1,
+      "endFrame": 120,
+      "Resources": {
+        "video": "./resource/fhd/yugata/input.mp4",
+        "result": "./output/result1.mp4",
+        "mask": "./resource/fhd/back_kaikai.png",
+        "roadMasksBase": "./resource/fhd/back_kai",
+        "roadDirections": [
+          "L",
+          "A",
+          "L",
+          "A"
+        ]
+      },
+      "DetectAreaInf": {
+        "top": 310,
+        "bottom": 720,
+        "mergin": 16,
+        "merginPad": 24,
+        "nearOffset": 16
+      },
+      "ExtractorParams": {
+        "shadowThrL": 10,
+        "shadowThrB": 5,
+        "closeCount": 3,
+        "kernelSize": 5,
+        "reshadowAreaThr": 20,
+        "reshadowAspectThr": 1.8
+      },
+      "TracerParams": {
+        "minAreaRatio": 0.3,
+        "detectAreaThr": 30,
+        "minMatchingThr": 0.55
+      },
+      "TemplateHandleParams": {
+        "mergin": 16,
+        "magni": 1.0006,
+        "kernelSize": 3,
+        "closeCount": 2,
+        "minAreaRatio": 0.3,
+        "areaThr": 10,
+        "nlDenoising": "on"
+      },
+      "BackImgHandleParams": {
+        "blendAlpha": 0.025
+      }
+    }
+  ]
+}

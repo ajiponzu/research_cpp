@@ -2,19 +2,6 @@
 
 namespace ImgProc
 {
-	/* グローバル変数 */
-	/* ファイルパス関連 */
-	static const std::string gsVideoPathList[4] = { "./resource/hare/input.mp4", "./resource/kumori/input.mp4", "./resource/ame/input.mp4", "./resource/yugata/input.mp4" };
-	static const std::string gsBackImgPathList[4] = { "./resource/hare/back.png", "./resource/kumori/back.png", "./resource/ame/back.png", "./resource/yugata/back.png"};
-	static const std::string gsOutputPathList[4] = { "./output/hare/output.mp4", "./output/kumori/output.mp4", "./output/ame/output.mp4", "./output/yugata/output.mp4" };
-	static const std::string gsTemplatesPathList[4] = { "./output/hare/template/", "./output/kumori/template/", "./output/ame/template/", "./output/yugata/template/" };
-	//static const std::string gsRoadMaskPath = "./resource/back_kaikai.png";
-	static const std::string gsRoadMaskPath = "./resource/2k/back_kaikai.png";
-	//static const std::string gsRoadMasksBasePath = "./resource/back_kai";
-	static const std::string gsRoadMasksBasePath = "./resource/2k/back_kai";
-	/* end */
-	/* end */
-
 	/* ImgProcToolkit */
 
 	/* static変数再宣言 */
@@ -51,13 +38,15 @@ namespace ImgProc
 	std::vector<std::unordered_set<uint64_t>> ImgProcToolkit::sBoundaryCarIdLists;
 	/* end */
 
+	// 道路数
 	size_t ImgProcToolkit::sRoadMasksNum = 0;
-	VideoType ImgProcToolkit::sVideoType = VideoType::HARE;
 
 	// 読み込んだフレーム数
 	uint64_t ImgProcToolkit::sFrameCount = 0;
 	// 初期フレーム
 	uint64_t ImgProcToolkit::sStartFrame = 0;
+	// 終了フレーム
+	uint64_t ImgProcToolkit::sEndFrame = 0;
 	// 検出・追跡中車両台数
 	uint64_t ImgProcToolkit::sCarsNum = 0;
 	// 全フレーム中の検出・追跡中車両台数(前フレームのもの)
@@ -66,76 +55,69 @@ namespace ImgProc
 	uint64_t ImgProcToolkit::sFrameCarsNum = 0;
 	// 検出車両のうち, もっとも最初に検出した車両のID
 	uint64_t ImgProcToolkit::sFrontCarId = 0;
-
-	/* 検出範囲指定 */
-	int ImgProcToolkit::sDetectTop = 0;
-	int ImgProcToolkit::sDetectBottom = 0;
-	int ImgProcToolkit::sDetectMergin = 0;
-	int ImgProcToolkit::sDetectMerginPad = 0;
-	int ImgProcToolkit::sDetectedNearOffset = 0;
 	/* end */
 
+	/* パラメータ構造体初期化 */
+	DetectAreaInf ImgProcToolkit::sDetectAreaInf{};
+	ExtractorParams ImgProcToolkit::sExtractorParams{};
+	TracerParams ImgProcToolkit::sTracerParams{};
+	TemplateHandleParams ImgProcToolkit::sTemplateHandleParams{};
+	BackImgHandleParams ImgProcToolkit::sBackImgHandleParams{};
 	/* end */
 
 	/// <summary>
-	/// ビデオリソース読み込み・初期設定
+	/// ビデオリソース読み込み・書き出し設定
 	/// </summary>
-	/// <returns>処理成功の真偽</returns>
-	bool ImgProcToolkit::CreateVideoResource()
+	/// <param name="inputPath">入力ビデオパス</param>
+	/// <param name="outputPath">出力パス</param>
+	void ImgProcToolkit::CreateVideoResource(const std::string& inputPath, const std::string& outputPath)
 	{
-		sVideoCapture.open(gsVideoPathList[static_cast<int>(sVideoType)]);
+		sVideoCapture.open(inputPath);
 		if (!sVideoCapture.isOpened())
 		{
-			std::cout << gsVideoPathList[static_cast<int>(sVideoType)] << ": doesn't exist" << std::endl;
-			return false;
+			std::cout << inputPath << ": doesn't exist" << std::endl;
+			assert("failed to read video");
 		}
 
 		auto fourcc = static_cast<int>(sVideoCapture.get(cv::CAP_PROP_FOURCC));
 		sVideoWidth = static_cast<int>(sVideoCapture.get(cv::CAP_PROP_FRAME_WIDTH));
 		sVideoHeight = static_cast<int>(sVideoCapture.get(cv::CAP_PROP_FRAME_HEIGHT));
 		auto videoFps = sVideoCapture.get(cv::CAP_PROP_FPS);
-		sVideoWriter.open(gsOutputPathList[static_cast<int>(sVideoType)], fourcc, videoFps, cv::Size(sVideoWidth, sVideoHeight));
+
+		sVideoWriter.open(outputPath, fourcc, videoFps, cv::Size(sVideoWidth, sVideoHeight));
 		if (!sVideoWriter.isOpened())
 		{
-			std::cout << gsOutputPathList[static_cast<int>(sVideoType)] << ": can't create or overwrite" << std::endl;
-			return false;
+			std::cout << outputPath << ": can't create or overwrite" << std::endl;
+			assert("failed to overwrite video");
 		}
-
-		return true;
 	}
 
 	/// <summary>
-	/// 背景画像・道路マスク画像等, 画像リソース読み込み
+	/// マスク画像等読み込み
 	/// </summary>
-	/// <returns>処理成功の真偽</returns>
-	bool ImgProcToolkit::CreateImageResource()
+	/// <param name="roadMaskPath">マスク画像（全体）パス</param>
+	/// <param name="roadMasksBasePath">道路マスク画像ベースパス</param>
+	void ImgProcToolkit::CreateImageResource(const std::string& roadMaskPath, const std::string& roadMasksBasePath)
 	{
-		sBackImg = cv::imread(gsBackImgPathList[static_cast<int>(sVideoType)]);
-		if (sBackImg.empty())
-		{
-			std::cout << gsBackImgPathList[static_cast<int>(sVideoType)] << ": can't read this." << std::endl;
-			return false;
-		}
-
-		sRoadMaskGray = cv::imread(gsRoadMaskPath);
+		sRoadMaskGray = cv::imread(roadMaskPath);
 		if (sRoadMaskGray.empty())
 		{
-			std::cout << gsRoadMaskPath << ": can't read this." << std::endl;
-			return false;
+			std::cout << roadMaskPath << ": can't read this." << std::endl;
+			assert("failed to read roadMask");
 		}
 		binarizeImage(sRoadMaskGray);
 
 		size_t idx = 0;
 		while (true)
 		{
-			const auto filePath = gsRoadMasksBasePath + std::to_string(idx) + ".png";
+			const auto filePath = roadMasksBasePath + std::to_string(idx) + ".png";
 			auto mask = cv::imread(filePath);
 			if (mask.empty())
 			{
 				if (idx == 0)
 				{
 					std::cout << filePath << ": can't read this." << std::endl;
-					return false;
+					assert("failed to read some roadMasks");
 				}
 				break;
 			}
@@ -147,8 +129,26 @@ namespace ImgProc
 		sBoundaryCarIdLists.resize(idx);
 		sTemplatesList.resize(idx);
 		sTemplatePositionsList.resize(idx);
+	}
 
-		return true;
+	/// <summary>
+	/// 車線ごとの車の移動方向を設定
+	/// </summary>
+	/// <param name="directions">"L"か"R"が格納された配列</param>
+	void ImgProcToolkit::SetRoadCarsDirections(const std::vector<const std::string>& directions)
+	{
+		size_t idx = 0;
+		RoadDirect directTemp{};
+		for (const auto& direct : directions)
+		{
+			if (direct == "L")
+				directTemp = RoadDirect::LEAVE;
+			else
+				directTemp = RoadDirect::APPROACH;
+
+			sRoadCarsDirections[idx] = directTemp;
+			idx++;
+		}
 	}
 
 	/// <summary>
@@ -169,14 +169,81 @@ namespace ImgProc
 	}
 
 	/// <summary>
-	/// 車線ごとの車の移動方向を設定
+	/// リソース読み込み
 	/// </summary>
-	/// <param name="directions">key: 車線番号(0~), value: CARS_~_ROADマクロのハッシュ</param>
-	void ImgProcToolkit::SetRoadCarsDirections(const std::unordered_map<size_t, RoadDirect>&& directions)
+	void ImgProcToolkit::SetResourcesAndParams()
 	{
-		sRoadCarsDirections = directions;
+		cv::FileStorage fstorage("./execute.json", 0); // json読み込み
+		const auto testCaseNum = static_cast<int>(fstorage["executeCaseNum"]); // 実行テストケース番号
+		const auto root = fstorage["TestCases"][testCaseNum]; // テストケースパラメータハッシュ
+
+		/* 処理フレーム指定 */
+		sStartFrame = static_cast<uint64_t>(root["startFrame"].real());
+		sEndFrame = static_cast<uint64_t>(root["endFrame"].real());
+		/* end */
+		
+		/* リソース指定 */
+		const auto resources = root["Resources"];
+
+		const auto inputPath = resources["video"].string();
+		const auto outputPath = resources["result"].string();
+		const auto roadMaskPath = resources["mask"].string();
+		const auto roadMasksBasePath = resources["roadMasksBase"].string();
+
+		std::vector<const std::string> directions{};
+		const auto roadDirections = resources["roadDirections"];
+		for (int i = 0; i < roadDirections.size(); i++)
+			directions.push_back(roadDirections[i].string());
+
+		CreateVideoResource(inputPath, outputPath);
+		CreateImageResource(roadMaskPath, roadMasksBasePath);
+		SetRoadCarsDirections(directions);
+		/* end */
+
+		/* パラメータ指定 */
+		/* その1 */
+		const auto detectAreaInf = root["DetectAreaInf"];
+		sDetectAreaInf.top = static_cast<int>(detectAreaInf["top"].real());
+		sDetectAreaInf.bottom = static_cast<int>(detectAreaInf["bottom"].real());
+		sDetectAreaInf.mergin = static_cast<int>(detectAreaInf["mergin"].real());
+		sDetectAreaInf.merginPad = static_cast<int>(detectAreaInf["merginPad"].real());
+		sDetectAreaInf.nearOffset = static_cast<int>(detectAreaInf["nearOffset"].real());
+		/* end */
+
+		/* その2 */
+		const auto extractorParams = root["ExtractorParams"];
+		sExtractorParams.shadowThrL = static_cast<int>(extractorParams["shadowThrL"].real());
+		sExtractorParams.shadowThrB = static_cast<int>(extractorParams["shadowThrB"].real());
+		sExtractorParams.closeCount = static_cast<int>(extractorParams["closeCount"].real());
+		sExtractorParams.kernelSize = static_cast<int>(extractorParams["kernelSize"].real());
+		sExtractorParams.reshadowAreaThr = static_cast<int>(extractorParams["reshadowAreaThr"].real());
+		sExtractorParams.reshadowAspectThr = static_cast<float>(extractorParams["reshadowAspectThr"].real());
+		/* end */
+
+		/* その3 */
+		const auto tracerParams = root["TracerParams"];
+		sTracerParams.minAreaRatio = tracerParams["minAreaRatio"].real();
+		sTracerParams.detectAreaThr = static_cast<int>(tracerParams["detectAreaThr"].real());
+		sTracerParams.minMatchingThr = tracerParams["minMatchingThr"].real();
+		/* end */
+
+		/* その4 */
+		const auto templateHandleParams = root["TemplateHandleParams"];
+		sTemplateHandleParams.mergin = static_cast<int>(templateHandleParams["mergin"].real());
+		sTemplateHandleParams.magni = templateHandleParams["magni"].real();
+		sTemplateHandleParams.kernelSize = static_cast<int>(templateHandleParams["kernelSize"].real());
+		sTemplateHandleParams.closeCount = static_cast<int>(templateHandleParams["closeCount"].real());
+		sTemplateHandleParams.minAreaRatio = templateHandleParams["minAreaRatio"].real();
+		sTemplateHandleParams.areaThr = static_cast<int>(templateHandleParams["areaThr"].real());
+		sTemplateHandleParams.nlDenoising = (templateHandleParams["mergin"].string() == "on");
+		/* end */
+
+		/* その5 */
+		const auto backImgHandleParams = root["BackImgHandleParams"];
+		sBackImgHandleParams.blendAlpha = backImgHandleParams["blendAlpha"].real();
+		/* end */
+		/* end */
 	}
-	/* end */
 
 	/* ImgProcToolkit外 */
 	/// <summary>
