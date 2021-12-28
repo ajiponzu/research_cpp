@@ -7,8 +7,6 @@ using Tk = ImgProc::ImgProcToolkit;
 namespace ImgProc
 {
 	/* スタティック変数 */
-	double CarsTracer::TemplateHandle::mMagni = 1.0006; // 拡大・縮小の度合を決める
-	double CarsTracer::TemplateHandle::mMergin = 16; // 推定移動幅
 	Image CarsTracer::TemplateHandle::mLabels; //ラベル画像
 	Image CarsTracer::TemplateHandle::mStats; //ラベリングにおける統計情報
 	Image CarsTracer::TemplateHandle::mCentroids; //ラベリングにおける中心点座標群
@@ -16,7 +14,6 @@ namespace ImgProc
 	Image CarsTracer::TemplateHandle::mTemp2;
 	Image CarsTracer::TemplateHandle::mTemp3;
 	Image CarsTracer::TemplateHandle::mCloseKernel = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(3, 3)); // クロージングで使用するカーネル
-	int CarsTracer::TemplateHandle::mCloseCount = 2; // クロージング回数
 	/* end */
 
 	/// <summary>
@@ -75,14 +72,15 @@ namespace ImgProc
 	/// <param name="carId">車両番号</param>
 	void CarsTracer::TemplateHandle::ExtractCarsNearestArea(cv::Rect2d& nearRect, const size_t& maskId, const uint64_t& carId)
 	{
-		auto magni = mMagni;
+		const auto& crefParams = Tk::GetTemplateHandleParams();
+		auto magni = crefParams.magni;
 		auto& refRect = Tk::GetTemplatePositionsList()[maskId][carId];
 		auto& refCarTemplate = Tk::GetTemplatesList()[maskId][carId];
 		const auto& crefRoadCarsDirection = Tk::GetRoadCarsDirections()[maskId];
 
 		/* 車両が遠ざかっていくとき */
 		if (crefRoadCarsDirection == RoadDirect::LEAVE)
-			magni = 1 / mMagni; // 縮小するために逆数にする
+			magni = 1 / crefParams.magni; // 縮小するために逆数にする
 		/* end */
 
 		/* テンプレートの拡大・縮小処理と, 座標矩形の縦横の変更 */
@@ -94,13 +92,13 @@ namespace ImgProc
 		/* テンプレートマッチングの対象領域の限定 */
 		/* 原点の設定 */
 		const auto& [crefVideoWidth, crefVideoHeight] = Tk::GetVideoWidAndHigh();
-		auto findRectX = std::round(std::clamp((refRect.x - mMergin), 0.0, static_cast<double>(crefVideoWidth)));
-		auto findRectY = std::round(std::clamp((refRect.y - mMergin), 0.0, static_cast<double>(crefVideoHeight)));
+		auto findRectX = std::round(std::clamp((refRect.x - crefParams.mergin), 0.0, static_cast<double>(crefVideoWidth)));
+		auto findRectY = std::round(std::clamp((refRect.y - crefParams.mergin), 0.0, static_cast<double>(crefVideoHeight)));
 		/* end */
 
 		/* 移動後に予想される到達地点の最大値を算出 */
-		auto findRectXR = std::round(std::clamp(findRectX + refRect.width + mMergin * 2.0, 0.0, static_cast<double>(crefVideoWidth)));
-		auto findRectYB = std::round(std::clamp(findRectY + refRect.height + mMergin * 2.0, 0.0, static_cast<double>(crefVideoHeight)));
+		auto findRectXR = std::round(std::clamp(findRectX + refRect.width + crefParams.mergin * 2.0, 0.0, static_cast<double>(crefVideoWidth)));
+		auto findRectYB = std::round(std::clamp(findRectY + refRect.height + crefParams.mergin * 2.0, 0.0, static_cast<double>(crefVideoHeight)));
 		/* end */
 
 		/* 最終的な探索領域の縦横の幅を算出 */
@@ -126,15 +124,26 @@ namespace ImgProc
 	{
 		const auto& crefFrame = Tk::GetFrame();
 		const auto& crefBackImg = Tk::GetBackImg();
+		const auto& crefParams = Tk::GetTemplateHandleParams();
+		const auto& crefDetectArea = Tk::GetDetectAreaInf();
 
 		mTemp1 = ExtractTemplate(crefFrame, carPos);
 		mTemp2 = ExtractTemplate(crefBackImg, carPos);
-		cv::fastNlMeansDenoisingColored(mTemp1, mTemp3, 3.0f, 3.0f, 3);
-		cv::fastNlMeansDenoisingColored(mTemp2, mTemp1, 3.0f, 3.0f, 3);
+
+		if (crefParams.nlDenoising)
+		{
+			cv::fastNlMeansDenoisingColored(mTemp1, mTemp3, 3.0f, 3.0f, 3);
+			cv::fastNlMeansDenoisingColored(mTemp2, mTemp1, 3.0f, 3.0f, 3);
+		}
+		else
+		{
+			mTemp3 = mTemp1;
+			mTemp1 = mTemp2;
+		}
 
 		cv::absdiff(mTemp3, mTemp1, mTemp2);
 		binarizeImage(mTemp2);
-		cv::morphologyEx(mTemp2, mTemp3, cv::MORPH_CLOSE, mCloseKernel, cv::Point(-1, -1), mCloseCount);
+		cv::morphologyEx(mTemp2, mTemp3, cv::MORPH_CLOSE, mCloseKernel, cv::Point(-1, -1), crefParams.closeCount);
 
 		//ラベリングによって求められるラベル数
 		auto labelNum = cv::connectedComponentsWithStats(mTemp3, mLabels, mStats, mCentroids, 8);
@@ -150,11 +159,11 @@ namespace ImgProc
 			auto& area = statsPtr[cv::ConnectedComponentsTypes::CC_STAT_AREA];
 			/* end */
 
-			auto tAreaThr = (carPos.y - Tk::GetDetectTop()) / 4 + 10; // 位置に応じた面積の閾値
+			auto tAreaThr = (carPos.y - crefDetectArea.top) / 6 + crefParams.areaThr; // 位置に応じた面積の閾値
 			if (area < tAreaThr)
 				continue;
 
-			if (area < width * height * 0.3) // 外周や直線だけで面積を稼いでるラベルを除外
+			if (area < width * height * crefParams.minAreaRatio) // 外周や直線だけで面積を稼いでるラベルを除外
 				continue;
 
 			finCarPosList.push_back(cv::Rect(static_cast<int>(carPos.x) + x, static_cast<int>(carPos.y) + y, width, height));

@@ -4,8 +4,6 @@
 class ImgProc::CarsTracer::TemplateHandle
 {
 private:
-	static double mMagni; // 拡大・縮小の度合を決める
-	static double mMergin; // 推定移動幅
 	static Image mLabels; //ラベル画像
 	static Image mStats; //ラベリングにおける統計情報
 	static Image mCentroids; //ラベリングにおける中心点座標群
@@ -13,7 +11,6 @@ private:
 	static Image mTemp2;
 	static Image mTemp3;
 	static Image mCloseKernel; // クロージングで使用するカーネル
-	static int mCloseCount; // クロージング回数
 private:
 	/// <summary>
 	/// 頻度値データを, 一行n列の1チャンネル(グレースケール)画像として考え, 極大値をもつインデックスを保存
