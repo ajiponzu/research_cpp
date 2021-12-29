@@ -57,4 +57,7 @@
       <Filter>Process</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="execute.json" />
+  </ItemGroup>
 </Project>

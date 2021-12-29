@@ -159,6 +159,9 @@
     <ClInclude Include="process\ImgProc.h" />
     <ClInclude Include="process\TemplateHandle.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="execute.json" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
