@@ -127,19 +127,8 @@ namespace ImgProc
 		const auto& crefParams = Tk::GetTemplateHandleParams();
 		const auto& crefDetectArea = Tk::GetDetectAreaInf();
 
-		mTemp1 = ExtractTemplate(crefFrame, carPos);
-		mTemp2 = ExtractTemplate(crefBackImg, carPos);
-
-		if (crefParams.nlDenoising)
-		{
-			cv::fastNlMeansDenoisingColored(mTemp1, mTemp3, 3.0f, 3.0f, 3);
-			cv::fastNlMeansDenoisingColored(mTemp2, mTemp1, 3.0f, 3.0f, 3);
-		}
-		else
-		{
-			mTemp3 = mTemp1;
-			mTemp1 = mTemp2;
-		}
+		mTemp3 = ExtractTemplate(crefFrame, carPos);
+		mTemp1 = ExtractTemplate(crefBackImg, carPos);
 
 		cv::absdiff(mTemp3, mTemp1, mTemp2);
 		binarizeImage(mTemp2);

@@ -32,6 +32,9 @@ namespace ImgProc
 			TraceCars(idx);
 			DetectNewCars(idx);
 		}
+		const auto& detect = Tk::GetDetectAreaInf();
+		cv::line(refResultImg, cv::Point(0, detect.top), cv::Point(Tk::GetVideoWidAndHigh().first, detect.top), cv::Scalar(0, 255, 0), 2);
+		cv::line(refResultImg, cv::Point(0, detect.bottom), cv::Point(Tk::GetVideoWidAndHigh().first, detect.bottom), cv::Scalar(0, 255, 0), 2);
 	}
 
 	/// <summary>
@@ -48,8 +51,9 @@ namespace ImgProc
 		auto& refBoundaryCarIdList = Tk::GetBoundaryCarIdLists()[idx];
 		auto& refRoadCarsDirection = Tk::GetRoadCarsDirections()[idx];
 
+		double maxValueArray[2] = { 0.0, 0.0 };
 		double maxValue = 0.0;
-
+		Image gray, edge, edgeTempl;
 		/* 検出済み車両ごとに処理 */
 		for (auto carId = Tk::GetFrontCarId(); carId < Tk::GetCarsNum(); carId++)
 		{
@@ -62,18 +66,33 @@ namespace ImgProc
 			TemplateHandle::ExtractCarsNearestArea(mNearRect, idx, carId);
 			mTemp = GetImgSlice(crefFrame, mNearRect).clone();
 
-			//Image edge, edgeTempl;
-			//cv::cvtColor(mTemp, mTemp, cv::COLOR_BGR2GRAY);
-			//cv::Laplacian(mTemp, edge, CV_8U);
-			//cv::cvtColor(edge, edge, cv::COLOR_GRAY2BGR);
+			/* エッジによるテンプレートマッチング */
+			cv::cvtColor(mTemp, gray, cv::COLOR_BGR2GRAY);
+			cv::Laplacian(gray, edge, CV_8U);
+			cv::cvtColor(edge, edge, cv::COLOR_GRAY2BGR);
 
-			//cv::cvtColor(carImg, mTemp, cv::COLOR_BGR2GRAY);
-			//cv::Laplacian(mTemp, edgeTempl, CV_8U);
-			//cv::cvtColor(edgeTempl, edgeTempl, cv::COLOR_GRAY2BGR);
-			//cv::matchTemplate(edge, edgeTempl, mDataTemp, cv::TM_CCOEFF_NORMED);
+			cv::cvtColor(refCarImg, gray, cv::COLOR_BGR2GRAY);
+			cv::Laplacian(gray, edgeTempl, CV_8U);
+			cv::cvtColor(edgeTempl, edgeTempl, cv::COLOR_GRAY2BGR);
+			cv::matchTemplate(edge, edgeTempl, mDataTemp, cv::TM_CCOEFF_NORMED);
+			cv::minMaxLoc(mDataTemp, nullptr, &maxValueArray[0], nullptr, &mMaxLocArray[0]);
+			/* end */
 
+			/* カラーによるテンプレートマッチング */
 			cv::matchTemplate(mTemp, refCarImg, mDataTemp, cv::TM_CCOEFF_NORMED);
-			cv::minMaxLoc(mDataTemp, nullptr, &maxValue, nullptr, &mMaxLoc);
+			cv::minMaxLoc(mDataTemp, nullptr, &maxValueArray[1], nullptr, &mMaxLocArray[1]);
+			/* end */
+
+			if (maxValueArray[0] <= maxValueArray[1])
+			{
+				mMaxLoc = mMaxLocArray[1];
+				maxValue = maxValueArray[1];
+			}
+			else
+			{
+				mMaxLoc = mMaxLocArray[0];
+				maxValue = maxValueArray[0];
+			}
 
 			if (maxValue < crefParams.minMatchingThr)
 			{
@@ -85,15 +104,9 @@ namespace ImgProc
 			refCarPos.x = mNearRect.x + mMaxLoc.x;
 			refCarPos.y = mNearRect.y + mMaxLoc.y;
 			cv::rectangle(refResultImg, refCarPos, cv::Scalar(0, 0, 255), 3);
-
-			//if (carId % 5 == 0)
-			//{
-			//	const std::string path = Tk::sTemplatesPathList[Tk::sVideoType] + "template_" + std::to_string(carId) + "_" + std::to_string(Tk::sFrameCount) + ".png";
-			//	cv::imwrite(path, templates[carId]);
-			//}
-			//templates[carId] = ExtractTemplate(Tk::sFrame, carPos);
-
 			JudgeStopTraceAndDetect(idx, carId, refCarPos); // 追跡終了判定
+			//std::string path = "./template_" + std::to_string(Tk::GetFrameCount()) + "_" + std::to_string(carId) + ".png";
+			//cv::imwrite(path, refTemplates[carId]);
 		}
 		/* end */
 		DestructTracedCars(); // 追跡終了処理

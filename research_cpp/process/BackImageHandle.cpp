@@ -51,6 +51,7 @@ namespace ImgProc
 
 		sBackImgFloat.convertTo(refBackImg, CV_8UC3);
 		sIsExistPreBackImg = true;
+		Tk::GetStartFrame() += fgbg->getHistory();
 	}
 
 

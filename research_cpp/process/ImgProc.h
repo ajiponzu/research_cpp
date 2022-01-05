@@ -48,7 +48,6 @@ namespace ImgProc
 		int closeCount = 0;
 		double minAreaRatio = 0.0;
 		int areaThr = 0;
-		bool nlDenoising = false;
 	};
 
 	struct BackImgHandleParams

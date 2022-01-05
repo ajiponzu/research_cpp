@@ -18,6 +18,7 @@ private:
 	int mLabelNum; // ラベル数
 
 	cv::Point mMaxLoc;
+	cv::Point mMaxLocArray[2]{};
 	cv::Rect2d mNearRect;
 
 	std::vector<cv::Rect> mFinCarPosList;

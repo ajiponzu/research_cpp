@@ -176,7 +176,7 @@ namespace ImgProc
 	void ImgProcToolkit::SetResourcesAndParams()
 	{
 		cv::FileStorage fstorage("./execute.json", 0); // json読み込み
-		const auto testCaseNum = static_cast<int>(fstorage["executeCaseNum"]); // 実行テストケース番号
+		const auto testCaseNum = static_cast<int>(fstorage["executeCaseNum"]) - 1; // 実行テストケース番号
 		const auto root = fstorage["TestCases"][testCaseNum]; // テストケースパラメータハッシュ
 
 		/* 処理フレーム指定 */
@@ -237,7 +237,6 @@ namespace ImgProc
 		sTemplateHandleParams.closeCount = static_cast<int>(templateHandleParams["closeCount"].real());
 		sTemplateHandleParams.minAreaRatio = templateHandleParams["minAreaRatio"].real();
 		sTemplateHandleParams.areaThr = static_cast<int>(templateHandleParams["areaThr"].real());
-		sTemplateHandleParams.nlDenoising = (templateHandleParams["nlDenoising"].string() == "on");
 		/* end */
 
 		/* その5 */
