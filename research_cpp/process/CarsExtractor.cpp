@@ -14,9 +14,10 @@ namespace ImgProc
 		const auto& crefParams = Tk::GetExtractorParams();
 		auto& refCarsImg = Tk::GetCars();
 		const auto& crefRoadMaskGray = Tk::GetRoadMaskGray();
-		mTemp = mSubtracted - mReShadow; // 移動物体から車影を除去
-		cv::morphologyEx(mTemp, refCarsImg, cv::MORPH_CLOSE, mCloseKernel, cv::Point(-1, -1), crefParams.closeCount);
+		mPreCars = mSubtracted - mReShadow; // 移動物体から車影を除去
+		cv::morphologyEx(mPreCars, refCarsImg, cv::MORPH_CLOSE, mCloseKernel, cv::Point(-1, -1), crefParams.closeCount);
 		cv::bitwise_and(refCarsImg, crefRoadMaskGray, refCarsImg);
+		OutputProcessVideo();
 	}
 
 	/// <summary>
@@ -150,5 +151,26 @@ namespace ImgProc
 
 		cv::imshow("detector", mReShadow);
 		cv::waitKey(interval);
+	}
+
+	/// <summary>
+	/// 書く処理過程の結果画像を出力
+	/// </summary>
+	void CarsExtractor::OutputProcessVideo()
+	{
+		cv::cvtColor(mSubtracted, mTemp, cv::COLOR_GRAY2BGR);
+		mVideoWriterSub << mTemp;
+
+		cv::cvtColor(mShadow, mTemp, cv::COLOR_GRAY2BGR);
+		mVideoWriterShadow << mTemp;
+
+		cv::cvtColor(mReShadow, mTemp, cv::COLOR_GRAY2BGR);
+		mVideoWriterReShadow << mTemp;
+
+		cv::cvtColor(mPreCars, mTemp, cv::COLOR_GRAY2BGR);
+		mVideoWriterPreCars << mTemp;
+
+		cv::cvtColor(Tk::GetCars(), mTemp, cv::COLOR_GRAY2BGR);
+		mVideoWriterCars << mTemp;
 	}
 };

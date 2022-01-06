@@ -6,7 +6,7 @@
       "endFrame": 1720,
       "Resources": {
         "video": "./resource/fhd/yugata/input.mp4",
-        "result": "./output/result1.mp4",
+        "result": "./output/result1",
         "mask": "./resource/fhd/back_kaikai.png",
         "roadMasksBase": "./resource/fhd/back_kai",
         "roadDirections": [
@@ -53,7 +53,7 @@
       "endFrame": 720,
       "Resources": {
         "video": "./resource/fhd/yugata/input.mp4",
-        "result": "./output/result2.mp4",
+        "result": "./output/result2",
         "mask": "./resource/fhd/back_kaikai.png",
         "roadMasksBase": "./resource/fhd/back_kai",
         "roadDirections": [
@@ -100,7 +100,7 @@
       "endFrame": 3000,
       "Resources": {
         "video": "./resource/fhd/yugata/input.mp4",
-        "result": "./output/result3.mp4",
+        "result": "./output/result3",
         "mask": "./resource/fhd/back_kaikai.png",
         "roadMasksBase": "./resource/fhd/back_kai",
         "roadDirections": [

@@ -67,6 +67,8 @@ namespace ImgProc
 	BackImgHandleParams ImgProcToolkit::sBackImgHandleParams{};
 	/* end */
 
+	std::string ImgProcToolkit::sOutputBasePath{};
+
 	/// <summary>
 	/// ビデオリソース読み込み・書き出し設定
 	/// </summary>
@@ -188,7 +190,8 @@ namespace ImgProc
 		const auto resources = root["Resources"];
 
 		const auto inputPath = resources["video"].string();
-		const auto outputPath = resources["result"].string();
+		sOutputBasePath = resources["result"].string();
+		const auto outputPath = sOutputBasePath + ".mp4";
 		const auto roadMaskPath = resources["mask"].string();
 		const auto roadMasksBasePath = resources["roadMasksBase"].string();
 

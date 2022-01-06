@@ -123,6 +123,8 @@ namespace ImgProc
 		static BackImgHandleParams sBackImgHandleParams; // 背景処理パラメータ
 		/* end */
 
+		static std::string sOutputBasePath; // 出力動画のベースパス
+
 	private:
 		/// <summary>
 		/// ビデオリソース読み込み・書き出し設定
@@ -199,6 +201,7 @@ namespace ImgProc
 		static const TracerParams& GetTracerParams() { return sTracerParams; }
 		static const TemplateHandleParams& GetTemplateHandleParams() { return sTemplateHandleParams; }
 		static const BackImgHandleParams& GetBackImgHandleParams() { return sBackImgHandleParams; }
+		static const std::string& GetOutputBasePath() { return sOutputBasePath; }
 		/* end */
 		/* end */
 	};

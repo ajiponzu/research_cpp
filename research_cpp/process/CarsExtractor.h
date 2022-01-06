@@ -10,7 +10,14 @@ private:
 	Image mSubtracted; //背景差分画像, 1チャンネル固定
 	Image mShadow; //車影画像, 1チャンネル固定
 	Image mReShadow;//車影再抽出画像, 1チャンネル固定
+	Image mPreCars; // モルフォロジかけない車両抽出画像, 1チャンネル固定
 	/* end */
+
+	cv::VideoWriter mVideoWriterSub;
+	cv::VideoWriter mVideoWriterShadow;
+	cv::VideoWriter mVideoWriterReShadow;
+	cv::VideoWriter mVideoWriterCars;
+	cv::VideoWriter mVideoWriterPreCars;
 
 	/* 画像処理に用いるバッファ */
 	Image mTemp; //バッファ
@@ -38,6 +45,49 @@ public:
 		const auto& kernelSize = ImgProcToolkit::GetExtractorParams().kernelSize;
 		mCloseKernel = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(kernelSize, kernelSize)); // モルフォロジカーネル取得関数, RECTのほかにCROSS, ELIPSEがある
 		/* end */
+
+		auto fourcc = cv::VideoWriter::fourcc('m', 'p', '4', 'v');
+		auto videoFps = ImgProcToolkit::GetVideoCapture().get(cv::CAP_PROP_FPS);
+
+		std::string outputPath = ImgProcToolkit::GetOutputBasePath() + "_Sub.mp4";
+		mVideoWriterSub.open(outputPath, fourcc, videoFps, cv::Size(crefVideoWidth, crefVideoHeight));
+		if (!mVideoWriterSub.isOpened())
+		{
+			std::cout << outputPath << ": can't create or overwrite" << std::endl;
+			assert("failed to overwrite video");
+		}
+
+		outputPath = ImgProcToolkit::GetOutputBasePath() + "_Shadow.mp4";
+		mVideoWriterShadow.open(outputPath, fourcc, videoFps, cv::Size(crefVideoWidth, crefVideoHeight));
+		if (!mVideoWriterShadow.isOpened())
+		{
+			std::cout << outputPath << ": can't create or overwrite" << std::endl;
+			assert("failed to overwrite video");
+		}
+
+		outputPath = ImgProcToolkit::GetOutputBasePath() + "_ReShadow.mp4";
+		mVideoWriterReShadow.open(outputPath, fourcc, videoFps, cv::Size(crefVideoWidth, crefVideoHeight));
+		if (!mVideoWriterReShadow.isOpened())
+		{
+			std::cout << outputPath << ": can't create or overwrite" << std::endl;
+			assert("failed to overwrite video");
+		}
+
+		outputPath = ImgProcToolkit::GetOutputBasePath() + "_PreCars.mp4";
+		mVideoWriterPreCars.open(outputPath, fourcc, videoFps, cv::Size(crefVideoWidth, crefVideoHeight));
+		if (!mVideoWriterPreCars.isOpened())
+		{
+			std::cout << outputPath << ": can't create or overwrite" << std::endl;
+			assert("failed to overwrite video");
+		}
+
+		outputPath = ImgProcToolkit::GetOutputBasePath() + "_Cars.mp4";
+		mVideoWriterCars.open(outputPath, fourcc, videoFps, cv::Size(crefVideoWidth, crefVideoHeight));
+		if (!mVideoWriterCars.isOpened())
+		{
+			std::cout << outputPath << ": can't create or overwrite" << std::endl;
+			assert("failed to overwrite video");
+		}
 	}
 
 	const Image& GetSubtracted() const { return mSubtracted; }
@@ -79,4 +129,9 @@ private:
 	/// </summary>
 	/// <param name="interval">待機時間[ms]</param>
 	void ShowOutImgs(const int& interval = 1500);
+
+	/// <summary>
+	/// 各処理過程の結果画像を出力
+	/// </summary>
+	void OutputProcessVideo();
 };
