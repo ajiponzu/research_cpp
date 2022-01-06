@@ -25,7 +25,6 @@ private:
 	Image mLabels; //ラベル画像
 	Image mStats; //ラベリングにおける統計情報
 	Image mCentroids; //ラベリングにおける中心点座標群
-	Image mExceptedShadows; //除外すべき影画像
 	Image mCloseKernel; // クロージングで使用するカーネル
 	Image mOpenKernel; // クロージングで使用するカーネル
 	/* end */

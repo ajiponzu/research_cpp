@@ -106,8 +106,8 @@ namespace ImgProc
 		auto labelNum = cv::connectedComponentsWithStats(mShadow, mLabels, mStats, mCentroids, 8);
 		const auto& crefDetectArea = Tk::GetDetectAreaInf();
 		const auto& crefParams = Tk::GetExtractorParams();
+		mShadow.copyTo(mReShadow);
 
-		mExceptedShadows.setTo(0); // 除外すべき影画像を0で初期化
 		/* 各領域ごとの処理, 0番は背景 */
 		for (int label = 1; label < labelNum; label++)
 		{
@@ -121,20 +121,14 @@ namespace ImgProc
 			/* end */
 
 			auto aspect = static_cast<float>(width) / height; //アスペクト比の導出
-			auto tAreaThr = (y - crefDetectArea.top) / 4 + crefParams.reshadowAreaThr; // 位置に応じた面積の閾値
 
-			//bool condArea = area < tAreaThr;
-			bool condArea = true;
-			bool condAspect = aspect > crefParams.reshadowAspectThr;
-			if (condArea || condAspect)
+			if (aspect > crefParams.reshadowAspectThr)
 			{
-				auto idxGroup = (mLabels == label); // 車影でない部分を抜き出す
-				mExceptedShadows.setTo(255, idxGroup); //車影でない部分を白画素で塗る
+				auto idxGroup = (mLabels == label); // 車影でない部分をマスクとして抜き出す
+				mReShadow.setTo(0, idxGroup); // 車影でない部分を0埋め
 			}
 		}
 		/* end */
-
-		cv::bitwise_xor(mExceptedShadows, mShadow, mReShadow); //車影のみ抽出, xorなので先ほど作ったマスク以外の部分を車影として残す
 	}
 
 	/// <summary>

@@ -24,17 +24,17 @@
         "nearOffset": 10
       },
       "ExtractorParams": {
-        "shadowThrL": 20,
-        "shadowThrB": 15,
-        "closeCount": 3,
+        "shadowThrL": 15,
+        "shadowThrB": 10,
+        "closeCount": 2,
         "kernelSize": 5,
-        "reshadowAreaThr": 10,
-        "reshadowAspectThr": 1.6
+        "reshadowAreaThr": 20,
+        "reshadowAspectThr": 1.4
       },
       "TracerParams": {
         "minAreaRatio": 0.3,
         "detectAreaThr": 20,
-        "minMatchingThr": 0.55
+        "minMatchingThr": 0.45
       },
       "TemplateHandleParams": {
         "mergin": 16,
