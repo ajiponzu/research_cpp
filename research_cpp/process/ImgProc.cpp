@@ -190,7 +190,7 @@ namespace ImgProc
 		const auto resources = root["Resources"];
 
 		const auto inputPath = resources["video"].string();
-		sOutputBasePath = resources["result"].string();
+		sOutputBasePath = resources["result"].string() + "_" + std::to_string(testCaseNum);
 		const auto outputPath = sOutputBasePath + ".mp4";
 		const auto roadMaskPath = resources["mask"].string();
 		const auto roadMasksBasePath = resources["roadMasksBase"].string();

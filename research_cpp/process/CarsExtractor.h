@@ -36,7 +36,6 @@ public:
 		cv::Size imgSize(crefVideoWidth, crefVideoHeight);
 
 		/* メンバ画像の初期化 */
-		mExceptedShadows = Image::zeros(imgSize, CV_8U);
 		mLab128 = Image::ones(imgSize, CV_8U) * 128;
 		/* end */
 

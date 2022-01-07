@@ -2,10 +2,10 @@
   "executeCaseNum": 1,
   "TestCases": [
     {
-      "startFrame": 1001,
-      "endFrame": 1720,
+      "startFrame": 1,
+      "endFrame": 100000,
       "Resources": {
-        "video": "./resource/fhd/yugata/input.mp4",
+        "video": "./resource/fhd/hiru/input.mp4",
         "result": "./output/result1",
         "mask": "./resource/fhd/back_kaikai.png",
         "roadMasksBase": "./resource/fhd/back_kai",
@@ -34,7 +34,7 @@
       "TracerParams": {
         "minAreaRatio": 0.3,
         "detectAreaThr": 20,
-        "minMatchingThr": 0.45
+        "minMatchingThr": 0.35
       },
       "TemplateHandleParams": {
         "mergin": 16,
@@ -50,7 +50,7 @@
     },
     {
       "startFrame": 1,
-      "endFrame": 720,
+      "endFrame": 100000,
       "Resources": {
         "video": "./resource/fhd/yugata/input.mp4",
         "result": "./output/result2",
@@ -71,64 +71,17 @@
         "nearOffset": 10
       },
       "ExtractorParams": {
-        "shadowThrL": 10,
-        "shadowThrB": 5,
-        "closeCount": 3,
-        "kernelSize": 5,
-        "reshadowAreaThr": 15,
-        "reshadowAspectThr": 1.6
-      },
-      "TracerParams": {
-        "minAreaRatio": 0.3,
-        "detectAreaThr": 30,
-        "minMatchingThr": 0.4
-      },
-      "TemplateHandleParams": {
-        "mergin": 16,
-        "magni": 1.0009,
-        "kernelSize": 3,
+        "shadowThrL": 15,
+        "shadowThrB": 10,
         "closeCount": 2,
-        "minAreaRatio": 0.3,
-        "areaThr": 20
-      },
-      "BackImgHandleParams": {
-        "blendAlpha": 0.025
-      }
-    },
-    {
-      "startFrame": 1001,
-      "endFrame": 3000,
-      "Resources": {
-        "video": "./resource/fhd/yugata/input.mp4",
-        "result": "./output/result3",
-        "mask": "./resource/fhd/back_kaikai.png",
-        "roadMasksBase": "./resource/fhd/back_kai",
-        "roadDirections": [
-          "L",
-          "A",
-          "L",
-          "A"
-        ]
-      },
-      "DetectAreaInf": {
-        "top": 320,
-        "bottom": 720,
-        "mergin": 10,
-        "merginPad": 10,
-        "nearOffset": 10
-      },
-      "ExtractorParams": {
-        "shadowThrL": 10,
-        "shadowThrB": 5,
-        "closeCount": 3,
         "kernelSize": 5,
-        "reshadowAreaThr": 30,
-        "reshadowAspectThr": 1.6
+        "reshadowAreaThr": 20,
+        "reshadowAspectThr": 1.4
       },
       "TracerParams": {
         "minAreaRatio": 0.3,
-        "detectAreaThr": 30,
-        "minMatchingThr": 0.4
+        "detectAreaThr": 20,
+        "minMatchingThr": 0.35
       },
       "TemplateHandleParams": {
         "mergin": 16,
