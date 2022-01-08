@@ -5,6 +5,11 @@ using Tk = ImgProc::ImgProcToolkit;
 
 namespace ImgProc
 {
+	CarsTracer::CarsTracer()
+	{
+		TemplateHandle::MakeCloseKernel();
+	}
+
 	/// <summary>
 	/// 車両検出
 	/// </summary>
@@ -21,7 +26,7 @@ namespace ImgProc
 		for (size_t idx = 0; idx < Tk::GetRoadMasksNum(); idx++)
 		{
 			cv::bitwise_and(crefCarsImg, crefRoadMasksGray[idx], mTemp); // マスキング処理
-			mLabelNum = cv::connectedComponentsWithStats(mTemp, mLabels, mStats, mCentroids); // ラベリング
+			mLabelNum = cv::connectedComponentsWithStats(mTemp, mLabels, mStats, mCentroids, 4); // ラベリング
 
 			if (Tk::GetFrameCount() == Tk::GetStartFrame())
 			{

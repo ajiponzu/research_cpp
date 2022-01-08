@@ -13,7 +13,7 @@ namespace ImgProc
 	Image CarsTracer::TemplateHandle::mTemp1;
 	Image CarsTracer::TemplateHandle::mTemp2;
 	Image CarsTracer::TemplateHandle::mTemp3;
-	Image CarsTracer::TemplateHandle::mCloseKernel = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(3, 3)); // クロージングで使用するカーネル
+	Image CarsTracer::TemplateHandle::mCloseKernel; // クロージングで使用するカーネル
 	/* end */
 
 	/// <summary>

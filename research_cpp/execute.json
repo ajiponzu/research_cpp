@@ -7,7 +7,7 @@
       "Resources": {
         "video": "./resource/fhd/hiru/input.mp4",
         "result": "./output/result1",
-        "mask": "./resource/fhd/back_kaikai.png",
+        "mask": "./resource/fhd/back_kai.png",
         "roadMasksBase": "./resource/fhd/back_kai",
         "roadDirections": [
           "L",
@@ -17,7 +17,7 @@
         ]
       },
       "DetectAreaInf": {
-        "top": 320,
+        "top": 350,
         "bottom": 720,
         "mergin": 10,
         "merginPad": 10,
@@ -37,7 +37,7 @@
         "minMatchingThr": 0.35
       },
       "TemplateHandleParams": {
-        "mergin": 16,
+        "mergin": 8,
         "magni": 1.0009,
         "kernelSize": 3,
         "closeCount": 2,

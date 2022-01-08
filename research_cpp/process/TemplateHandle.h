@@ -50,5 +50,21 @@ public:
 	/// <param name="inputImg">入力テンプレート画像</param>
 	/// <returns>切りだすx座標二つを一組にして返す</returns>
 	static std::pair<int, int> ExtractAreaByEdgeV(const Image& inputImg);
+
+	/// <summary>
+	/// クロージングカーネルを設定
+	/// </summary>
+	static void MakeCloseKernel() 
+	{
+		const auto& size = ImgProcToolkit::GetTemplateHandleParams().kernelSize;
+		mCloseKernel = cv::getStructuringElement(cv::MORPH_CROSS, cv::Size(size, size));
+		auto matPtr = mCloseKernel.ptr<cv::Vec3b>(size / 2);
+		for (int i = 0; i < size; i++)
+		{
+			if (i == size / 2)
+				continue;
+			matPtr[0][i] = 0;
+		}
+	}
 };
 

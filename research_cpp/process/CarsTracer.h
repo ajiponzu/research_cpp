@@ -15,7 +15,7 @@ private:
 	Image mStats; //ラベリングにおける統計情報
 	Image mCentroids; //ラベリングにおける中心点座標群
 
-	int mLabelNum; // ラベル数
+	int mLabelNum = 0; // ラベル数
 
 	cv::Point mMaxLoc;
 	cv::Point mMaxLocArray[2]{};
@@ -23,7 +23,7 @@ private:
 
 	std::vector<cv::Rect> mFinCarPosList;
 public:
-	CarsTracer() : mLabelNum(0) {}
+	CarsTracer();
 
 	/// <summary>
 	/// 車両検出
