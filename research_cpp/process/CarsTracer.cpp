@@ -38,8 +38,8 @@ namespace ImgProc
 			DetectNewCars(idx);
 		}
 		const auto& detect = Tk::GetDetectAreaInf();
-		cv::line(refResultImg, cv::Point(0, detect.top), cv::Point(Tk::GetVideoWidAndHigh().first, detect.top), cv::Scalar(0, 255, 0), 2);
-		cv::line(refResultImg, cv::Point(0, detect.bottom), cv::Point(Tk::GetVideoWidAndHigh().first, detect.bottom), cv::Scalar(0, 255, 0), 2);
+		cv::line(refResultImg, cv::Point(0, detect.top), cv::Point(Tk::GetVideoWidAndHigh().first, detect.top), cv::Scalar(0, 255, 0), 3);
+		cv::line(refResultImg, cv::Point(0, detect.bottom), cv::Point(Tk::GetVideoWidAndHigh().first, detect.bottom), cv::Scalar(0, 255, 0), 3);
 	}
 
 	/// <summary>
@@ -128,11 +128,12 @@ namespace ImgProc
 		const auto& crefRoadCarsDirection = Tk::GetRoadCarsDirections()[idx];
 		const auto& crefDetectArea = Tk::GetDetectAreaInf();
 		auto& refBoundaryCarIdList = Tk::GetBoundaryCarIdLists()[idx];
+		auto carPosBottom = carPos.br();
 		/* 追跡終了位置か, 新規車両かどうかの判別 */
 		switch (crefRoadCarsDirection)
 		{
 		case RoadDirect::APPROACH:
-			if ((carPos.y + carPos.height) > crefDetectArea.bottom)
+			if (carPosBottom.y > crefDetectArea.bottom)
 				mDeleteLists.push_back(std::pair(idx, carId)); // 追跡停止判定
 			if (carPos.y > (crefDetectArea.top + crefDetectArea.mergin + crefDetectArea.merginPad))
 				refBoundaryCarIdList.erase(carId);
@@ -140,7 +141,7 @@ namespace ImgProc
 		case RoadDirect::LEAVE:
 			if (carPos.y < crefDetectArea.top)
 				mDeleteLists.push_back(std::pair(idx, carId)); // 追跡停止判定
-			if ((carPos.y + carPos.height) < (crefDetectArea.top - crefDetectArea.mergin - crefDetectArea.merginPad))
+			if (carPosBottom.y < (crefDetectArea.top - crefDetectArea.mergin - crefDetectArea.merginPad))
 				refBoundaryCarIdList.erase(carId);
 			break;
 		default:
@@ -217,9 +218,8 @@ namespace ImgProc
 				/* 1フレーム目で検出されない領域を除外 */
 				if (Tk::GetFrameCount() == Tk::GetStartFrame())
 				{
-					auto bottomY = finPos.y + finPos.height;
 					doesntDetectCar = (finPos.y < (crefDetectArea.top + crefDetectArea.mergin + crefDetectArea.merginPad))
-						|| (bottomY > (crefDetectArea.bottom - crefDetectArea.mergin - crefDetectArea.merginPad));
+						|| (finPos.br().y >(crefDetectArea.bottom - crefDetectArea.mergin - crefDetectArea.merginPad));
 				}
 				/* end */
 				else
@@ -264,7 +264,7 @@ namespace ImgProc
 		const auto& crefRoadCarsDirection = Tk::GetRoadCarsDirections()[idx];
 		const auto& crefDetectArea = Tk::GetDetectAreaInf();
 		bool doesntDetectCar = true;
-		auto bottomY = carPos.y + carPos.height;
+		auto carPosBottom = carPos.br();
 
 		/* 検出開始地点から遠い領域かをチェック */
 		switch (crefRoadCarsDirection)
@@ -274,8 +274,8 @@ namespace ImgProc
 				|| (carPos.y > (crefDetectArea.top + crefDetectArea.mergin));
 			return doesntDetectCar;
 		case RoadDirect::LEAVE:
-			doesntDetectCar = (bottomY < (crefDetectArea.bottom - crefDetectArea.mergin))
-				|| (bottomY > crefDetectArea.bottom);
+			doesntDetectCar = (carPosBottom.y < (crefDetectArea.bottom - crefDetectArea.mergin))
+				|| (carPosBottom.y > crefDetectArea.bottom);
 			return doesntDetectCar;
 		default:
 			break;
@@ -311,8 +311,10 @@ namespace ImgProc
 			if (retFlag)
 				break;
 
-			diffPosX = (carPosRect.x + carPosRect.width) - (crefCarPos.x + crefCarPos.width);
-			diffPosY = (carPosRect.y + carPosRect.height) - (crefCarPos.y + crefCarPos.height);
+			auto carPosRectBottom = carPosRect.br();
+			auto carPosBottom = crefCarPos.br();
+			diffPosX = carPosRectBottom.x  - carPosBottom.x;
+			diffPosY = carPosRectBottom.y - carPosBottom.y;
 			retFlag = (std::abs(diffPosX) < crefDetectArea.nearOffset)
 				&& (std::abs(diffPosY) < crefDetectArea.nearOffset);
 			if (retFlag)

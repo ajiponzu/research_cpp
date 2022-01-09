@@ -3,7 +3,7 @@
   "TestCases": [
     {
       "startFrame": 1,
-      "endFrame": 100000,
+      "endFrame": 560,
       "Resources": {
         "video": "./resource/fhd/hiru/input.mp4",
         "result": "./output/result1",
