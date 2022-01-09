@@ -36,6 +36,13 @@ public:
 	static void ReLabelingTemplate(std::vector<cv::Rect>& finCarPosList, const cv::Rect2d& carPos);
 
 	/// <summary>
+	/// テンプレートに対してもう一度ラベリングを行い, ラベルの左上座標を参照リストに入れる
+	/// </summary>
+	/// <param name="finCarPosList">ラベル座標を格納するために渡されたリストの参照</param>
+	/// <param name="carPos">テンプレートの絶対座標</param>
+	static void ReLabelingTemplateContours(std::vector<cv::Rect>& finCarPosList, const cv::Rect2d& carPos);
+
+	/// <summary>
 	/// 横方向の負エッジをy方向微分によって求め, 切りだすy座標を処理によって選択
 	/// </summary>
 	/// <param name="inputImg">入力テンプレート画像</param>

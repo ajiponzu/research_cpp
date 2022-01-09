@@ -161,6 +161,51 @@ namespace ImgProc
 	}
 
 	/// <summary>
+	/// テンプレートに対してもう一度ラベリングを行い, ラベルの左上座標を参照リストに入れる
+	/// </summary>
+	/// <param name="finCarPosList">ラベル座標を格納するために渡されたリストの参照</param>
+	/// <param name="carPos">テンプレートの絶対座標</param>
+	void CarsTracer::TemplateHandle::ReLabelingTemplateContours(std::vector<cv::Rect>& finCarPosList, const cv::Rect2d& carPos)
+	{
+		const auto& crefFrame = Tk::GetFrame();
+		const auto& crefBackImg = Tk::GetBackImg();
+		const auto& crefParams = Tk::GetTemplateHandleParams();
+		const auto& crefDetectArea = Tk::GetDetectAreaInf();
+
+		mTemp3 = ExtractTemplate(crefFrame, carPos);
+		mTemp1 = ExtractTemplate(crefBackImg, carPos);
+
+		cv::absdiff(mTemp3, mTemp1, mTemp2);
+		binarizeImage(mTemp2);
+		cv::morphologyEx(mTemp2, mTemp3, cv::MORPH_CLOSE, mCloseKernel, cv::Point(-1, -1), crefParams.closeCount);
+
+		//ラベリングによって求められるラベル数
+		auto labelNum = cv::connectedComponentsWithStats(mTemp3, mLabels, mStats, mCentroids, 8);
+		/* 各領域ごとの処理, 0番は背景 */
+		for (int label = 1; label < labelNum; label++)
+		{
+			/* 統計情報分割 */
+			auto statsPtr = mStats.ptr<int>(label);
+			auto& x = statsPtr[cv::ConnectedComponentsTypes::CC_STAT_LEFT];
+			auto& y = statsPtr[cv::ConnectedComponentsTypes::CC_STAT_TOP];
+			auto& width = statsPtr[cv::ConnectedComponentsTypes::CC_STAT_WIDTH];
+			auto& height = statsPtr[cv::ConnectedComponentsTypes::CC_STAT_HEIGHT];
+			auto& area = statsPtr[cv::ConnectedComponentsTypes::CC_STAT_AREA];
+			/* end */
+
+			auto tAreaThr = (carPos.y - crefDetectArea.top) / 4 + crefParams.areaThr; // 位置に応じた面積の閾値
+			if (area < tAreaThr)
+				continue;
+
+			if (area < width * height * crefParams.minAreaRatio) // 外周や直線だけで面積を稼いでるラベルを除外
+				continue;
+
+			finCarPosList.push_back(cv::Rect(static_cast<int>(carPos.x) + x, static_cast<int>(carPos.y) + y, width, height));
+		}
+		/* end */
+	}
+
+	/// <summary>
 	/// 横方向の負エッジをy方向微分によって求め, 切りだすy座標を処理によって選択
 	/// </summary>
 	/// <param name="inputImg">入力テンプレート画像</param>
