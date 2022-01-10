@@ -10,7 +10,6 @@ private:
 	Image mSubtracted; //背景差分画像, 1チャンネル固定
 	Image mShadow; //車影画像, 1チャンネル固定
 	Image mReShadow;//車影再抽出画像, 1チャンネル固定
-	Image mPreCars; // モルフォロジかけない車両抽出画像, 1チャンネル固定
 	/* end */
 
 	cv::VideoWriter mVideoWriterSub;

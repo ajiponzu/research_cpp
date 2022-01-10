@@ -64,14 +64,14 @@ public:
 	static void MakeCloseKernel() 
 	{
 		const auto& size = ImgProcToolkit::GetTemplateHandleParams().kernelSize;
-		mCloseKernel = cv::getStructuringElement(cv::MORPH_CROSS, cv::Size(size, size));
-		auto matPtr = mCloseKernel.ptr<cv::Vec3b>(size / 2);
-		for (int i = 0; i < size; i++)
-		{
-			if (i == size / 2)
-				continue;
-			matPtr[0][i] = 0;
-		}
+		mCloseKernel = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(size, size));
+		//auto matPtr = mCloseKernel.ptr<cv::Vec3b>(size / 2);
+		//for (int i = 0; i < size; i++)
+		//{
+		//	if (i == size / 2)
+		//		continue;
+		//	matPtr[0][i] = 0;
+		//}
 	}
 };
 

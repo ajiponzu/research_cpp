@@ -330,6 +330,7 @@ namespace ImgProc
 	/// <param name="carPos">車両位置</param>
 	void CarsTracer::ReExtractTemplate(const cv::Rect2d& carPos)
 	{
-		TemplateHandle::ReLabelingTemplate(mFinCarPosList, carPos);
+		//TemplateHandle::ReLabelingTemplate(mFinCarPosList, carPos);
+		TemplateHandle::ReLabelingTemplateContours(mFinCarPosList, carPos);
 	}
 };

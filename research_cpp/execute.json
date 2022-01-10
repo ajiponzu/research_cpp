@@ -3,7 +3,7 @@
   "TestCases": [
     {
       "startFrame": 1,
-      "endFrame": 560,
+      "endFrame": 1000,
       "Resources": {
         "video": "./resource/fhd/hiru/input.mp4",
         "result": "./output/result1",
@@ -26,7 +26,7 @@
       "ExtractorParams": {
         "shadowThrL": 15,
         "shadowThrB": 10,
-        "closeCount": 2,
+        "closeCount": 3,
         "kernelSize": 5,
         "reshadowAreaThr": 20,
         "reshadowAspectThr": 1.4

@@ -19,7 +19,9 @@ namespace ImgProc
 	Image ImgProcToolkit::sFrame;
 	// 結果画像
 	Image ImgProcToolkit::sResultImg;
-	// 車両二値画像
+	// 車両二値画像, モルフォロジなし
+	Image ImgProcToolkit::sMorphPrevCarsImg;
+	// 車両二値画像, モルフォロジで整形済み
 	Image ImgProcToolkit::sCarsImg;
 	// 背景画像
 	Image ImgProcToolkit::sBackImg;

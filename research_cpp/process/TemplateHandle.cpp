@@ -1,8 +1,43 @@
 #include "TemplateHandle.h"
 
 #include <opencv2/core/core_c.h>
+#include <opencv2/imgproc/types_c.h>
 
 using Tk = ImgProc::ImgProcToolkit;
+
+/// <summary>
+/// np.uniqueと同義. 
+/// 引用「https://stackoverflow.com/questions/24716932/obtaining-list-of-unique-pixel-values-in-opencv-mat」
+/// </summary>
+/// <param name="input"></param>
+/// <param name="sort"></param>
+/// <returns></returns>
+std::vector<int> unique(const cv::Mat& input, bool sort = false)
+{
+    if (input.channels() > 1) 
+    {
+        std::cerr << "unique !!! Only works with 1-channel Mat" << std::endl;
+        return std::vector<int>();
+    }
+
+    std::vector<int> out;
+    for (int y = 0; y < input.rows; ++y)
+    {
+        const int* row_ptr = input.ptr<int>(y);
+        for (int x = 0; x < input.cols; ++x)
+        {
+            int value = row_ptr[x];
+
+            if ( std::find(out.begin(), out.end(), value) == out.end() )
+                out.push_back(value);
+        }
+    }
+
+    if (sort)
+        std::sort(out.begin(), out.end());
+
+    return out;
+}
 
 namespace ImgProc
 {
@@ -59,7 +94,7 @@ namespace ImgProc
 			}
 			/* end */
 		}
-		
+
 		if (retData.size() == 0)
 			retData.push_back(-1);
 	}
@@ -167,40 +202,52 @@ namespace ImgProc
 	/// <param name="carPos">テンプレートの絶対座標</param>
 	void CarsTracer::TemplateHandle::ReLabelingTemplateContours(std::vector<cv::Rect>& finCarPosList, const cv::Rect2d& carPos)
 	{
-		const auto& crefFrame = Tk::GetFrame();
-		const auto& crefBackImg = Tk::GetBackImg();
 		const auto& crefParams = Tk::GetTemplateHandleParams();
 		const auto& crefDetectArea = Tk::GetDetectAreaInf();
+		const auto& crefMorphPrevCars = Tk::GetMorphPrevCars();
+		const auto& crefCars = Tk::GetCars();
 
-		mTemp3 = ExtractTemplate(crefFrame, carPos);
-		mTemp1 = ExtractTemplate(crefBackImg, carPos);
+		Image bin, sureBg, sureFore, dist, unknown;
+		bin = ExtractTemplate(crefMorphPrevCars, carPos);
+		cv::morphologyEx(bin, bin, cv::MORPH_CLOSE, mCloseKernel, cv::Point(-1, -1), 2);
+		cv::morphologyEx(bin, bin, cv::MORPH_OPEN, mCloseKernel, cv::Point(-1, -1), 2);
+		cv::morphologyEx(bin, sureBg, cv::MORPH_CLOSE, mCloseKernel, cv::Point(-1, -1), 2);
 
-		cv::absdiff(mTemp3, mTemp1, mTemp2);
-		binarizeImage(mTemp2);
-		cv::morphologyEx(mTemp2, mTemp3, cv::MORPH_CLOSE, mCloseKernel, cv::Point(-1, -1), crefParams.closeCount);
+		cv::distanceTransform(bin, dist, CV_DIST_L2, 5);
+		double maxVal = 0.0;
+		cv::minMaxLoc(dist, nullptr, &maxVal, nullptr, nullptr);
+		cv::threshold(dist, mTemp2, 0.5 * maxVal, 255, CV_THRESH_BINARY);
+		mTemp2.convertTo(sureFore, CV_8U);
+
+		cv::subtract(sureBg, sureFore, unknown);
+
+		//cv::imshow("fore", sureFore);
+		//cv::imshow("bin", bin);
+		//cv::waitKey(0);
+		//cv::destroyAllWindows();
 
 		//ラベリングによって求められるラベル数
-		auto labelNum = cv::connectedComponentsWithStats(mTemp3, mLabels, mStats, mCentroids, 8);
+		auto labelNum = cv::connectedComponents(sureFore, mLabels, 4);
+		mLabels += 1;
+		mLabels.setTo(0, (unknown == 255));
+
+		cv::cvtColor(crefCars, mTemp3, cv::COLOR_GRAY2BGR);
+		mTemp3 = ExtractTemplate(mTemp3, carPos);
+		cv::watershed(mTemp3, mLabels);
+		auto labelList = unique(mLabels, true);
+		std::erase_if(labelList, [](int x) { return x < 2; });
+
 		/* 各領域ごとの処理, 0番は背景 */
-		for (int label = 1; label < labelNum; label++)
+		for (const auto& label : labelList)
 		{
-			/* 統計情報分割 */
-			auto statsPtr = mStats.ptr<int>(label);
-			auto& x = statsPtr[cv::ConnectedComponentsTypes::CC_STAT_LEFT];
-			auto& y = statsPtr[cv::ConnectedComponentsTypes::CC_STAT_TOP];
-			auto& width = statsPtr[cv::ConnectedComponentsTypes::CC_STAT_WIDTH];
-			auto& height = statsPtr[cv::ConnectedComponentsTypes::CC_STAT_HEIGHT];
-			auto& area = statsPtr[cv::ConnectedComponentsTypes::CC_STAT_AREA];
-			/* end */
-
-			auto tAreaThr = (carPos.y - crefDetectArea.top) / 4 + crefParams.areaThr; // 位置に応じた面積の閾値
-			if (area < tAreaThr)
-				continue;
-
-			if (area < width * height * crefParams.minAreaRatio) // 外周や直線だけで面積を稼いでるラベルを除外
-				continue;
-
-			finCarPosList.push_back(cv::Rect(static_cast<int>(carPos.x) + x, static_cast<int>(carPos.y) + y, width, height));
+			std::vector<std::vector<cv::Point>> contours;
+			Image target = Image::ones(mLabels.size(), CV_8UC1) * 255;
+			target.setTo(0, (mLabels != label));
+			cv::findContours(target, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
+			auto rect = cv::boundingRect(contours[0]);
+			rect.x += static_cast<int>(carPos.x);
+			rect.y += static_cast<int>(carPos.y);
+			finCarPosList.push_back(rect);
 		}
 		/* end */
 	}

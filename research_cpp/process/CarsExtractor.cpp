@@ -14,8 +14,9 @@ namespace ImgProc
 		const auto& crefParams = Tk::GetExtractorParams();
 		auto& refCarsImg = Tk::GetCars();
 		const auto& crefRoadMaskGray = Tk::GetRoadMaskGray();
-		mPreCars = mSubtracted - mReShadow; // 移動物体から車影を除去
-		cv::morphologyEx(mPreCars, refCarsImg, cv::MORPH_CLOSE, mCloseKernel, cv::Point(-1, -1), crefParams.closeCount);
+		auto& refMorphPrevCars = Tk::GetMorphPrevCars();
+		refMorphPrevCars = mSubtracted - mReShadow; // 移動物体から車影を除去
+		cv::morphologyEx(refMorphPrevCars, refCarsImg, cv::MORPH_CLOSE, mCloseKernel, cv::Point(-1, -1), crefParams.closeCount);
 		cv::bitwise_and(refCarsImg, crefRoadMaskGray, refCarsImg);
 		OutputProcessVideo();
 	}
@@ -161,7 +162,7 @@ namespace ImgProc
 		cv::cvtColor(mReShadow, mTemp, cv::COLOR_GRAY2BGR);
 		mVideoWriterReShadow << mTemp;
 
-		cv::cvtColor(mPreCars, mTemp, cv::COLOR_GRAY2BGR);
+		cv::cvtColor(Tk::GetMorphPrevCars(), mTemp, cv::COLOR_GRAY2BGR);
 		mVideoWriterPreCars << mTemp;
 
 		cv::cvtColor(Tk::GetCars(), mTemp, cv::COLOR_GRAY2BGR);

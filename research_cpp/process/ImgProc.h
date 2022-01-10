@@ -74,7 +74,9 @@ namespace ImgProc
 		static Image sFrame;
 		// 結果画像
 		static Image sResultImg;
-		// 車両二値画像
+		// 車両二値画像, モルフォロジなし
+		static Image sMorphPrevCarsImg;
+		// 車両二値画像, モルフォロジで整形済み
 		static Image sCarsImg;
 		// 背景画像
 		static Image sBackImg;
@@ -182,6 +184,7 @@ namespace ImgProc
 		static uint64_t& GetEndFrame() { return sEndFrame; }
 		static Image& GetFrame() { return sFrame; }
 		static Image& GetResult() { return sResultImg; }
+		static Image& GetMorphPrevCars() { return sMorphPrevCarsImg; }
 		static Image& GetCars() { return sCarsImg; }
 		static Image& GetBackImg() { return sBackImg; }
 		static const size_t& GetRoadMasksNum() { return sRoadMasksNum; }
