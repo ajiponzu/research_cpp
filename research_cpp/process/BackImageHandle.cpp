@@ -8,6 +8,7 @@ namespace ImgProc
 	Image CarsExtractor::BackImageHandle::sBackImgFloat;
 	Image CarsExtractor::BackImageHandle::sFrameFloat;
 	Image CarsExtractor::BackImageHandle::sMoveCarsMask;
+	Image CarsExtractor::BackImageHandle::sMoveCarsMaskPrev;
 	bool CarsExtractor::BackImageHandle::sIsExistPreBackImg = false;
 
 	void CarsExtractor::BackImageHandle::CreatePreBackImg()
@@ -38,12 +39,16 @@ namespace ImgProc
 			else if (refFrameCount > Tk::GetEndFrame())
 				break;
 
+
 			refFrame.convertTo(sFrameFloat, CV_32FC3);
 
 			fgbg->apply(refFrame, sMoveCarsMask);
 			binarizeImage(sMoveCarsMask);
 			cv::bitwise_not(sMoveCarsMask, sMoveCarsMask);
+			if (refFrameCount != Tk::GetStartFrame())
+				cv::bitwise_and(sMoveCarsMask, sMoveCarsMaskPrev, sMoveCarsMask);
 			cv::accumulateWeighted(sFrameFloat, sBackImgFloat, crefParams.blendAlpha, sMoveCarsMask);
+			sMoveCarsMaskPrev = sMoveCarsMask;
 
 			std::cout << refFrameCount << std::endl;
 			count++;
@@ -65,9 +70,11 @@ namespace ImgProc
 		
 		/* 背景更新処理 */
 		cv::bitwise_not(sSubtracted, sMoveCarsMask);
+		cv::bitwise_and(sMoveCarsMask, sMoveCarsMaskPrev, sMoveCarsMask);
 		crefFrame.convertTo(sFrameFloat, CV_32FC3);
 		cv::accumulateWeighted(sFrameFloat, sBackImgFloat, crefParams.blendAlpha, sMoveCarsMask);
 		sBackImgFloat.convertTo(refBackImg, CV_8UC3);
+		sMoveCarsMaskPrev = sMoveCarsMask;
 		/* end */
 	}
 };

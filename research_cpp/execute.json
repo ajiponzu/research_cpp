@@ -3,11 +3,11 @@
   "TestCases": [
     {
       "startFrame": 1,
-      "endFrame": 10000,
+      "endFrame": 1000,
       "Resources": {
         "video": "./resource/fhd/hiru/input.mp4",
         "result": "./output/result1",
-        "mask": "./resource/fhd/back_kaikai.png",
+        "mask": "./resource/fhd/back_kai.png",
         "roadMasksBase": "./resource/fhd/back_kai",
         "roadDirections": [
           "L",

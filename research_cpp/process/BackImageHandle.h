@@ -9,6 +9,7 @@ private:
 	static Image sBackImgFloat;
 	static Image sFrameFloat;
 	static Image sMoveCarsMask; // グレースケール二値画像
+	static Image sMoveCarsMaskPrev; // グレースケール二値画像
 	static bool sIsExistPreBackImg;
 
 public:

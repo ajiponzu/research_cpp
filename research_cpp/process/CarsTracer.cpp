@@ -291,27 +291,29 @@ namespace ImgProc
 		bool retFlag = false;
 		for (auto& [refCarId, refCarPos] : crefTemplatePositions)
 		{
-			auto diffPosX = carPosRect.x - refCarPos.x;
-			auto diffPosY = carPosRect.y - refCarPos.y;
-			retFlag = (std::abs(diffPosX) < crefDetectArea.nearOffset)
-				&& (std::abs(diffPosY) < crefDetectArea.nearOffset);
-			if (retFlag)
-				break;
+			//auto diffPosX = carPosRect.x - refCarPos.x;
+			//auto diffPosY = carPosRect.y - refCarPos.y;
+			//retFlag = (std::abs(diffPosX) < crefDetectArea.nearOffset)
+			//	&& (std::abs(diffPosY) < crefDetectArea.nearOffset);
+			//if (retFlag)
+			//	return true;
 
-			auto carPosRectBottom = carPosRect.br();
-			auto carPosBottom = refCarPos.br();
-			diffPosX = carPosRectBottom.x  - carPosBottom.x;
-			diffPosY = carPosRectBottom.y - carPosBottom.y;
-			retFlag = (std::abs(diffPosX) < crefDetectArea.nearOffset)
-				&& (std::abs(diffPosY) < crefDetectArea.nearOffset);
-			if (retFlag)
-				break;
+			//auto carPosRectBottom = carPosRect.br();
+			//auto carPosBottom = refCarPos.br();
+			//diffPosX = carPosRectBottom.x  - carPosBottom.x;
+			//diffPosY = carPosRectBottom.y - carPosBottom.y;
+			//retFlag = (std::abs(diffPosX) < crefDetectArea.nearOffset)
+			//	&& (std::abs(diffPosY) < crefDetectArea.nearOffset);
+			//if (retFlag)
+			//	return true;
 
 			if (carPosRect.area() < refCarPos.area())
 			{
 				const auto bottom = carPosRect.br();
 				auto center = cv::Point2d((carPosRect.x + bottom.x) / 2, (carPosRect.y + bottom.y) / 2);
 				retFlag = refCarPos.contains(center);
+				if (retFlag)
+					return true;
 			}
 			else
 			{
@@ -324,9 +326,6 @@ namespace ImgProc
 					return true;
 				}
 			}
-
-			if (retFlag)
-				break;
 		}
 
 		return retFlag;
@@ -351,6 +350,11 @@ namespace ImgProc
 		auto& crefTemplatePositions = Tk::GetTemplatePositionsList()[idx];
 
 		for (const auto& [crefCarId, crefCarPos] : crefTemplatePositions)
+		{
+			const auto bottom = crefCarPos.br();
+			auto center = cv::Point2d((crefCarPos.x + bottom.x) / 2, (crefCarPos.y + bottom.y) / 2);
+			cv::circle(refResultImg, center, 2, cv::Scalar(255, 0, 0)); // 中心点を描く
 			cv::rectangle(refResultImg, crefCarPos, cv::Scalar(0, 0, 255), 2); // 矩形を描く
+		}
 	}
 };
