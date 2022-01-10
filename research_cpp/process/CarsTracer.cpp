@@ -291,22 +291,6 @@ namespace ImgProc
 		bool retFlag = false;
 		for (auto& [refCarId, refCarPos] : crefTemplatePositions)
 		{
-			//auto diffPosX = carPosRect.x - refCarPos.x;
-			//auto diffPosY = carPosRect.y - refCarPos.y;
-			//retFlag = (std::abs(diffPosX) < crefDetectArea.nearOffset)
-			//	&& (std::abs(diffPosY) < crefDetectArea.nearOffset);
-			//if (retFlag)
-			//	return true;
-
-			//auto carPosRectBottom = carPosRect.br();
-			//auto carPosBottom = refCarPos.br();
-			//diffPosX = carPosRectBottom.x  - carPosBottom.x;
-			//diffPosY = carPosRectBottom.y - carPosBottom.y;
-			//retFlag = (std::abs(diffPosX) < crefDetectArea.nearOffset)
-			//	&& (std::abs(diffPosY) < crefDetectArea.nearOffset);
-			//if (retFlag)
-			//	return true;
-
 			if (carPosRect.area() < refCarPos.area())
 			{
 				const auto bottom = carPosRect.br();
