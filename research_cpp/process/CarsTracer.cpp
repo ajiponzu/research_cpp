@@ -110,7 +110,6 @@ namespace ImgProc
 
 			refCarPos.x = mNearRect.x + mMaxLoc.x;
 			refCarPos.y = mNearRect.y + mMaxLoc.y;
-			cv::rectangle(refResultImg, refCarPos, cv::Scalar(0, 0, 255), 3);
 			JudgeStopTraceAndDetect(idx, carId, refCarPos); // 追跡終了判定
 			//std::string path = "./template_" + std::to_string(Tk::GetFrameCount()) + "_" + std::to_string(carId) + ".png";
 			//cv::imwrite(path, refTemplates[carId]);
@@ -354,6 +353,6 @@ namespace ImgProc
 		auto& crefTemplatePositions = Tk::GetTemplatePositionsList()[idx];
 
 		for (const auto& [crefCarId, crefCarPos] : crefTemplatePositions)
-			cv::rectangle(refResultImg, crefCarPos, cv::Scalar(255, 0, 0), 3); // 矩形を描く
+			cv::rectangle(refResultImg, crefCarPos, cv::Scalar(0, 0, 255), 2); // 矩形を描く
 	}
 };
