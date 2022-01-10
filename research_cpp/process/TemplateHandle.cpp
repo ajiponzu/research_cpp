@@ -215,7 +215,6 @@ namespace ImgProc
 		bin = ExtractTemplate(crefMorphPrevCars, carPos);
 		//bin = ExtractTemplate(crefCars, carPos);
 		cv::morphologyEx(bin, bin, cv::MORPH_CLOSE, mCloseKernel, cv::Point(-1, -1), 3);
-		//cv::morphologyEx(bin, bin, cv::MORPH_OPEN, mOpenKernel, cv::Point(-1, -1), 1);
 		cv::morphologyEx(bin, sureBg, cv::MORPH_DILATE, mDilateKernel, cv::Point(-1, -1), 2);
 
 		cv::distanceTransform(bin, dist, CV_DIST_L2, 5);

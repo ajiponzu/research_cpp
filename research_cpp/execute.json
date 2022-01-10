@@ -3,11 +3,11 @@
   "TestCases": [
     {
       "startFrame": 1,
-      "endFrame": 1000,
+      "endFrame": 10000,
       "Resources": {
         "video": "./resource/fhd/hiru/input.mp4",
         "result": "./output/result1",
-        "mask": "./resource/fhd/back_kai.png",
+        "mask": "./resource/fhd/back_kaikai.png",
         "roadMasksBase": "./resource/fhd/back_kai",
         "roadDirections": [
           "L",
@@ -34,7 +34,7 @@
       "TracerParams": {
         "minAreaRatio": 0.3,
         "detectAreaThr": 20,
-        "minMatchingThr": 0.35
+        "minMatchingThr": 0.5
       },
       "TemplateHandleParams": {
         "mergin": 6,
@@ -50,7 +50,7 @@
     },
     {
       "startFrame": 1,
-      "endFrame": 1500,
+      "endFrame": 10000,
       "Resources": {
         "video": "./resource/fhd/yugata/input.mp4",
         "result": "./output/result2",
@@ -89,7 +89,7 @@
         "kernelSize": 3,
         "closeCount": 2,
         "minAreaRatio": 0.3,
-        "areaThr": 50
+        "areaThr": 20
       },
       "BackImgHandleParams": {
         "blendAlpha": 0.025

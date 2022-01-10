@@ -79,14 +79,12 @@ namespace ImgProc
 			cv::cvtColor(refCarImg, gray, cv::COLOR_BGR2GRAY);
 			cv::Laplacian(gray, edgeTempl, CV_8U);
 			cv::cvtColor(edgeTempl, edgeTempl, cv::COLOR_GRAY2BGR);
-			cv::matchTemplate(edge, edgeTempl, mDataTemp, cv::TM_CCOEFF_NORMED);
-			//cv::matchTemplate(edge, edgeTempl, mDataTemp, cv::TM_CCORR_NORMED);
+			cv::matchTemplate(edge, edgeTempl, mDataTemp, cv::TM_CCORR_NORMED); // cos類似度
 			cv::minMaxLoc(mDataTemp, nullptr, &maxValueArray[0], nullptr, &mMaxLocArray[0]);
 			/* end */
 
 			/* カラーによるテンプレートマッチング */
-			cv::matchTemplate(mTemp, refCarImg, mDataTemp, cv::TM_CCOEFF_NORMED);
-			//cv::matchTemplate(mTemp, refCarImg, mDataTemp, cv::TM_CCORR_NORMED);
+			cv::matchTemplate(mTemp, refCarImg, mDataTemp, cv::TM_CCOEFF_NORMED); // ZNCC
 			cv::minMaxLoc(mDataTemp, nullptr, &maxValueArray[1], nullptr, &mMaxLocArray[1]);
 			/* end */
 
