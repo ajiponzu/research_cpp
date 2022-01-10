@@ -93,8 +93,6 @@ namespace ImgProc
 		static std::vector<std::unordered_map<uint64_t, cv::Rect2d>> sTemplatePositionsList;
 		// 車線ごとの車の移動方向を保存
 		static std::unordered_map<size_t, RoadDirect> sRoadCarsDirections;
-		// 車線ごとに検出境界に最も近い(高さの大小)車両IDを保存
-		static std::vector<std::unordered_set<uint64_t>> sBoundaryCarIdLists;
 		/* end */
 
 		/* ファイルパス関連 */
@@ -198,7 +196,6 @@ namespace ImgProc
 		static std::vector<std::unordered_map<uint64_t, Image>>& GetTemplatesList() { return sTemplatesList; }
 		static std::vector<std::unordered_map<uint64_t, cv::Rect2d>>& GetTemplatePositionsList() { return sTemplatePositionsList; }
 		static std::unordered_map<size_t, RoadDirect>& GetRoadCarsDirections() { return sRoadCarsDirections; }
-		static std::vector<std::unordered_set<uint64_t>>& GetBoundaryCarIdLists() { return sBoundaryCarIdLists; }
 		static const DetectAreaInf& GetDetectAreaInf() { return sDetectAreaInf; }
 		static const ExtractorParams& GetExtractorParams() { return sExtractorParams; }
 		static const TracerParams& GetTracerParams() { return sTracerParams; }

@@ -49,6 +49,8 @@ namespace ImgProc
 	Image CarsTracer::TemplateHandle::mTemp2;
 	Image CarsTracer::TemplateHandle::mTemp3;
 	Image CarsTracer::TemplateHandle::mCloseKernel; // クロージングで使用するカーネル
+	Image CarsTracer::TemplateHandle::mOpenKernel; // オープニングで使用するカーネル
+	Image CarsTracer::TemplateHandle::mDilateKernel; // 膨張で使用するカーネル
 	/* end */
 
 	/// <summary>
@@ -121,6 +123,8 @@ namespace ImgProc
 		/* テンプレートの拡大・縮小処理と, 座標矩形の縦横の変更 */
 		refRect.width *= magni;
 		refRect.height *= magni;
+		refRect.width = std::max(refRect.width, 1.0);
+		refRect.height = std::max(refRect.height, 1.0);
 		cv::resize(refCarTemplate, refCarTemplate, refRect.size());
 		/* end */
 
@@ -209,9 +213,10 @@ namespace ImgProc
 
 		Image bin, sureBg, sureFore, dist, unknown;
 		bin = ExtractTemplate(crefMorphPrevCars, carPos);
-		cv::morphologyEx(bin, bin, cv::MORPH_CLOSE, mCloseKernel, cv::Point(-1, -1), 2);
-		cv::morphologyEx(bin, bin, cv::MORPH_OPEN, mCloseKernel, cv::Point(-1, -1), 2);
-		cv::morphologyEx(bin, sureBg, cv::MORPH_CLOSE, mCloseKernel, cv::Point(-1, -1), 2);
+		//bin = ExtractTemplate(crefCars, carPos);
+		cv::morphologyEx(bin, bin, cv::MORPH_CLOSE, mCloseKernel, cv::Point(-1, -1), 3);
+		//cv::morphologyEx(bin, bin, cv::MORPH_OPEN, mOpenKernel, cv::Point(-1, -1), 1);
+		cv::morphologyEx(bin, sureBg, cv::MORPH_DILATE, mDilateKernel, cv::Point(-1, -1), 2);
 
 		cv::distanceTransform(bin, dist, CV_DIST_L2, 5);
 		double maxVal = 0.0;
@@ -237,14 +242,23 @@ namespace ImgProc
 		auto labelList = unique(mLabels, true);
 		std::erase_if(labelList, [](int x) { return x < 2; });
 
+		if (labelList.empty())
+		{
+			finCarPosList.push_back(carPos);
+			return;
+		}
+
 		/* 各領域ごとの処理, 0番は背景 */
 		for (const auto& label : labelList)
 		{
 			std::vector<std::vector<cv::Point>> contours;
 			Image target = Image::ones(mLabels.size(), CV_8UC1) * 255;
 			target.setTo(0, (mLabels != label));
+			cv::morphologyEx(target, target, cv::MORPH_DILATE, mOpenKernel, cv::Point(-1, -1), 1);
 			cv::findContours(target, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
 			auto rect = cv::boundingRect(contours[0]);
+			if (rect.area() < crefParams.areaThr)
+				continue;
 			rect.x += static_cast<int>(carPos.x);
 			rect.y += static_cast<int>(carPos.y);
 			finCarPosList.push_back(rect);

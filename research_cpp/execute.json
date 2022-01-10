@@ -26,7 +26,7 @@
       "ExtractorParams": {
         "shadowThrL": 15,
         "shadowThrB": 10,
-        "closeCount": 3,
+        "closeCount": 2,
         "kernelSize": 5,
         "reshadowAreaThr": 20,
         "reshadowAspectThr": 1.4
@@ -37,8 +37,8 @@
         "minMatchingThr": 0.35
       },
       "TemplateHandleParams": {
-        "mergin": 8,
-        "magni": 1.0009,
+        "mergin": 6,
+        "magni": 1.0006,
         "kernelSize": 3,
         "closeCount": 2,
         "minAreaRatio": 0.3,
@@ -50,11 +50,11 @@
     },
     {
       "startFrame": 1,
-      "endFrame": 100000,
+      "endFrame": 1500,
       "Resources": {
         "video": "./resource/fhd/yugata/input.mp4",
         "result": "./output/result2",
-        "mask": "./resource/fhd/back_kaikai.png",
+        "mask": "./resource/fhd/back_kai.png",
         "roadMasksBase": "./resource/fhd/back_kai",
         "roadDirections": [
           "L",
@@ -64,7 +64,7 @@
         ]
       },
       "DetectAreaInf": {
-        "top": 320,
+        "top": 350,
         "bottom": 720,
         "mergin": 10,
         "merginPad": 10,
@@ -73,7 +73,7 @@
       "ExtractorParams": {
         "shadowThrL": 15,
         "shadowThrB": 10,
-        "closeCount": 2,
+        "closeCount": 3,
         "kernelSize": 5,
         "reshadowAreaThr": 20,
         "reshadowAspectThr": 1.4
@@ -84,12 +84,12 @@
         "minMatchingThr": 0.35
       },
       "TemplateHandleParams": {
-        "mergin": 16,
-        "magni": 1.0009,
+        "mergin": 6,
+        "magni": 1.0006,
         "kernelSize": 3,
         "closeCount": 2,
         "minAreaRatio": 0.3,
-        "areaThr": 20
+        "areaThr": 50
       },
       "BackImgHandleParams": {
         "blendAlpha": 0.025

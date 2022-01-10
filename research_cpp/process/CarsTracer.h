@@ -66,16 +66,21 @@ private:
 	bool IsntDetectedCars(const size_t& idx, const cv::Rect2d& carPos);
 
 	/// <summary>
-	/// 新規車両として検出するか判定. 以前検出した新規車両との位置関係を考える.
+	/// 新規車両として検出するか判定. 以前検出した車両との位置関係を考える.
 	/// </summary>
 	/// <param name="idx">道路マスク番号</param>
 	/// <param name="carPosRect">車両位置</param>
 	/// <returns>判定結果, trueなら検出しない</returns>
-	bool DoesntAddBoundCar(const size_t& idx, const cv::Rect2d& carPosRect);
+	bool DoesntAddCar(const size_t& idx, const cv::Rect2d& carPosRect);
 
 	/// <summary>
 	/// テンプレート再抽出
 	/// </summary>
 	/// <param name="carPos">車両位置</param>
 	void ReExtractTemplate(const cv::Rect2d& carPos);
+
+	/// <summary>
+	/// 車両矩形描画
+	/// </summary>
+	void DrawRectangles(const size_t& idx);
 };

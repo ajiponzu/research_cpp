@@ -38,8 +38,6 @@ namespace ImgProc
 	std::vector<std::unordered_map<uint64_t, cv::Rect2d>> ImgProcToolkit::sTemplatePositionsList;
 	// 車線ごとの車の移動方向を保存
 	std::unordered_map<size_t, RoadDirect> ImgProcToolkit::sRoadCarsDirections;
-	// 車線ごとに検出境界に最も近い(高さの大小)車両IDを保存
-	std::vector<std::unordered_set<uint64_t>> ImgProcToolkit::sBoundaryCarIdLists;
 	/* end */
 
 	// 道路数
@@ -132,7 +130,6 @@ namespace ImgProc
 			idx++;
 		}
 		sRoadMasksNum = idx;
-		sBoundaryCarIdLists.resize(idx);
 		sTemplatesList.resize(idx);
 		sTemplatePositionsList.resize(idx);
 	}

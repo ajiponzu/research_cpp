@@ -11,6 +11,8 @@ private:
 	static Image mTemp2;
 	static Image mTemp3;
 	static Image mCloseKernel; // クロージングで使用するカーネル
+	static Image mOpenKernel; // オープニングで使用するカーネル
+	static Image mDilateKernel; // 膨張で使用するカーネル
 private:
 	/// <summary>
 	/// 頻度値データを, 一行n列の1チャンネル(グレースケール)画像として考え, 極大値をもつインデックスを保存
@@ -63,15 +65,18 @@ public:
 	/// </summary>
 	static void MakeCloseKernel() 
 	{
-		const auto& size = ImgProcToolkit::GetTemplateHandleParams().kernelSize;
-		mCloseKernel = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(size, size));
-		//auto matPtr = mCloseKernel.ptr<cv::Vec3b>(size / 2);
-		//for (int i = 0; i < size; i++)
-		//{
-		//	if (i == size / 2)
-		//		continue;
-		//	matPtr[0][i] = 0;
-		//}
+		const auto& sizeNum = ImgProcToolkit::GetTemplateHandleParams().kernelSize;
+		const cv::Size size(sizeNum, sizeNum);
+		mDilateKernel = cv::getStructuringElement(cv::MORPH_ELLIPSE, size);
+		mOpenKernel = cv::getStructuringElement(cv::MORPH_RECT, size);
+		mCloseKernel = cv::getStructuringElement(cv::MORPH_RECT, size);
+		auto matPtr = mCloseKernel.ptr<cv::Vec3b>(sizeNum / 2);
+		for (int i = 0; i < sizeNum; i++)
+		{
+			if (i == sizeNum / 2)
+				continue;
+			matPtr[0][i] = 0;
+		}
 	}
 };
 
