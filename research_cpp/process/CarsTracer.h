@@ -58,6 +58,12 @@ private:
 	void DetectNewCars(const size_t& idx);
 
 	/// <summary>
+	/// 車両検出, 開始フレームとそれ以降で検出範囲が変化
+	/// </summary>
+	/// <param name="idx"></param>
+	void DetectNewCarsWatershed(const size_t& idx);
+
+	/// <summary>
 	/// 車両が検出範囲に存在するか判定
 	/// </summary>
 	/// <param name="idx">道路マスク番号</param>

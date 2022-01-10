@@ -1,7 +1,42 @@
 #include "CarsTracer.h"
 #include "TemplateHandle.h"
+#include <opencv2/imgproc/types_c.h>
 
 using Tk = ImgProc::ImgProcToolkit;
+
+/// <summary>
+/// np.uniqueと同義.
+/// 引用「https://stackoverflow.com/questions/24716932/obtaining-list-of-unique-pixel-values-in-opencv-mat」
+/// </summary>
+/// <param name="input"></param>
+/// <param name="sort"></param>
+/// <returns></returns>
+std::vector<int> unique(const cv::Mat& input, bool sort = false)
+{
+	if (input.channels() > 1)
+	{
+		std::cerr << "unique !!! Only works with 1-channel Mat" << std::endl;
+		return std::vector<int>();
+	}
+
+	std::vector<int> out;
+	for (int y = 0; y < input.rows; ++y)
+	{
+		const int* row_ptr = input.ptr<int>(y);
+		for (int x = 0; x < input.cols; ++x)
+		{
+			int value = row_ptr[x];
+
+			if (std::find(out.begin(), out.end(), value) == out.end())
+				out.push_back(value);
+		}
+	}
+
+	if (sort)
+		std::sort(out.begin(), out.end());
+
+	return out;
+}
 
 namespace ImgProc
 {
@@ -19,23 +54,63 @@ namespace ImgProc
 		auto& refResultImg = Tk::GetResult();
 		const auto& crefCarsImg = Tk::GetCars();
 		const auto& crefRoadMasksGray = Tk::GetRoadMasksGray();
+		const auto& crefMorphPrevCars = Tk::GetMorphPrevCars();
 
 		crefFrame.copyTo(refResultImg);
 		Tk::SetCarsNumPrev(Tk::GetCarsNum()); // 前フレームの車両台数を保持
 
+		auto kernel = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(3, 3));
+		Image colorCars;
+
 		for (size_t idx = 0; idx < Tk::GetRoadMasksNum(); idx++)
 		{
-			cv::bitwise_and(crefCarsImg, crefRoadMasksGray[idx], mTemp); // マスキング処理
-			mLabelNum = cv::connectedComponentsWithStats(mTemp, mLabels, mStats, mCentroids, 4); // ラベリング
+			cv::bitwise_and(crefMorphPrevCars, crefRoadMasksGray[idx], mTemp); // マスキング処理
+			//mLabelNum = cv::connectedComponentsWithStats(mTemp, mLabels, mStats, mCentroids, 4); // ラベリング
+
+			Image bin, sureBg, sureFore, dist, unknown;
+			cv::morphologyEx(mTemp, bin, cv::MORPH_CLOSE, kernel, cv::Point(-1, -1), 2);
+			cv::morphologyEx(bin, bin, cv::MORPH_OPEN, kernel, cv::Point(-1, -1), 1);
+			cv::morphologyEx(bin, sureBg, cv::MORPH_DILATE, kernel, cv::Point(-1, -1), 4);
+
+			cv::distanceTransform(bin, dist, CV_DIST_L2, 5);
+			double maxVal = 0.0;
+			cv::minMaxLoc(dist, nullptr, &maxVal, nullptr, nullptr);
+			cv::threshold(dist, sureFore, 0.35 * maxVal, 255, CV_THRESH_BINARY);
+			sureFore.convertTo(sureFore, CV_8U);
+
+			cv::subtract(sureBg, sureFore, unknown);
+
+			auto labelNum = cv::connectedComponents(sureFore, mLabels, 4);
+			mLabels += 1;
+			mLabels.setTo(0, (unknown == 255));
+
+			Image colorCars;
+			cv::bitwise_and(crefCarsImg, crefRoadMasksGray[idx], colorCars);
+			cv::cvtColor(colorCars, colorCars, cv::COLOR_GRAY2BGR);
+			cv::watershed(colorCars, mLabels);
+			auto labelList = unique(mLabels, true);
+			std::erase_if(labelList, [](int x) { return x < 2; });
+
+			for (const auto& label : labelList)
+			{
+				std::vector<std::vector<cv::Point>> contours;
+				Image target = Image::ones(mLabels.size(), CV_8UC1) * 255;
+				target.setTo(0, (mLabels != label));
+				cv::findContours(target, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
+				auto rect = cv::boundingRect(contours[0]);
+				mFinCarPosList.push_back(rect);
+			}
 
 			if (Tk::GetFrameCount() == Tk::GetStartFrame())
 			{
-				DetectNewCars(idx);
+				//DetectNewCars(idx);
+				DetectNewCarsWatershed(idx);
 				continue;
 			}
 
 			TraceCars(idx);
-			DetectNewCars(idx);
+			//DetectNewCars(idx);
+			DetectNewCarsWatershed(idx);
 		}
 		const auto& detect = Tk::GetDetectAreaInf();
 		cv::line(refResultImg, cv::Point(0, detect.top), cv::Point(Tk::GetVideoWidAndHigh().first, detect.top), cv::Scalar(0, 255, 0), 3);
@@ -219,7 +294,7 @@ namespace ImgProc
 				if (Tk::GetFrameCount() == Tk::GetStartFrame())
 				{
 					doesntDetectCar = (finPos.y < (crefDetectArea.top + crefDetectArea.mergin + crefDetectArea.merginPad))
-						|| (finPos.br().y >(crefDetectArea.bottom - crefDetectArea.mergin - crefDetectArea.merginPad));
+						|| (finPos.br().y > (crefDetectArea.bottom - crefDetectArea.mergin - crefDetectArea.merginPad));
 				}
 				/* end */
 				else
@@ -250,6 +325,59 @@ namespace ImgProc
 			mFinCarPosList.clear();
 		}
 		/* end */
+	}
+
+	void CarsTracer::DetectNewCarsWatershed(const size_t& idx)
+	{
+		const auto& crefFrame = Tk::GetFrame();
+		const auto& crefDetectArea = Tk::GetDetectAreaInf();
+		const auto& crefParams = Tk::GetTracerParams();
+		auto& refCarsNum = Tk::GetCarsNum();
+		auto& refFrameCarsNum = Tk::GetFrameCarsNum();
+		auto& refResultImg = Tk::GetResult();
+		auto& refTemplates = Tk::GetTemplatesList()[idx];
+		auto& refTemplatePositions = Tk::GetTemplatePositionsList()[idx];
+		auto& refBoundaryCarIdList = Tk::GetBoundaryCarIdLists()[idx];
+
+		bool doesntDetectCar = false;
+		for (const auto& finPos : mFinCarPosList)
+		{
+			/* 検出位置チェック */
+			// 検出開始位置近傍の車両を特定, 未検出車両なら車両IDを保存
+			// 1フレーム目は, 車両として検出しても, IDを保存しないものもあることに注意
+			/* 1フレーム目で検出されない領域を除外 */
+			if (Tk::GetFrameCount() == Tk::GetStartFrame())
+			{
+				doesntDetectCar = (finPos.y < (crefDetectArea.top + crefDetectArea.mergin + crefDetectArea.merginPad))
+					|| (finPos.br().y > (crefDetectArea.bottom - crefDetectArea.mergin - crefDetectArea.merginPad));
+			}
+			/* end */
+			else
+				doesntDetectCar = IsntDetectedCars(idx, finPos); // 検出範囲にあるか判定
+
+			if (doesntDetectCar) // 検出しない場合スキップ
+				continue;
+
+			if (DoesntAddBoundCar(idx, finPos)) // 検出範囲にある車両に対し検出するか判定. その後, 検出しない場合スキップ
+				continue;
+			/* end */
+
+			refBoundaryCarIdList.insert(refCarsNum); // 新規検出車両として登録
+			mTemp = ExtractTemplate(crefFrame, finPos);
+
+			cv::rectangle(refResultImg, finPos, cv::Scalar(255, 0, 0), 3); // 矩形を描く
+
+			/* テンプレート抽出・保存 */
+			refTemplates.insert(std::pair(refCarsNum, mTemp));
+			refTemplatePositions.insert(std::pair(refCarsNum, finPos));
+			/* end */
+
+			/* 検出台数を更新 */
+			refCarsNum++;
+			refFrameCarsNum++;
+			/* end */
+		}
+		mFinCarPosList.clear();
 	}
 
 	/// <summary>
@@ -313,7 +441,7 @@ namespace ImgProc
 
 			auto carPosRectBottom = carPosRect.br();
 			auto carPosBottom = crefCarPos.br();
-			diffPosX = carPosRectBottom.x  - carPosBottom.x;
+			diffPosX = carPosRectBottom.x - carPosBottom.x;
 			diffPosY = carPosRectBottom.y - carPosBottom.y;
 			retFlag = (std::abs(diffPosX) < crefDetectArea.nearOffset)
 				&& (std::abs(diffPosY) < crefDetectArea.nearOffset);

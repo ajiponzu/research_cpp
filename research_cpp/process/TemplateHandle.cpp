@@ -5,40 +5,6 @@
 
 using Tk = ImgProc::ImgProcToolkit;
 
-/// <summary>
-/// np.uniqueと同義. 
-/// 引用「https://stackoverflow.com/questions/24716932/obtaining-list-of-unique-pixel-values-in-opencv-mat」
-/// </summary>
-/// <param name="input"></param>
-/// <param name="sort"></param>
-/// <returns></returns>
-std::vector<int> unique(const cv::Mat& input, bool sort = false)
-{
-    if (input.channels() > 1) 
-    {
-        std::cerr << "unique !!! Only works with 1-channel Mat" << std::endl;
-        return std::vector<int>();
-    }
-
-    std::vector<int> out;
-    for (int y = 0; y < input.rows; ++y)
-    {
-        const int* row_ptr = input.ptr<int>(y);
-        for (int x = 0; x < input.cols; ++x)
-        {
-            int value = row_ptr[x];
-
-            if ( std::find(out.begin(), out.end(), value) == out.end() )
-                out.push_back(value);
-        }
-    }
-
-    if (sort)
-        std::sort(out.begin(), out.end());
-
-    return out;
-}
-
 namespace ImgProc
 {
 	/* スタティック変数 */
@@ -234,21 +200,21 @@ namespace ImgProc
 		cv::cvtColor(crefCars, mTemp3, cv::COLOR_GRAY2BGR);
 		mTemp3 = ExtractTemplate(mTemp3, carPos);
 		cv::watershed(mTemp3, mLabels);
-		auto labelList = unique(mLabels, true);
-		std::erase_if(labelList, [](int x) { return x < 2; });
+		//auto labelList = unique(mLabels, true);
+		//std::erase_if(labelList, [](int x) { return x < 2; });
 
-		/* 各領域ごとの処理, 0番は背景 */
-		for (const auto& label : labelList)
-		{
-			std::vector<std::vector<cv::Point>> contours;
-			Image target = Image::ones(mLabels.size(), CV_8UC1) * 255;
-			target.setTo(0, (mLabels != label));
-			cv::findContours(target, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
-			auto rect = cv::boundingRect(contours[0]);
-			rect.x += static_cast<int>(carPos.x);
-			rect.y += static_cast<int>(carPos.y);
-			finCarPosList.push_back(rect);
-		}
+		///* 各領域ごとの処理, 0番は背景 */
+		//for (const auto& label : labelList)
+		//{
+		//	std::vector<std::vector<cv::Point>> contours;
+		//	Image target = Image::ones(mLabels.size(), CV_8UC1) * 255;
+		//	target.setTo(0, (mLabels != label));
+		//	cv::findContours(target, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
+		//	auto rect = cv::boundingRect(contours[0]);
+		//	rect.x += static_cast<int>(carPos.x);
+		//	rect.y += static_cast<int>(carPos.y);
+		//	finCarPosList.push_back(rect);
+		//}
 		/* end */
 	}
 
