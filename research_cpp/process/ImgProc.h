@@ -112,8 +112,6 @@ namespace ImgProc
 		static uint64_t sCarsNumPrev;
 		// 現在のフレーム中の車両台数
 		static uint64_t sFrameCarsNum;
-		// 検出車両のうち, もっとも最初に検出した車両のID
-		static uint64_t sFrontCarId;
 
 		/* パラメータ構造体 */
 		static DetectAreaInf sDetectAreaInf; // 検出範囲
@@ -189,7 +187,6 @@ namespace ImgProc
 		static Image& GetRoadMaskGray() { return sRoadMaskGray; }
 		static std::vector<Image>& GetRoadMasksGray() { return sRoadMasksGray; }
 		static uint64_t& GetFrameCount() { return sFrameCount; }
-		static uint64_t& GetFrontCarId() { return sFrontCarId; }
 		static uint64_t& GetCarsNum() { return sCarsNum; }
 		static uint64_t& GetFrameCarsNum() { return sFrameCarsNum; }
 		static const uint64_t& GetCarsNumPrev() { return sCarsNumPrev; }

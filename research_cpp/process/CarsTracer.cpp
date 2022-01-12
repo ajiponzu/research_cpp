@@ -61,15 +61,11 @@ namespace ImgProc
 		double maxValue = 0.0;
 		Image gray, edge, edgeTempl;
 		/* 検出済み車両ごとに処理 */
-		for (auto carId = Tk::GetFrontCarId(); carId < Tk::GetCarsNum(); carId++)
+		for (auto& [refCarId, refCarImg] : refTemplates)
 		{
-			if (refTemplates.find(carId) == refTemplates.end())
-				continue;
-
 			/* テンプレートマッチング */
-			auto& refCarImg = refTemplates[carId];
-			auto& refCarPos = refTemplatePositions[carId];
-			TemplateHandle::ExtractCarsNearestArea(mNearRect, idx, carId);
+			auto& refCarPos = refTemplatePositions[refCarId];
+			TemplateHandle::ExtractCarsNearestArea(mNearRect, idx, refCarId);
 			mTemp = GetImgSlice(crefFrame, mNearRect).clone();
 
 			/* エッジによるテンプレートマッチング */
@@ -102,14 +98,14 @@ namespace ImgProc
 
 			if (maxValue < crefParams.minMatchingThr)
 			{
-				mDeleteLists.push_back(std::pair(idx, carId));
+				mDeleteLists.push_back(std::pair(idx, refCarId));
 				continue;
 			}
 			/* end */
 
 			refCarPos.x = mNearRect.x + mMaxLoc.x;
 			refCarPos.y = mNearRect.y + mMaxLoc.y;
-			JudgeStopTraceAndDetect(idx, carId, refCarPos); // 追跡終了判定
+			JudgeStopTraceAndDetect(idx, refCarId, refCarPos); // 追跡終了判定
 			//std::string path = "./template_" + std::to_string(Tk::GetFrameCount()) + "_" + std::to_string(carId) + ".png";
 			//cv::imwrite(path, refTemplates[carId]);
 		}
@@ -151,14 +147,11 @@ namespace ImgProc
 	{
 		auto& refTemplatesList = Tk::GetTemplatesList();
 		auto& refTemplatePositionsList = Tk::GetTemplatePositionsList();
-		auto& refFrontCarId = Tk::GetFrontCarId();
 		/* 追跡終了車両をデータから除外 */
 		for (const auto& [roadIdx, carId] : mDeleteLists)
 		{
 			refTemplatesList[roadIdx].erase(carId);
 			refTemplatePositionsList[roadIdx].erase(carId);
-			if (carId == refFrontCarId)
-				refFrontCarId++;
 		}
 		mDeleteLists.clear();
 		/* end */
