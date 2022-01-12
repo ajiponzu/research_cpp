@@ -53,8 +53,8 @@ namespace ImgProc
 	uint64_t ImgProcToolkit::sCarsNum = 0;
 	// 全フレーム中の検出・追跡中車両台数(前フレームのもの)
 	uint64_t ImgProcToolkit::sCarsNumPrev = 0;
-	// 現在のフレーム中の車両台数
-	uint64_t ImgProcToolkit::sFrameCarsNum = 0;
+	// 新規IDを生成?
+	uint64_t ImgProcToolkit::sNewID = 0;
 	/* end */
 
 	/* パラメータ構造体初期化 */

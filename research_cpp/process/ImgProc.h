@@ -110,8 +110,8 @@ namespace ImgProc
 		static uint64_t sCarsNum;
 		// 全フレーム中の検出・追跡中車両台数(前フレームのもの)
 		static uint64_t sCarsNumPrev;
-		// 現在のフレーム中の車両台数
-		static uint64_t sFrameCarsNum;
+		// 新規IDを生成?
+		static uint64_t sNewID;
 
 		/* パラメータ構造体 */
 		static DetectAreaInf sDetectAreaInf; // 検出範囲
@@ -166,12 +166,6 @@ namespace ImgProc
 		/// </summary>
 		static void RunImageProcedure();
 
-		/* セッタ・ゲッタ */
-		/* セッタ */
-		static void SetCarsNum(const uint64_t& carsNum) { sCarsNum = carsNum; }
-		static void SetCarsNumPrev(const uint64_t& carsNumPrev) { sCarsNumPrev = carsNumPrev; }
-		static void SetFrameCarsNum(const uint64_t& frameCarsNum) { sFrameCarsNum = frameCarsNum; }
-		/* end */
 		/* ゲッタ */
 		static cv::VideoCapture& GetVideoCapture() { return sVideoCapture; }
 		static cv::VideoWriter& GetVideoWriter() { return sVideoWriter; }
@@ -188,7 +182,7 @@ namespace ImgProc
 		static std::vector<Image>& GetRoadMasksGray() { return sRoadMasksGray; }
 		static uint64_t& GetFrameCount() { return sFrameCount; }
 		static uint64_t& GetCarsNum() { return sCarsNum; }
-		static uint64_t& GetFrameCarsNum() { return sFrameCarsNum; }
+		static uint64_t& GetNewID() { return sNewID; }
 		static const uint64_t& GetCarsNumPrev() { return sCarsNumPrev; }
 		static std::vector<std::unordered_map<uint64_t, Image>>& GetTemplatesList() { return sTemplatesList; }
 		static std::vector<std::unordered_map<uint64_t, cv::Rect2d>>& GetTemplatePositionsList() { return sTemplatePositionsList; }
@@ -200,8 +194,9 @@ namespace ImgProc
 		static const BackImgHandleParams& GetBackImgHandleParams() { return sBackImgHandleParams; }
 		static const std::string& GetOutputBasePath() { return sOutputBasePath; }
 		/* end */
-		/* end */
-	};
+
+		static void SetCarsNumPrev() { sCarsNumPrev = sCarsNum; }
+	}; 
 
 	/// <summary>
 	/// BGR二値化

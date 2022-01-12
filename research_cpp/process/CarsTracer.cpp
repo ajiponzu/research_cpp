@@ -21,7 +21,7 @@ namespace ImgProc
 		const auto& crefRoadMasksGray = Tk::GetRoadMasksGray();
 
 		crefFrame.copyTo(refResultImg);
-		Tk::SetCarsNumPrev(Tk::GetCarsNum()); // 前フレームの車両台数を保持
+		Tk::SetCarsNumPrev(); // 前フレームの車両台数を保持
 
 		for (size_t idx = 0; idx < Tk::GetRoadMasksNum(); idx++)
 		{
@@ -167,7 +167,7 @@ namespace ImgProc
 		const auto& crefDetectArea = Tk::GetDetectAreaInf();
 		const auto& crefParams = Tk::GetTracerParams();
 		auto& refCarsNum = Tk::GetCarsNum();
-		auto& refFrameCarsNum = Tk::GetFrameCarsNum();
+		auto& refNewID = Tk::GetNewID();
 		auto& refResultImg = Tk::GetResult();
 		auto& refTemplates = Tk::GetTemplatesList()[idx];
 		auto& refTemplatePositions = Tk::GetTemplatePositionsList()[idx];
@@ -218,13 +218,13 @@ namespace ImgProc
 
 				mTemp = ExtractTemplate(crefFrame, finPos);
 				/* テンプレート抽出・保存 */
-				refTemplates.insert(std::pair(refCarsNum, mTemp));
-				refTemplatePositions.insert(std::pair(refCarsNum, finPos));
+				refTemplates.insert(std::pair(refNewID, mTemp));
+				refTemplatePositions.insert(std::pair(refNewID, finPos));
 				/* end */
 
 				/* 検出台数を更新 */
 				refCarsNum++;
-				refFrameCarsNum++;
+				refNewID++;
 				/* end */
 			}
 			mFinCarPosList.clear();
@@ -263,10 +263,7 @@ namespace ImgProc
 		/* end */
 
 		/* 2フレーム目以降は, 検出開始地点から遠い車両を検出しない */
-		if (doesntDetectCar && (Tk::GetFrameCount() > Tk::GetStartFrame()))
-			return true;
-
-		return false;
+		return (Tk::GetFrameCount() > Tk::GetStartFrame()) && doesntDetectCar;
 	}
 
 	/// <summary>
@@ -280,17 +277,16 @@ namespace ImgProc
 		const auto& crefDetectArea = Tk::GetDetectAreaInf();
 		auto& refResultImg = Tk::GetResult();
 		auto& refTemplates = Tk::GetTemplatesList()[idx];
-		auto& crefTemplatePositions = Tk::GetTemplatePositionsList()[idx];
+		const auto& crefTemplatePositions = Tk::GetTemplatePositionsList()[idx];
+		auto& refCarsNum = Tk::GetCarsNum();
 		bool retFlag = false;
-		for (auto& [refCarId, refCarPos] : crefTemplatePositions)
+		for (const auto& [refCarId, refCarPos] : crefTemplatePositions)
 		{
 			if (carPosRect.area() < refCarPos.area())
 			{
 				const auto bottom = carPosRect.br();
 				auto center = cv::Point2d((carPosRect.x + bottom.x) / 2, (carPosRect.y + bottom.y) / 2);
-				retFlag = refCarPos.contains(center);
-				if (retFlag)
-					return true;
+				retFlag = retFlag || refCarPos.contains(center);
 			}
 			else
 			{
@@ -298,9 +294,8 @@ namespace ImgProc
 				auto center = cv::Point2d((refCarPos.x + bottom.x) / 2, (refCarPos.y + bottom.y) / 2);
 				if (carPosRect.contains(center))
 				{
-					refCarPos = carPosRect;
-					refTemplates[refCarId] = ExtractTemplate(refResultImg, refCarPos);
-					return true;
+					mDeleteLists.push_back(std::pair(idx, refCarId));
+					refCarsNum--;
 				}
 			}
 		}
