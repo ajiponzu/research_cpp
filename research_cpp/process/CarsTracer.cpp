@@ -30,13 +30,14 @@ namespace ImgProc
 
 			if (Tk::GetFrameCount() == Tk::GetStartFrame())
 			{
-				DetectNewCars(idx);
+				DetectNewCars(idx); // 検出処理
 				continue;
 			}
 
-			TraceCars(idx);
-			DetectNewCars(idx);
-			DrawRectangles(idx);
+			TraceCars(idx); // 追跡処理
+			DetectNewCars(idx); // 検出処理
+			DestructTracedCars(); // 追跡終了処理
+			DrawRectangles(idx); // 矩形描画処理
 		}
 		const auto& detect = Tk::GetDetectAreaInf();
 		cv::line(refResultImg, cv::Point(0, detect.top), cv::Point(Tk::GetVideoWidAndHigh().first, detect.top), cv::Scalar(0, 255, 0), 3);
@@ -113,7 +114,6 @@ namespace ImgProc
 			//cv::imwrite(path, refTemplates[carId]);
 		}
 		/* end */
-		DestructTracedCars(); // 追跡終了処理
 	}
 
 	/// <summary>

@@ -225,11 +225,6 @@ namespace ImgProc
 
 		cv::subtract(sureBg, sureFore, unknown);
 
-		//cv::imshow("fore", sureFore);
-		//cv::imshow("bin", bin);
-		//cv::waitKey(0);
-		//cv::destroyAllWindows();
-
 		//ラベリングによって求められるラベル数
 		auto labelNum = cv::connectedComponents(sureFore, mLabels, 4);
 		mLabels += 1;

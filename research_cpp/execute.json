@@ -50,10 +50,57 @@
     },
     {
       "startFrame": 1,
-      "endFrame": 10000,
+      "endFrame": 1000,
       "Resources": {
         "video": "./resource/fhd/yugata/input.mp4",
         "result": "./output/result2",
+        "mask": "./resource/fhd/back_kai.png",
+        "roadMasksBase": "./resource/fhd/back_kai",
+        "roadDirections": [
+          "L",
+          "A",
+          "L",
+          "A"
+        ]
+      },
+      "DetectAreaInf": {
+        "top": 350,
+        "bottom": 720,
+        "mergin": 10,
+        "merginPad": 10,
+        "nearOffset": 10
+      },
+      "ExtractorParams": {
+        "shadowThrL": 15,
+        "shadowThrB": 10,
+        "closeCount": 3,
+        "kernelSize": 5,
+        "reshadowAreaThr": 20,
+        "reshadowAspectThr": 1.4
+      },
+      "TracerParams": {
+        "minAreaRatio": 0.3,
+        "detectAreaThr": 20,
+        "minMatchingThr": 0.35
+      },
+      "TemplateHandleParams": {
+        "mergin": 6,
+        "magni": 1.0006,
+        "kernelSize": 3,
+        "closeCount": 2,
+        "minAreaRatio": 0.3,
+        "areaThr": 20
+      },
+      "BackImgHandleParams": {
+        "blendAlpha": 0.025
+      }
+    },
+    {
+      "startFrame": 1,
+      "endFrame": 1000,
+      "Resources": {
+        "video": "./resource/fhd/kumori/input.mp4",
+        "result": "./output/result3",
         "mask": "./resource/fhd/back_kai.png",
         "roadMasksBase": "./resource/fhd/back_kai",
         "roadDirections": [
