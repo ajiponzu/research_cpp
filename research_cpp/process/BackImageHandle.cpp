@@ -10,6 +10,8 @@ namespace ImgProc
 	Image CarsExtractor::BackImageHandle::sMoveCarsMask;
 	Image CarsExtractor::BackImageHandle::sMoveCarsMaskPrev;
 	bool CarsExtractor::BackImageHandle::sIsExistPreBackImg = false;
+	
+	cv::VideoWriter CarsExtractor::BackImageHandle::mVideoWriterBack;
 
 	void CarsExtractor::BackImageHandle::CreatePreBackImg()
 	{
@@ -17,8 +19,20 @@ namespace ImgProc
 		auto& refBackImg = Tk::GetBackImg();
 		auto& refFrameCount = Tk::GetFrameCount();
 		const auto& crefParams = Tk::GetBackImgHandleParams();
+		const auto& [crefVideoWidth, crefVideoHeight] = ImgProcToolkit::GetVideoWidAndHigh();
 
 		auto& videoCapture = ImgProcToolkit::GetVideoCapture();
+		auto fourcc = cv::VideoWriter::fourcc('m', 'p', '4', 'v');
+		auto videoFps = videoCapture.get(cv::CAP_PROP_FPS);
+
+		std::string outputPath = ImgProcToolkit::GetOutputBasePath() + "_Back.mp4";
+		mVideoWriterBack.open(outputPath, fourcc, videoFps, cv::Size(crefVideoWidth, crefVideoHeight));
+		if (!mVideoWriterBack.isOpened())
+		{
+			std::cout << outputPath << ": can't create or overwrite" << std::endl;
+			assert("failed to overwrite video");
+		}
+
 		auto fgbg = cv::createBackgroundSubtractorMOG2();
 
 		videoCapture >> refFrame;
@@ -50,11 +64,12 @@ namespace ImgProc
 			cv::accumulateWeighted(sFrameFloat, sBackImgFloat, crefParams.blendAlpha, sMoveCarsMask);
 			sMoveCarsMaskPrev = sMoveCarsMask;
 
+			sBackImgFloat.convertTo(refBackImg, CV_8UC3);
+			mVideoWriterBack << refBackImg;
 			std::cout << refFrameCount << std::endl;
 			count++;
 		}
 
-		sBackImgFloat.convertTo(refBackImg, CV_8UC3);
 		sIsExistPreBackImg = true;
 		Tk::GetStartFrame() += fgbg->getHistory();
 	}
@@ -74,6 +89,7 @@ namespace ImgProc
 		crefFrame.convertTo(sFrameFloat, CV_32FC3);
 		cv::accumulateWeighted(sFrameFloat, sBackImgFloat, crefParams.blendAlpha, sMoveCarsMask);
 		sBackImgFloat.convertTo(refBackImg, CV_8UC3);
+		mVideoWriterBack << refBackImg;
 		sMoveCarsMaskPrev = sMoveCarsMask;
 		/* end */
 	}

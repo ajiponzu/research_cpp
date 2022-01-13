@@ -47,7 +47,7 @@ public:
 		auto videoFps = ImgProcToolkit::GetVideoCapture().get(cv::CAP_PROP_FPS);
 
 		std::string outputPath = ImgProcToolkit::GetOutputBasePath() + "_Sub.mp4";
-		mVideoWriterSub.open(outputPath, fourcc, videoFps, cv::Size(crefVideoWidth, crefVideoHeight));
+		mVideoWriterSub.open(outputPath, fourcc, videoFps, imgSize);
 		if (!mVideoWriterSub.isOpened())
 		{
 			std::cout << outputPath << ": can't create or overwrite" << std::endl;
@@ -55,7 +55,7 @@ public:
 		}
 
 		outputPath = ImgProcToolkit::GetOutputBasePath() + "_Shadow.mp4";
-		mVideoWriterShadow.open(outputPath, fourcc, videoFps, cv::Size(crefVideoWidth, crefVideoHeight));
+		mVideoWriterShadow.open(outputPath, fourcc, videoFps, imgSize);
 		if (!mVideoWriterShadow.isOpened())
 		{
 			std::cout << outputPath << ": can't create or overwrite" << std::endl;
@@ -63,7 +63,7 @@ public:
 		}
 
 		outputPath = ImgProcToolkit::GetOutputBasePath() + "_ReShadow.mp4";
-		mVideoWriterReShadow.open(outputPath, fourcc, videoFps, cv::Size(crefVideoWidth, crefVideoHeight));
+		mVideoWriterReShadow.open(outputPath, fourcc, videoFps, imgSize);
 		if (!mVideoWriterReShadow.isOpened())
 		{
 			std::cout << outputPath << ": can't create or overwrite" << std::endl;
@@ -71,7 +71,7 @@ public:
 		}
 
 		outputPath = ImgProcToolkit::GetOutputBasePath() + "_PreCars.mp4";
-		mVideoWriterPreCars.open(outputPath, fourcc, videoFps, cv::Size(crefVideoWidth, crefVideoHeight));
+		mVideoWriterPreCars.open(outputPath, fourcc, videoFps, imgSize);
 		if (!mVideoWriterPreCars.isOpened())
 		{
 			std::cout << outputPath << ": can't create or overwrite" << std::endl;
@@ -79,7 +79,7 @@ public:
 		}
 
 		outputPath = ImgProcToolkit::GetOutputBasePath() + "_Cars.mp4";
-		mVideoWriterCars.open(outputPath, fourcc, videoFps, cv::Size(crefVideoWidth, crefVideoHeight));
+		mVideoWriterCars.open(outputPath, fourcc, videoFps, imgSize);
 		if (!mVideoWriterCars.isOpened())
 		{
 			std::cout << outputPath << ": can't create or overwrite" << std::endl;

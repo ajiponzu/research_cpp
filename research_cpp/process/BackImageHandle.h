@@ -12,6 +12,8 @@ private:
 	static Image sMoveCarsMaskPrev; // グレースケール二値画像
 	static bool sIsExistPreBackImg;
 
+	static cv::VideoWriter mVideoWriterBack;
+
 public:
 	static Image& GetSubtracted() { return sSubtracted; }
 
