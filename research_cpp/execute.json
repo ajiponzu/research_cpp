@@ -1,13 +1,13 @@
 {
-  "executeCaseNum": 1,
+  "executeCaseNum": 3,
   "TestCases": [
     {
       "startFrame": 1,
-      "endFrame": 1000,
+      "endFrame": 10000,
       "Resources": {
         "video": "./resource/fhd/hiru/input.mp4",
         "result": "./output/result1",
-        "mask": "./resource/fhd/back_kai.png",
+        "mask": "./resource/fhd/back_kaikai.png",
         "roadMasksBase": "./resource/fhd/back_kai",
         "roadDirections": [
           "L",
@@ -29,7 +29,7 @@
         "closeCount": 2,
         "kernelSize": 5,
         "reshadowAreaThr": 20,
-        "reshadowAspectThr": 1.4
+        "reshadowAspectThr": 2.0
       },
       "TracerParams": {
         "minAreaRatio": 0.3,
@@ -50,11 +50,11 @@
     },
     {
       "startFrame": 1,
-      "endFrame": 1000,
+      "endFrame": 10000,
       "Resources": {
         "video": "./resource/fhd/yugata/input.mp4",
         "result": "./output/result2",
-        "mask": "./resource/fhd/back_kai.png",
+        "mask": "./resource/fhd/back_kaikai.png",
         "roadMasksBase": "./resource/fhd/back_kai",
         "roadDirections": [
           "L",
@@ -76,7 +76,7 @@
         "closeCount": 3,
         "kernelSize": 5,
         "reshadowAreaThr": 20,
-        "reshadowAspectThr": 1.4
+        "reshadowAspectThr": 2.0
       },
       "TracerParams": {
         "minAreaRatio": 0.3,
@@ -97,11 +97,11 @@
     },
     {
       "startFrame": 1,
-      "endFrame": 1000,
+      "endFrame": 10000,
       "Resources": {
         "video": "./resource/fhd/kumori/input.mp4",
         "result": "./output/result3",
-        "mask": "./resource/fhd/back_kai.png",
+        "mask": "./resource/fhd/back_kaikai.png",
         "roadMasksBase": "./resource/fhd/back_kai",
         "roadDirections": [
           "L",
@@ -123,7 +123,7 @@
         "closeCount": 3,
         "kernelSize": 5,
         "reshadowAreaThr": 20,
-        "reshadowAspectThr": 1.4
+        "reshadowAspectThr": 2.0
       },
       "TracerParams": {
         "minAreaRatio": 0.3,

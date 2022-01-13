@@ -66,7 +66,7 @@ namespace ImgProc
 			/* テンプレートマッチング */
 			auto& refCarPos = refTemplatePositions[refCarId];
 			TemplateHandle::ExtractCarsNearestArea(mNearRect, idx, refCarId);
-			mTemp = GetImgSlice(crefFrame, mNearRect).clone();
+			mTemp = GetImgSlice(crefFrame, mNearRect);
 
 			/* エッジによるテンプレートマッチング */
 			cv::cvtColor(mTemp, gray, cv::COLOR_BGR2GRAY);
@@ -120,24 +120,14 @@ namespace ImgProc
 	/// <param name="carPos">車両位置</param>
 	void CarsTracer::JudgeStopTraceAndDetect(const size_t& idx, const uint64_t& carId, const cv::Rect2d& carPos)
 	{
-		const auto& crefRoadCarsDirection = Tk::GetRoadCarsDirections()[idx];
 		const auto& crefDetectArea = Tk::GetDetectAreaInf();
 		auto carPosBottom = carPos.br();
-		/* 追跡終了位置か, 新規車両かどうかの判別 */
-		switch (crefRoadCarsDirection)
-		{
-		case RoadDirect::APPROACH:
-			if (carPos.y > crefDetectArea.bottom)
-				mDeleteLists.push_back(std::pair(idx, carId)); // 追跡停止判定
-			break;
-		case RoadDirect::LEAVE:
-			if (carPosBottom.y < crefDetectArea.top)
-				mDeleteLists.push_back(std::pair(idx, carId)); // 追跡停止判定
-			break;
-		default:
-			break;
-		}
-		/* end */
+		///* 追跡終了位置か, 新規車両かどうかの判別 */
+		if (carPos.y > crefDetectArea.bottom)
+			mDeleteLists.push_back(std::pair(idx, carId)); // 追跡停止判定
+		if (carPosBottom.y < crefDetectArea.top)
+			mDeleteLists.push_back(std::pair(idx, carId)); // 追跡停止判定
+	/* end */
 	}
 
 	/// <summary>
@@ -203,7 +193,7 @@ namespace ImgProc
 				if (Tk::GetFrameCount() == Tk::GetStartFrame())
 				{
 					doesntDetectCar = (finPos.y < (crefDetectArea.top + crefDetectArea.mergin + crefDetectArea.merginPad))
-						|| (finPos.br().y >(crefDetectArea.bottom - crefDetectArea.mergin - crefDetectArea.merginPad));
+						|| (finPos.br().y > (crefDetectArea.bottom - crefDetectArea.mergin - crefDetectArea.merginPad));
 				}
 				/* end */
 				else

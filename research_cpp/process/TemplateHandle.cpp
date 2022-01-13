@@ -213,7 +213,6 @@ namespace ImgProc
 
 		Image bin, sureBg, sureFore, dist, unknown;
 		bin = ExtractTemplate(crefMorphPrevCars, carPos);
-		//bin = ExtractTemplate(crefCars, carPos);
 		cv::morphologyEx(bin, bin, cv::MORPH_CLOSE, mCloseKernel, cv::Point(-1, -1), 3);
 		cv::morphologyEx(bin, sureBg, cv::MORPH_CLOSE, mDilateKernel, cv::Point(-1, -1), 1);
 
