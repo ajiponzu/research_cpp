@@ -53,7 +53,6 @@ namespace ImgProc
 			else if (refFrameCount > Tk::GetEndFrame())
 				break;
 
-
 			refFrame.convertTo(sFrameFloat, CV_32FC3);
 
 			fgbg->apply(refFrame, sMoveCarsMask);
