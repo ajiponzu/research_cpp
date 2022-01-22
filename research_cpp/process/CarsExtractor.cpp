@@ -46,6 +46,7 @@ namespace ImgProc
 	{
 		const auto& crefFrame = Tk::GetFrame();
 		const auto& crefParams = Tk::GetExtractorParams();
+		const auto& crefFrameCount = Tk::GetFrameCount();
 
 		// [0], [1], [2]にl, a, bが分割して代入される動的配列
 		std::vector<Image> vLab;
@@ -92,6 +93,11 @@ namespace ImgProc
 		/* end */
 
 		cv::cvtColor(mTemp, mTemp, cv::COLOR_BGR2GRAY);
+		if (crefFrameCount == 510 /*|| crefFrameCount == ||...*/)
+		{
+			std::string path = "./all_shadow" + std::to_string(crefFrameCount) + ".png";
+			cv::imwrite(path, mTemp);
+		}
 		cv::bitwise_and(mTemp, mSubtracted, mShadow);
 	}
 
