@@ -171,6 +171,7 @@ namespace ImgProc
 		const auto& crefBackImg = Tk::GetBackImg();
 		const auto& crefParams = Tk::GetTemplateHandleParams();
 		const auto& crefDetectArea = Tk::GetDetectAreaInf();
+		const auto& crefFrameCount = Tk::GetFrameCount();
 
 		mTemp3 = ExtractTemplate(crefFrame, carPos);
 		mTemp1 = ExtractTemplate(crefBackImg, carPos);
