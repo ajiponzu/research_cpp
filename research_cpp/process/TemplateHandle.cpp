@@ -210,6 +210,7 @@ namespace ImgProc
 		const auto& crefDetectArea = Tk::GetDetectAreaInf();
 		const auto& crefMorphPrevCars = Tk::GetMorphPrevCars();
 		const auto& crefCars = Tk::GetCars();
+		const auto& crefFrameCount = Tk::GetFrameCount();
 
 		Image bin, sureBg, sureFore, dist, unknown;
 		bin = ExtractTemplate(crefMorphPrevCars, carPos);
@@ -239,6 +240,33 @@ namespace ImgProc
 		{
 			finCarPosList.push_back(carPos);
 			return;
+		}
+
+		if (crefFrameCount == 4880 /*|| crefFrameCount == || ...*/)
+		{
+			std::string path = "./watershed_org_morph" + std::to_string(crefFrameCount) + ".png";
+			cv::imwrite(path, bin);
+
+			path = "./watershed_fg" + std::to_string(crefFrameCount) + "_x" + std::to_string(carPos.x) + "y" + std::to_string(carPos.y) + ".png";
+			cv::imwrite(path, sureFore);
+
+			path = "./watershed_bg" + std::to_string(crefFrameCount) +  "_x" + std::to_string(carPos.x) + "y" + std::to_string(carPos.y) + ".png";
+			cv::imwrite(path, sureBg);
+
+			path = "./watershed_unknown" + std::to_string(crefFrameCount) +  "_x" + std::to_string(carPos.x) + "y" + std::to_string(carPos.y) + ".png";
+			cv::imwrite(path, unknown);
+
+			path = "./watershed_dist" + std::to_string(crefFrameCount) +  "_x" + std::to_string(carPos.x) + "y" + std::to_string(carPos.y) +".png";
+			Image distEq;
+			dist.convertTo(distEq, CV_8U);
+			cv::equalizeHist(distEq, distEq);
+			cv::imwrite(path, distEq);
+
+			path = "./watershed_result" + std::to_string(crefFrameCount) +  "_x" + std::to_string(carPos.x) + "y" + std::to_string(carPos.y) + ".png";
+			Image result, grayLabels;
+			mLabels.convertTo(grayLabels, CV_8U);
+			cv::equalizeHist(grayLabels, result);
+			cv::imwrite(path, result);
 		}
 
 		/* 各領域ごとの処理, 0番は背景 */

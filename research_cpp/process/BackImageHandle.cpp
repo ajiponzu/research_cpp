@@ -39,8 +39,7 @@ namespace ImgProc
 		refFrame.convertTo(sBackImgFloat, CV_32FC3);
 		sBackImgFloat.setTo(0.0);
 
-		uint64_t count = 0;
-		for (int count = 1; count <= fgbg->getHistory(); count++)
+		uint64_t count = 1;
 		while (count <= fgbg->getHistory())
 		{
 			refFrameCount++;
@@ -65,6 +64,17 @@ namespace ImgProc
 
 			sBackImgFloat.convertTo(refBackImg, CV_8UC3);
 			mVideoWriterBack << refBackImg;
+
+			if (count == 500)
+			{
+				Image bg;
+				fgbg->getBackgroundImage(bg);
+				std::string path = "./back_mog" + std::to_string(count) + ".png";
+				cv::imwrite(path, bg);
+				path = "./back" + std::to_string(count) + ".png";
+				cv::imwrite(path, refBackImg);
+			}
+
 			std::cout << refFrameCount << std::endl;
 			count++;
 		}
@@ -79,11 +89,33 @@ namespace ImgProc
 		const auto& crefParams = Tk::GetBackImgHandleParams();
 		const auto& crefFrame = Tk::GetFrame();
 		const auto& refBackImg = Tk::GetBackImg();
+		const auto& crefFrameCount = Tk::GetFrameCount();
+
 		cv::absdiff(crefFrame, refBackImg, sSubtracted); // 差分を取ってからその絶対値を画素値として格納
+		if (crefFrameCount == 4880 /*|| crefFrameCount == || ...*/)
+		{
+			std::string path = "./sub_abs" + std::to_string(crefFrameCount) + ".png";
+			cv::imwrite(path, sSubtracted);
+		}
 		binarizeImage(sSubtracted);
+		if (crefFrameCount == 4880 /*|| crefFrameCount == || ...*/)
+		{
+			std::string path = "./sub_bin" + std::to_string(crefFrameCount) + ".png";
+			cv::imwrite(path, sSubtracted);
+		}
 		
 		/* 背景更新処理 */
 		cv::bitwise_not(sSubtracted, sMoveCarsMask);
+		if (crefFrameCount == 4880 /*|| crefFrameCount == || ...*/)
+		{
+			std::string path = "./sub_nega" + std::to_string(crefFrameCount) + ".png";
+			cv::imwrite(path, sMoveCarsMask);
+			Image bg, bgMask;
+			cv::cvtColor(sMoveCarsMask, bgMask, cv::COLOR_GRAY2BGR);
+			cv::bitwise_and(crefFrame, bgMask, bg);
+			path = "./back_from_nega" + std::to_string(crefFrameCount) + ".png";
+			cv::imwrite(path, bg);
+		}
 		cv::bitwise_and(sMoveCarsMask, sMoveCarsMaskPrev, sMoveCarsMask);
 		crefFrame.convertTo(sFrameFloat, CV_32FC3);
 		cv::accumulateWeighted(sFrameFloat, sBackImgFloat, crefParams.blendAlpha, sMoveCarsMask);

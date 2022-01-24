@@ -318,5 +318,16 @@ namespace ImgProc
 			cv::circle(refResultImg, center, 2, cv::Scalar(255, 0, 0)); // 中心点を描く
 			cv::rectangle(refResultImg, crefCarPos, cv::Scalar(0, 0, 255), 2); // 矩形を描く
 		}
+
+		const auto& crefFrameCount = Tk::GetFrameCount();
+		if (crefFrameCount == 4880 /*|| crefFrameCount == || ...*/)
+		{
+			std::string path{};
+			for (const auto& [crefCarId, crefCarImg] : Tk::GetTemplatesList()[idx])
+			{
+				path = "./template" + std::to_string(crefFrameCount) + "_" + std::to_string(crefCarId) + ".png";
+				cv::imwrite(path, crefCarImg);
+			}
+		}
 	}
 };
