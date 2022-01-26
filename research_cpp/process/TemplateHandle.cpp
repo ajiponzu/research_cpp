@@ -242,9 +242,9 @@ namespace ImgProc
 			return;
 		}
 
-		if (crefFrameCount == 4880 /*|| crefFrameCount == || ...*/)
+		if (crefFrameCount == 501 /*|| crefFrameCount == || ...*/)
 		{
-			std::string path = "./watershed_org_morph" + std::to_string(crefFrameCount) + ".png";
+			std::string path = "./watershed_org_morph" + std::to_string(crefFrameCount) + "_x" + std::to_string(carPos.x) + "y" + std::to_string(carPos.y) + ".png";
 			cv::imwrite(path, bin);
 
 			path = "./watershed_fg" + std::to_string(crefFrameCount) + "_x" + std::to_string(carPos.x) + "y" + std::to_string(carPos.y) + ".png";

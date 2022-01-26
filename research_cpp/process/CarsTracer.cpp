@@ -31,6 +31,7 @@ namespace ImgProc
 			if (Tk::GetFrameCount() == Tk::GetStartFrame())
 			{
 				DetectNewCars(idx); // 検出処理
+				DrawRectangles(idx); // 矩形描画処理
 				continue;
 			}
 
@@ -42,6 +43,16 @@ namespace ImgProc
 		const auto& detect = Tk::GetDetectAreaInf();
 		cv::line(refResultImg, cv::Point(0, detect.top), cv::Point(Tk::GetVideoWidAndHigh().first, detect.top), cv::Scalar(0, 255, 0), 3);
 		cv::line(refResultImg, cv::Point(0, detect.bottom), cv::Point(Tk::GetVideoWidAndHigh().first, detect.bottom), cv::Scalar(0, 255, 0), 3);
+		if (Tk::GetFrameCount() == 501)
+		{
+			std::string path = "result5_frame1.png";
+			cv::imwrite(path, refResultImg);
+		}
+		if (Tk::GetFrameCount() == 565)
+		{
+			std::string path = "result5_frame2.png";
+			cv::imwrite(path, refResultImg);
+		}
 	}
 
 	/// <summary>
@@ -76,6 +87,22 @@ namespace ImgProc
 			cv::cvtColor(refCarImg, gray, cv::COLOR_BGR2GRAY);
 			cv::Laplacian(gray, edgeTempl, CV_8U);
 			cv::cvtColor(edgeTempl, edgeTempl, cv::COLOR_GRAY2BGR);
+
+			if (Tk::GetFrameCount() == 565 && (refCarId == 11 || refCarId == 12 || refCarId == 13))
+			{
+				Image grayTemp;
+				std::string path = "./template_edge" + std::to_string(Tk::GetFrameCount()) + "_" + std::to_string(refCarId)  + ".png";
+				cv::cvtColor(edgeTempl, grayTemp, cv::COLOR_BGR2GRAY);
+				cv::equalizeHist(grayTemp, grayTemp);
+				cv::imwrite(path, grayTemp);
+				path = "./input_edge" + std::to_string(Tk::GetFrameCount()) + "_" + std::to_string(refCarId) + ".png";
+				cv::cvtColor(edge, grayTemp, cv::COLOR_BGR2GRAY);
+				cv::equalizeHist(grayTemp, grayTemp);
+				cv::imwrite(path, grayTemp);
+				path = "./input_color" + std::to_string(Tk::GetFrameCount()) + "_" + std::to_string(refCarId) + ".png";
+				cv::imwrite(path, mTemp);
+			}
+
 			cv::matchTemplate(edge, edgeTempl, mDataTemp, cv::TM_CCORR_NORMED); // cos類似度
 			cv::minMaxLoc(mDataTemp, nullptr, &maxValueArray[0], nullptr, &mMaxLocArray[0]);
 			/* end */
@@ -320,7 +347,7 @@ namespace ImgProc
 		}
 
 		const auto& crefFrameCount = Tk::GetFrameCount();
-		if (crefFrameCount == 4880 /*|| crefFrameCount == || ...*/)
+		if (crefFrameCount == 501 || crefFrameCount == 565)
 		{
 			std::string path{};
 			for (const auto& [crefCarId, crefCarImg] : Tk::GetTemplatesList()[idx])

@@ -1,9 +1,9 @@
 {
-  "executeCaseNum": 1,
+  "executeCaseNum": 3,
   "TestCases": [
     {
       "startFrame": 1,
-      "endFrame": 10000,
+      "endFrame": 600,
       "Resources": {
         "video": "./resource/fhd/hiru/input.mp4",
         "result": "./output/result1",
@@ -101,8 +101,8 @@
       "Resources": {
         "video": "./resource/fhd/kumori/input.mp4",
         "result": "./output/result3",
-        "mask": "./resource/fhd/back_kaikai.png",
-        "roadMasksBase": "./resource/fhd/back_kai",
+        "mask": "./resource/fhd/back_kaikai_kumori.png",
+        "roadMasksBase": "./resource/fhd/back_kai_kumori",
         "roadDirections": [
           "L",
           "A",

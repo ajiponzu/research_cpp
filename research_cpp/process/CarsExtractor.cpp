@@ -94,7 +94,7 @@ namespace ImgProc
 		/* end */
 
 		cv::cvtColor(mTemp, mTemp, cv::COLOR_BGR2GRAY);
-		if (crefFrameCount == 4880 /*|| crefFrameCount == || ...*/)
+		if (crefFrameCount == 501 /*|| crefFrameCount == || ...*/)
 		{
 			std::string path = "./all_shadow" + std::to_string(crefFrameCount) + ".png";
 			cv::imwrite(path, mTemp);

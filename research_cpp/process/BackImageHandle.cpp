@@ -92,13 +92,13 @@ namespace ImgProc
 		const auto& crefFrameCount = Tk::GetFrameCount();
 
 		cv::absdiff(crefFrame, refBackImg, sSubtracted); // 差分を取ってからその絶対値を画素値として格納
-		if (crefFrameCount == 4880 /*|| crefFrameCount == || ...*/)
+		if (crefFrameCount == 501 /*|| crefFrameCount == || ...*/)
 		{
 			std::string path = "./sub_abs" + std::to_string(crefFrameCount) + ".png";
 			cv::imwrite(path, sSubtracted);
 		}
 		binarizeImage(sSubtracted);
-		if (crefFrameCount == 4880 /*|| crefFrameCount == || ...*/)
+		if (crefFrameCount == 501 /*|| crefFrameCount == || ...*/)
 		{
 			std::string path = "./sub_bin" + std::to_string(crefFrameCount) + ".png";
 			cv::imwrite(path, sSubtracted);
@@ -106,7 +106,7 @@ namespace ImgProc
 		
 		/* 背景更新処理 */
 		cv::bitwise_not(sSubtracted, sMoveCarsMask);
-		if (crefFrameCount == 4880 /*|| crefFrameCount == || ...*/)
+		if (crefFrameCount == 501 /*|| crefFrameCount == || ...*/)
 		{
 			std::string path = "./sub_nega" + std::to_string(crefFrameCount) + ".png";
 			cv::imwrite(path, sMoveCarsMask);
