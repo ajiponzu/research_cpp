@@ -1,9 +1,9 @@
 {
-  "executeCaseNum": 3,
+  "executeCaseNum": 1,
   "TestCases": [
     {
       "startFrame": 1,
-      "endFrame": 600,
+      "endFrame": 10000,
       "Resources": {
         "video": "./resource/fhd/hiru/input.mp4",
         "result": "./output/result1",

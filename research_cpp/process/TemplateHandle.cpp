@@ -209,7 +209,6 @@ namespace ImgProc
 		const auto& crefParams = Tk::GetTemplateHandleParams();
 		const auto& crefDetectArea = Tk::GetDetectAreaInf();
 		const auto& crefMorphPrevCars = Tk::GetMorphPrevCars();
-		const auto& crefCars = Tk::GetCars();
 		const auto& crefFrameCount = Tk::GetFrameCount();
 
 		Image bin, sureBg, sureFore, dist, unknown;
@@ -230,8 +229,7 @@ namespace ImgProc
 		mLabels += 1;
 		mLabels.setTo(0, (unknown == 255));
 
-		cv::cvtColor(crefCars, mTemp3, cv::COLOR_GRAY2BGR);
-		mTemp3 = ExtractTemplate(mTemp3, carPos);
+		mTemp3 = ExtractTemplate(Tk::GetFrame(), carPos);
 		cv::watershed(mTemp3, mLabels);
 		auto labelList = unique(mLabels, true);
 		std::erase_if(labelList, [](int x) { return x < 2; });
